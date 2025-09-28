@@ -1,0 +1,31 @@
+name: Docker Build
+
+on:
+  workflow_run:
+    workflows: ["testing", "linting"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    # Run only if both tests and linting passed
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build docker image
+        run: |
+          docker build -t webAleaPython:${GITHUB_SHA} .
+      
+      - name: Run docker tests
+        run: |
+          docker run --rm webAleaPython_test_container pytest --cov=.
+
+      - name: cleanup
+        run: |
+          docker stop webAleaPython_test_container
+          docker rm webAleaPython_test_container
+          docker rmi webAleaPython:${GITHUB_SHA}
