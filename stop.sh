@@ -1,4 +1,4 @@
-# stops and clean docker container
-docker stop $(docker ps -q --filter ancestor=webalea)
-docker rm $(docker ps -a -q --filter ancestor=webalea)
-docker rmi webalea
+#!/bin/bash
+# Stop and clean up Docker Compose services
+
+docker-compose down --volumes --remove-orphans

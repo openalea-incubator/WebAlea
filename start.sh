@@ -1,4 +1,4 @@
-# Launch a docker conatiner with both the backend and the frontend
+#!/bin/bash
+# Launch the backend and frontend using Docker Compose
 
-docker build -t webalea .
-docker run -d -p 8000:8000 -p 3000:3000 webalea
+docker-compose up --build -d
