@@ -10,10 +10,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY webAleaBack $APP_HOME/app
+COPY webAleaBack $APP_HOME/webAleaBack
 
 # Expose port here
 EXPOSE 8000
 
-# Command to run the application
-CMD ["start.sh"]
+# run the backend server
+WORKDIR /app/webAleaBack
+CMD ["uvicorn", "main:webAleaBack", "--host", "0.0.0.0", "--port", "8000"]
