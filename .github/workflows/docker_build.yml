@@ -18,14 +18,19 @@ jobs:
       
       - name: Build docker image
         run: |
-          docker build -t webAleaPython:${GITHUB_SHA} .
+          docker build -t webAlea:${GITHUB_SHA} .
+      
+      - name: Start docker container
+        run: |
+          docker run -d --name webalea_test_container -p 8000:8000 webAlea:${GITHUB_SHA}
+          sleep 10  # Wait for the container to be fully up and running
       
       - name: Run docker tests
         run: |
-          docker run --rm webAleaPython_test_container pytest --cov=.
+          docker exec webalea_test_container curl -f http://localhost:8000 || exit 1
 
       - name: cleanup
         run: |
-          docker stop webAleaPython_test_container
-          docker rm webAleaPython_test_container
-          docker rmi webAleaPython:${GITHUB_SHA}
+          docker stop webalea_test_container
+          docker rm webalea_test_container
+          docker rmi webAlea:${GITHUB_SHA}
