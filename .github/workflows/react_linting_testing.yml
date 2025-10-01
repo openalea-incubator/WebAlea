@@ -14,20 +14,23 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
+        working-directory: webAleaFront
         run: npm ci
 
       # linting
       - name: Run ESLint
+        working-directory: webAleaFront
         run: npx eslint . --ext .js,.jsx,.ts,.tsx
 
       # testing
       - name: Run tests with coverage
+        working-directory: webAleaFront
         run: npm test -- --coverage --watchAll=false
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: coverage/lcov.info
+          files: webAleaFront/coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: true

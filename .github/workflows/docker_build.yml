@@ -16,21 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Build docker image
+      - name: run docker containers
         run: |
-          docker build -t webAlea:${GITHUB_SHA} .
-      
-      - name: Start docker container
-        run: |
-          docker run -d --name webalea_test_container -p 8000:8000 webAlea:${GITHUB_SHA}
-          sleep 10  # Wait for the container to be fully up and running
+          ./webalea.sh start
       
       - name: Run docker tests
         run: |
           docker exec webalea_test_container curl -f http://localhost:8000 || exit 1
 
-      - name: cleanup
+      - name: stop and remove containers
         run: |
-          docker stop webalea_test_container
-          docker rm webalea_test_container
-          docker rmi webAlea:${GITHUB_SHA}
+          ./webalea.sh stop
