@@ -5,6 +5,10 @@ you can run
 ```bash
 ./start.sh
 ```
+## Conda environment
+A conda environment is deployed in webAleaBack.
+It is used to retrieve conda packages and execute them.
+Every entrypoints regarding the use of conda is available in the conda package.
 ## Best practices
 ### API versionning
 If significant changes are made, it is best to increment the API version.
