@@ -10,9 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@xyflow/react": "^12.8.6",
+    "bootstrap": "^5.3.8",
     "node": "^24.9.0",
     "npm": "^11.6.1",
-    "@xyflow/react": "^12.8.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },

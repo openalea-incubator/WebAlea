@@ -1,40 +1,28 @@
 import { useState, useCallback } from 'react';
-import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
- 
-const initialNodes = [
-  { id: 'n1', position: { x: 0, y: 0 }, data: { label: 'Node 1' } },
-  { id: 'n2', position: { x: 0, y: 100 }, data: { label: 'Node 2' } },
-];
-const initialEdges = [{ id: 'n1-n2', source: 'n1', target: 'n2' }];
- 
+import WorkSpace from './components/workspace/Workspace.jsx';
+import './assets/css/app.css'; 
+
 export default function App() {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
- 
-  const onNodesChange = useCallback(
-    (changes) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
-    [],
-  );
-  const onEdgesChange = useCallback(
-    (changes) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
-    [],
-  );
-  const onConnect = useCallback(
-    (params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
-    [],
-  );
- 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        fitView
-      />
-    </div>
+    <>
+      <header className="app-header bg-dark">
+        <nav className="app-navbar navbar navbar-dark bg-dark">
+          <h1 className="app-title">WebAlea</h1>
+        </nav>
+      </header>
+
+      <main className="app-main">
+        <div className="workspace-container">
+          <WorkSpace />
+        </div>
+      </main>
+
+      <footer className="app-footer bg-light text-center text-lg-start">
+        <div className="footer-text">
+          © 2024 WebAlea
+        </div>
+      </footer>
+    </>
   );
 }
+
