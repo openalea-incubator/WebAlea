@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import WorkSpace from './components/workspace/Workspace.jsx';
 import './assets/css/app.css'; 
+import PackageManager from './components/packagemanager/PackageManager.jsx';
 
 export default function App() {
   return (
@@ -12,7 +13,8 @@ export default function App() {
       </header>
 
       <main className="app-main">
-        <div className="workspace-container">
+        <div className="workspace-container d-flex">
+          <PackageManager/>
           <WorkSpace />
         </div>
       </main>
