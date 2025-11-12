@@ -1,4 +1,3 @@
-import { useState, useCallback } from 'react';
 import {
   ReactFlow,
   applyNodeChanges,
@@ -16,11 +15,11 @@ export default function WorkSpace({ useNodes, useEdges, applyNodeChanges, applyE
   return (
     <div className="workspace-flow rounded shadow-sm border bg-white">
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
+        nodes={useNodes}
+        edges={useEdges}
+        onNodesChange={applyNodeChanges}
+        onEdgesChange={applyEdgeChanges}
+        onConnect={connectEdges}
         fitView
       >
         <MiniMap />

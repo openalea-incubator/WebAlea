@@ -5,6 +5,7 @@ import NodeDetailSection from './components/description/NodeDetailSection.jsx';
 import ToolBar from './components/toolbar/ToolBar.jsx';
 import PackageManager from './components/packagemanager/PackageManager.jsx';
 import { ReactFlowProvider, useNodesState, useEdgesState, addEdge } from '@xyflow/react';
+import { useCallback } from 'react';
  
 const initialNodes = [
   { id: 'n1', position: { x: 0, y: 0 }, data: { label: 'Node 1' } },
