@@ -1,4 +1,6 @@
+import * as React from 'react';
 import Box from '@mui/material/Box';
+import { Menu, MenuItem } from "@mui/material";
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
 
 const MUI_X_PRODUCTS = [
@@ -37,10 +39,77 @@ const MUI_X_PRODUCTS = [
   },
 ];
 
-export default function PackageManager() {
+export default function PackageManager({ addNode, removeNode }) {
+  
+  const handleDelete = () => {
+    /*
+    const nodeIdToDelete = "n2";
+    removeNode(nodeIdToDelete);
+    */
+  };
+
+  const handleAddNode = (item) => {
+    console.log("Ajouter", item);
+    const newNode = {
+      id: `n${Math.floor(Math.random() * 10000)}-${item.id}`,
+      position: { x: Math.random() * 400, y: Math.random() * 400 },
+      data: { label: item },
+    };
+    addNode(newNode);
+  }
+
+  const [menu, setMenu] = React.useState(null);
+  const [selectedItem, setSelectedItem] = React.useState(null);
+
+  const handleRightClick = (event) => {
+    event.preventDefault();
+    
+    setMenu(menu === null ? { mouseX: event.clientX + 2, mouseY: event.clientY - 6 } : null);
+    setSelectedItem(event.target);
+
+    const selection = document.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+
+      setTimeout(() => {
+        selection.addRange(range);
+      });
+    }
+  };
+
+  const handleClose = () => {
+    setMenu(null);
+  };
+
   return (
-    <Box sx={{ minHeight: 352, minWidth: 250 }} border={4}>
-      <RichTreeView items={MUI_X_PRODUCTS} />
+    <Box sx={{ minHeight: 352, minWidth: 250 }} border={4} onContextMenu={handleRightClick}>
+      <div>
+        <RichTreeView
+          items={MUI_X_PRODUCTS}
+          onItemClick= {(event, item) => handleAddNode(item)}
+        />
+      </div>
+      <Menu
+        open={menu !== null}
+        onClose={handleClose}
+        anchorReference="anchorPosition"
+        anchorPosition={
+          menu !== null ? { top: menu.mouseY, left: menu.mouseX } : undefined
+        }
+      >
+        <MenuItem onClick={() => {
+          console.log("Renommer", selectedItem);
+          handleClose();
+        }}>
+          Renommer
+        </MenuItem>
+        <MenuItem onClick={() => {
+          console.log("Supprimer", selectedItem);
+          handleClose();
+        }}>
+          Supprimer
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }
