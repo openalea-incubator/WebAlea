@@ -1,6 +1,8 @@
 """Module to manage conda environments and packages."""
 import json
+import os
 import subprocess
+from packaging.version import Version
 
 class Conda:
     """
@@ -27,6 +29,29 @@ class Conda:
         with open(f"conda_{channel}_packages.json", "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
         return data
+
+    @staticmethod
+    def get_list_last_version(channel="openalea"):
+        """Get uniquely last version of package and create JSON
+
+        Args:
+            channel (str, optional): The conda channel to search. Defaults to "openalea".
+
+        Returns:
+            dict: A dictionary with all last versions of package.
+        """
+        filename = f"conda_{channel}_packages.json"
+        if not os.path.exists(filename):
+            Conda.list_packages()
+        with open(filename, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            latest_versions = {}
+            for package_name, package_list in data.items():
+                latest_entry = max(package_list, key=lambda e: Version(e["version"]))
+                latest_versions[package_name] = latest_entry
+        with open(f"conda_{channel}_packages_last_version.json", "w", encoding="utf-8") as f:
+            json.dump(latest_versions, f, indent=2)
+        return
 
     @staticmethod
     def get_versions(package_name, channel="openalea"):
@@ -57,3 +82,17 @@ class Conda:
             ["conda", "install", "-n", env_name, pkg, "-y"],
             check=True,
         )
+
+    @staticmethod
+    def install_all_packages(env_name, channel="openalea"):
+        """Install all packages in a conda environment.
+        Args:
+            env_name (str): The name of the conda environment.
+        """
+        with open(f"conda_{channel}_packages_last_version.json", "w", encoding="utf-8") as f:
+            data = json.load(f)
+            for package_name, entries in data.items():
+                subprocess.run(
+                    ["conda", "install", "-n", env_name, f"{package_name}={entries['version']}", "-y"],
+                    check=True,
+                )
