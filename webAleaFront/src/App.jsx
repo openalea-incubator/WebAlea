@@ -1,6 +1,8 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './assets/css/app.css';
+import './assets/css/app.css'; // Css perso
 import WorkSpace from './components/workspace/Workspace.jsx';
+import NodeDetailSection from './components/description/NodeDetailSection.jsx';
+import ToolBar from './components/toolbar/ToolBar.jsx';
 
 export default function App() {
   return (
@@ -24,27 +26,29 @@ export default function App() {
       </header>
 
       {/* MAIN */}
-      <div className="container-fluid mx-auto my-4 justify-content-center align-items-center">
-        <div className="container d-flex w-100">
-          <div className="container d-flex gap-2 me-auto">
-            <button className="btn btn-primary w-100">Import workflow</button>
-            <button className="btn btn-primary w-100">Export workflow</button>
-            <button className="btn btn-secondary w-100">Informations</button>
-          </div>
-          <div className="container d-flex gap-2 ms-auto">
-            <button className="btn btn-success w-100">Run workflow</button>
-            <button className="btn btn-danger w-100">Stop workflow</button>
-          </div>
-        </div>
-        <div className="container-fluid d-flex justify-content-center align-items-center my-4 mx-auto">
-              <WorkSpace /> 
-        </div>
-      </div>
+      <main className="container-fluid my-4 flex-grow-1">
+        {/* ToolBar */}
+        <ToolBar />
 
+        {/* Contenu principal */}
+        <div className="row gx-4 gy-4 px-4 align-items-stretch">
+          <div className="col-lg-9 d-flex">
+            <div className="workspace-container flex-fill p-3 bg-white shadow-sm rounded">
+              <WorkSpace />
+            </div>
+          </div>
+          <div className="col-lg-3 d-flex">
+            <div className="node-detail-container flex-fill p-3 bg-white shadow-sm rounded">
+              <NodeDetailSection />
+            </div>
+          </div>
+        </div>
+
+      </main>
 
       {/* FOOTER */}
-      <footer className="bg-dark text-white text-center py-3 mt-auto">
-        <div className="container small">
+      <footer className="footer bg-dark text-white text-center py-3 mt-auto">
+        <div className="container-fluid">
           © 2025 WebAlea — Tous droits réservés
         </div>
       </footer>

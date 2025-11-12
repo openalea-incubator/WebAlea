@@ -8,3 +8,16 @@ html, body {
   width: 100%;
   margin: 0;
 }
+
+.workspace-container,
+.node-detail-container {
+  min-height: 60vh;
+}
+
+/* Optionnel : améliore l’affichage sur petits écrans */
+@media (max-width: 768px) {
+  .workspace-container,
+  .node-detail-container {
+    min-height: auto;
+  }
+}
