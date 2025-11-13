@@ -1,22 +1,58 @@
 import React, { useState } from "react";
+import NodeParameters from "./NodeParameters"; // ton composant existant
 
 export default function NodeDetailSection() {
     const [activeTab, setActiveTab] = useState("parameters");
 
-    return(
-        <div className="container-fluid">
-            <div className="container-fluid d-flex justify-content-center align-items-center">
-                <div onClick={() => setActiveTab("parameters")} className="container justify-content-center align-items-center">
-                    <h6 className="text-center">Parameters</h6>
-                </div>
-                <div  onClick={() => setActiveTab("desc")} className="container justify-content-center align-items-center">
-                    <h6 className="text-center">Description</h6>
-                </div>
-                <div onClick={() => setActiveTab("view")} className="container justify-content-center align-items-center">
-                    <h6 className="text-center">View</h6>
-                </div>
+    const renderTabContent = () => {
+    switch (activeTab) {
+        case "parameters":
+        return <NodeParameters />;
+        case "desc":
+        return (
+            <div>
+            <p>Description du noeud ici...</p>
             </div>
+        );
+        case "view":
+        return (
+            <div>
+            <p>Vue / preview ici...</p>
+            </div>
+        );
+        default:    
+        return null;
+    }
+    };
+
+    return (
+    <div className="container-fluid">
+        {/* Onglets */}
+        <div className="d-flex justify-content-center mb-3 gap-2">
+        <button
+            className={`btn ${activeTab === "parameters" ? "btn-dark" : ""}`}
+            onClick={() => setActiveTab("parameters")}
+        >
+            Parameters
+        </button>
+        <button
+            className={`btn ${activeTab === "desc" ? "btn-dark" : ""}`}
+            onClick={() => setActiveTab("desc")}
+        >
+            Description
+        </button>
+        <button
+            className={`btn ${activeTab === "view" ? "btn-dark" : ""}`}
+            onClick={() => setActiveTab("view")}
+        >
+            View
+        </button>
         </div>
+
+        {/* Contenu de l’onglet actif */}
+        <div className="p-2">
+        {renderTabContent()}
+        </div>
+    </div>
     );
 }
-
