@@ -1,8 +1,5 @@
 import {
   ReactFlow,
-  applyNodeChanges,
-  applyEdgeChanges,
-  addEdge,
   Background,
   Controls,
   MiniMap
@@ -10,7 +7,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import '../../assets/css/workspace.css'; // Css perso
 
-export default function WorkSpace({ useNodes, useEdges, applyNodeChanges, applyEdgeChanges, connectEdges }) {
+export default function WorkSpace({ useNodes, useEdges, applyNodeChanges, applyEdgeChanges, connectEdges, nodesTypes }) {
 
   return (
     <div className="workspace-flow rounded shadow-sm border bg-white">
@@ -21,6 +18,8 @@ export default function WorkSpace({ useNodes, useEdges, applyNodeChanges, applyE
         onEdgesChange={applyEdgeChanges}
         onConnect={connectEdges}
         fitView
+        defaultEdgeOptions={{ type: 'smoothstep' }}
+        nodeTypes={nodesTypes}
       >
         <MiniMap />
         <Controls />

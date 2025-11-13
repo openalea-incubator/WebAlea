@@ -2,6 +2,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import { Menu, MenuItem } from "@mui/material";
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
+import { Node } from '../workspace/Node';
 
 const MUI_X_PRODUCTS = [
   {
@@ -53,9 +54,8 @@ export default function PackageManager({ addNode, removeNode }) {
     const newNode = {
       id: `n${Math.floor(Math.random() * 10000)}-${item.id}`,
       position: { x: Math.random() * 400, y: Math.random() * 400 },
-      data: { label: item },
     };
-    addNode(newNode);
+    addNode(new Node({ id: newNode.id, title: item }).serialize());
   }
 
   const [menu, setMenu] = React.useState(null);
