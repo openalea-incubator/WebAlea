@@ -82,7 +82,7 @@ export default function PackageManager({ addNode, removeNode }) {
   };
 
   return (
-    <Box sx={{ minHeight: 352, minWidth: 250 }} border={4} onContextMenu={handleRightClick}>
+    <Box sx={{ minHeight: 352, minWidth: 250 }} onContextMenu={handleRightClick}>
       <div>
         <RichTreeView
           items={MUI_X_PRODUCTS}

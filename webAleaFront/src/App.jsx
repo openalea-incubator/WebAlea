@@ -1,9 +1,12 @@
-import { useState, useCallback } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './assets/css/app.css'; // Css perso
 import WorkSpace from './components/workspace/Workspace.jsx';
-import './assets/css/app.css'; 
+import NodeDetailSection from './components/description/NodeDetailSection.jsx';
+import ToolBar from './components/toolbar/ToolBar.jsx';
 import PackageManager from './components/packagemanager/PackageManager.jsx';
 import { ReactFlowProvider, useNodesState, useEdgesState, addEdge } from '@xyflow/react';
- 
+import { useCallback } from 'react';
+
 const initialNodes = [
   { id: 'n1', position: { x: 0, y: 0 }, data: { label: 'Node 1' } },
   { id: 'n2', position: { x: 0, y: 100 }, data: { label: 'Node 2' } },
@@ -15,7 +18,7 @@ export default function App() {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
- 
+
   const onConnect = useCallback(
     (params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
     [],
@@ -30,35 +33,60 @@ export default function App() {
     setNodes((nds) => nds.concat(node));
   }
   
-  return (
-    <>
-      <header className="app-header bg-dark">
-        <nav className="app-navbar navbar navbar-dark bg-dark">
-          <h1 className="app-title">WebAlea</h1>
+    return (
+    <div className="min-vh-100 d-flex flex-column bg-light">
+      {/* HEADER */}
+      <header className="bg-dark text-white py-3 shadow-sm px-4 d-flex align-items-center justify-content-between">
+        <h1 className="mb-0 fs-2 fw-bold">WebAlea</h1>
+        <nav className="navbar navbar-expand-lg">
+          <ul className="nav">
+            <li className="nav-item"><a className="nav-link text-white" href="#">Workplace</a></li>
+            <li className="nav-item"><a className="nav-link text-white" href="#">About</a></li>
+            <li className="nav-item"><a className="nav-link text-white" href="#">Contact us</a></li>
+          </ul>
         </nav>
       </header>
 
-      <main className="app-main">
-        <div className="workspace-container d-flex">
-          <ReactFlowProvider>
-            <PackageManager addNode={addNode} removeNode={removeNode} />
-            <WorkSpace
-              useNodes={nodes}
-              useEdges={edges}
-              applyNodeChanges={onNodesChange}
-              applyEdgeChanges={onEdgesChange}
-              connectEdges={onConnect}
-            />
-          </ReactFlowProvider>
-        </div>
+      {/* MAIN */}
+      <main className="container-fluid flex-grow-1 my-4">
+        <ToolBar />
+
+        {/* Tous les composants ci dessous contenue dans ReactFlowProvider auront accès aux noeuds et relations entre ces derniers */}
+        <ReactFlowProvider>
+          <div className="row gx-4 gy-4 align-items-stretch">
+            {/* Package Manager */}
+            <div className="col-lg-2 d-flex">
+              <div className="package-manager-container flex-fill p-3 bg-white shadow-sm rounded">
+                <PackageManager addNode={addNode} removeNode={removeNode} />
+              </div>
+            </div>
+            {/* Workspace */}
+            <div className="col-lg-7 d-flex">
+              <div className="workspace-container flex-fill p-3 bg-white shadow-sm rounded">
+                <WorkSpace
+                  useNodes={nodes}
+                  useEdges={edges}
+                  applyNodeChanges={onNodesChange}
+                  applyEdgeChanges={onEdgesChange}
+                  connectEdges={onConnect}
+                />
+              </div>
+            </div>
+
+            {/* Node details */}
+            <div className="col-lg-3 d-flex">
+              <div className="node-detail-container flex-fill p-3 bg-white shadow-sm rounded">
+                <NodeDetailSection />
+              </div>
+            </div>
+          </div>
+        </ReactFlowProvider>
       </main>
 
-      <footer className="app-footer bg-light text-center text-lg-start">
-        <div className="footer-text">
-          © 2024 WebAlea
-        </div>
+      {/* FOOTER */}
+      <footer className="footer bg-dark text-white text-center py-3 mt-auto">
+        <div className="container-fluid">© 2025 WebAlea — Tous droits réservés</div>
       </footer>
-    </>
+    </div>
   );
 }
-

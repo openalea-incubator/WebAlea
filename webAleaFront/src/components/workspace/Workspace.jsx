@@ -1,21 +1,31 @@
-import { ReactFlow, Background, Controls } from '@xyflow/react';
-
+import {
+  ReactFlow,
+  applyNodeChanges,
+  applyEdgeChanges,
+  addEdge,
+  Background,
+  Controls,
+  MiniMap
+} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import '../../assets/css/workspace.css'; // Css perso
 
-export default function App({ useNodes, useEdges, applyNodeChanges, applyEdgeChanges, connectEdges }) {
+export default function WorkSpace({ useNodes, useEdges, applyNodeChanges, applyEdgeChanges, connectEdges }) {
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
-        <ReactFlow
-          nodes={useNodes}
-          edges={useEdges}
-          onNodesChange={applyNodeChanges}
-          onEdgesChange={applyEdgeChanges}
-          onConnect={connectEdges}
-          fitView>
-          <Background />
-          <Controls />
-        </ReactFlow>
+    <div className="workspace-flow rounded shadow-sm border bg-white">
+      <ReactFlow
+        nodes={useNodes}
+        edges={useEdges}
+        onNodesChange={applyNodeChanges}
+        onEdgesChange={applyEdgeChanges}
+        onConnect={connectEdges}
+        fitView
+      >
+        <MiniMap />
+        <Controls />
+        <Background gap={12} color="#aaa" />
+      </ReactFlow>
     </div>
   );
 }
