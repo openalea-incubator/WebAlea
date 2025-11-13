@@ -1,21 +1,33 @@
-
-header h1 {
-  letter-spacing: 1px;
-}
-
+/* ========== STRUCTURE GLOBALE ========== */
 html, body {
   height: 100%;
   width: 100%;
   margin: 0;
 }
 
-.workspace-container,
-.node-detail-container {
-  min-height: 60vh;
+header h1 {
+  letter-spacing: 1px;
 }
 
-/* Optionnel : améliore l’affichage sur petits écrans */
-@media (max-width: 768px) {
+/* ========== ZONES PRINCIPALES ========== */
+.workspace-container,
+.node-detail-container {
+  min-height: 75vh; /* mêmes hauteurs */
+}
+
+/* Rendre les conteneurs fluides et harmonieux */
+.workspace-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.node-detail-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 992px) {
   .workspace-container,
   .node-detail-container {
     min-height: auto;
