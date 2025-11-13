@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import NodeParameters from "./NodeParameters"; // ton composant existant
+import NodeDescription from "./NodeDescription";
 
 export default function NodeDetailSection() {
     const [activeTab, setActiveTab] = useState("parameters");
@@ -9,11 +10,7 @@ export default function NodeDetailSection() {
         case "parameters":
         return <NodeParameters />;
         case "desc":
-        return (
-            <div>
-            <p>Description du noeud ici...</p>
-            </div>
-        );
+            return <NodeDescription />;
         case "view":
         return (
             <div>
