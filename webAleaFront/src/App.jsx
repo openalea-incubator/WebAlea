@@ -4,6 +4,7 @@ import WorkSpace from './components/workspace/Workspace.jsx';
 import NodeDetailSection from './components/description/NodeDetailSection.jsx';
 import ToolBar from './components/toolbar/ToolBar.jsx';
 import PackageManager from './components/packagemanager/PackageManager.jsx';
+import ConsoleLog from './components/ConsoleLog/ConsoleLog.jsx';
 import { ReactFlowProvider, useNodesState, useEdgesState, addEdge } from '@xyflow/react';
 import { useCallback } from 'react';
 
@@ -51,32 +52,46 @@ export default function App() {
       <main className="container-fluid flex-grow-1 my-4">
         <ToolBar />
 
-        {/* Tous les composants ci dessous contenue dans ReactFlowProvider auront accès aux noeuds et relations entre ces derniers */}
+        {/* Tous les composants dans cette balise propre à ReactFlow auront accès aux données du workflow */}
         <ReactFlowProvider>
-          <div className="row gx-4 gy-4 align-items-stretch">
-            {/* Package Manager */}
+          <div className="row gx-4 gy-4 align-items-stretch main-layout">
+            {/* Package Manager  */}
             <div className="col-lg-2 d-flex">
-              <div className="package-manager-container flex-fill p-3 bg-white shadow-sm rounded">
+              <div className="package-manager-container flex-fill p-3 bg-white shadow-sm rounded h-100">
                 <PackageManager addNode={addNode} removeNode={removeNode} />
               </div>
             </div>
-            {/* Workspace */}
-            <div className="col-lg-7 d-flex">
-              <div className="workspace-container flex-fill p-3 bg-white shadow-sm rounded">
-                <WorkSpace
-                  useNodes={nodes}
-                  useEdges={edges}
-                  applyNodeChanges={onNodesChange}
-                  applyEdgeChanges={onEdgesChange}
-                  connectEdges={onConnect}
-                />
-              </div>
-            </div>
 
-            {/* Node details */}
-            <div className="col-lg-3 d-flex">
-              <div className="node-detail-container flex-fill p-3 bg-white shadow-sm rounded">
-                <NodeDetailSection />
+            {/* Colonne principale */}
+            <div className="col-lg-10 d-flex flex-column">
+              {/* Ligne du workspace et node details */}
+              <div className="row flex-grow-1 gx-3">
+                <div className="col-lg-8 d-flex">
+                  <div className="workspace-container flex-fill p-3 bg-white shadow-sm rounded">
+                    <WorkSpace
+                      useNodes={nodes}
+                      useEdges={edges}
+                      applyNodeChanges={onNodesChange}
+                      applyEdgeChanges={onEdgesChange}
+                      connectEdges={onConnect}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-lg-4 d-flex">
+                  <div className="node-detail-container flex-fill p-3 bg-white shadow-sm rounded">
+                    <NodeDetailSection />
+                  </div>
+                </div>
+              </div>
+
+              {/* Ligne ConsoleLog */}
+              <div className="row mt-3">
+                <div className="col-12 d-flex">
+                  <div className="console-log-container container-fluid min-vw-75 min-vh-25 flex-fill p-3 bg-light rounded shadow-sm">
+                    <ConsoleLog />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
