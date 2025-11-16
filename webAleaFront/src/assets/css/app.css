@@ -5,6 +5,7 @@ html, body {
   margin: 0;
 }
 
+
 header h1 {
   letter-spacing: 1px;
 }
@@ -12,7 +13,7 @@ header h1 {
 /* ========== ZONES PRINCIPALES ========== */
 .workspace-container,
 .node-detail-container {
-  min-height: 75vh; /* mêmes hauteurs */
+  min-height: 50vh; /* mêmes hauteurs */
 }
 
 /* Rendre les conteneurs fluides et harmonieux */
@@ -25,6 +26,28 @@ header h1 {
   display: flex;
   flex-direction: column;
 }
+
+.console-log-container {
+  max-height: 25vh;
+}
+
+.toggle-btn-nds {
+  cursor: pointer;
+  transition: right 0.3s ease;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.console-log-container {
+  max-height: 25vh;
+}
+
+.transition-width {
+  transition: width 0.3s ease;
+}
+
+
+
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 992px) {
