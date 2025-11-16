@@ -15,15 +15,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: webAleaFront
-        run: |
-          echo "Node $(node -v) npm $(npm -v)"
-          if [ -f package-lock.json ]; then
-            echo "Found package-lock.json, running npm ci"
-            npm ci
-          else
-            echo "No package-lock.json found, running npm install instead"
-            npm install
-          fi
+        run: npm ci
 
       # linting
       - name: Run ESLint
@@ -33,7 +25,7 @@ jobs:
       # testing
       - name: Run tests with coverage
         working-directory: webAleaFront
-        run: npx vitest run --coverage
+        run: npm test -- --coverage --watchAll=false
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
