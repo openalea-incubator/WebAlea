@@ -1,13 +1,13 @@
 import LogLine from "./LogLine";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 
 export default function ConsoleLog() {
 
-    const logs = [
+    const logs = useMemo(() => [
     { header: "> API", value: "Request sent to /users" },
     { header: "> STATUS", value: "200 OK" },
     { header: "> DATA", value: "{ name: 'Axel', age: 20 }" },
-    ];
+    ], []);
 
     const containerRef = useRef(null);
 

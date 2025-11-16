@@ -22,7 +22,7 @@ export default function App() {
 
   const onConnect = useCallback(
     (params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
-    [],
+    [setEdges],
   );
 
   const removeNode = (nodeId) => {
