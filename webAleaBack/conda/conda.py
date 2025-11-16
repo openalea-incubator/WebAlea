@@ -49,9 +49,10 @@ class Conda:
             for package_name, package_list in data.items():
                 latest_entry = max(package_list, key=lambda e: Version(e["version"]))
                 latest_versions[package_name] = latest_entry
+            print(latest_versions)
         with open(f"conda_{channel}_packages_last_version.json", "w", encoding="utf-8") as f:
             json.dump(latest_versions, f, indent=2)
-        return
+        return data
 
     @staticmethod
     def get_versions(package_name, channel="openalea"):
@@ -88,11 +89,30 @@ class Conda:
         """Install all packages in a conda environment.
         Args:
             env_name (str): The name of the conda environment.
+            channel (str): The conda channel to search. Defaults to "openalea".
         """
-        with open(f"conda_{channel}_packages_last_version.json", "w", encoding="utf-8") as f:
+        filename = f"conda_{channel}_packages_last_version.json"
+        if not os.path.exists(filename):
+            Conda.get_list_last_version()
+        with open(filename, "r", encoding="utf-8") as f:
             data = json.load(f)
             for package_name, entries in data.items():
+                url = entries["url"]
+                file_name = url.split("/")[-1]  # extrait 'alinea.astk-2.0.2-0.tar.bz2'
+
+                # Télécharger le fichier
                 subprocess.run(
-                    ["conda", "install", "-n", env_name, f"{package_name}={entries['version']}", "-y"],
+                    ["wget", url],
                     check=True,
                 )
+
+                # Installer le fichier téléchargé
+                subprocess.run(
+                    ["conda", "install", "-n", env_name, file_name, "-y"],
+                    check=True,
+                )
+
+
+
+conda = Conda()
+conda.install_all_packages("base")
