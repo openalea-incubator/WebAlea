@@ -25,10 +25,10 @@ export default function App() {
     [setEdges],
   );
 
-  const removeNode = (nodeId) => {
+  {/* const removeNode = (nodeId) => {
     setNodes((nds) => nds.filter((n) => n.id !== nodeId));
     setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
-  };
+  }; */}
 
   const addNode = (node) => {
     setNodes((nds) => nds.concat(node));
@@ -61,7 +61,7 @@ export default function App() {
             {/* Package Manager  */}
             <div className="col-lg-2 d-flex">
               <div className="package-manager-container flex-fill p-3 bg-white shadow-sm rounded">
-                <PackageManager addNode={addNode} removeNode={removeNode} />
+                <PackageManager addNode={addNode} />
               </div>
             </div>
 

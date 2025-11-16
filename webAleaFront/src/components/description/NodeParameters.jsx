@@ -25,6 +25,14 @@ export default function NodeParameters() {
     setIsChanged(true); // active le bouton Lancer
     };
 
+    const handleOutputChange = (name, value) => {
+    setOutputs((prev) =>
+        // On se place sur notre output ayant déclenché l'event, et on modifie la value tout en gardant les autres propriétés
+        prev.map((output) => (output.name === name ? { ...output, value } : output)) 
+    );
+    setIsChanged(false);
+}
+
     const handleLaunch = () => {
     console.log("Inputs :", inputs);
     // Traitements... TODO
@@ -36,7 +44,7 @@ export default function NodeParameters() {
     {/* Contenu en haut */}
     <div>
         <NodeInput inputs={inputs} onValueChange={handleInputChange} />
-        <NodeOutput outputs={outputs} />
+        <NodeOutput outputs={outputs} onValueChange={handleOutputChange} />
     </div>
 
     {/* Bouton centré en bas */}

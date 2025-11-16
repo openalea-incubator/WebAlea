@@ -1,7 +1,4 @@
-import React, { useState } from "react";
-
-
-export default function ButtonToolBar({ title, icon: Icon, onClick }) {
+export default function ButtonToolBar({ icon: Icon, onClick }) {
 
 
     return (

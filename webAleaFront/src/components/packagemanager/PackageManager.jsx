@@ -39,14 +39,7 @@ const MUI_X_PRODUCTS = [
   },
 ];
 
-export default function PackageManager({ addNode, removeNode }) {
-  
-  const handleDelete = () => {
-    /*
-    const nodeIdToDelete = "n2";
-    removeNode(nodeIdToDelete);
-    */
-  };
+export default function PackageManager({ addNode }) {
 
   const handleAddNode = (item) => {
     console.log("Ajouter", item);
