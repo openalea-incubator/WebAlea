@@ -15,7 +15,16 @@ jobs:
 
       - name: Install dependencies
         working-directory: webAleaFront
-        run: npm ci
+        run: |
+          echo "Node $(node -v) npm $(npm -v)"
+          ls -la
+          if [ -f package-lock.json ]; then
+            echo "Found package-lock.json, running npm ci"
+            npm ci
+          else
+            echo "No package-lock.json found, running npm install instead"
+            npm install
+          fi
 
       # linting
       - name: Run ESLint
