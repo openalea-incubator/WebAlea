@@ -34,8 +34,7 @@ jobs:
       - name: Run tests with coverage
         working-directory: webAleaFront
         run: |
-          npm run
-          npm run test -- --coverage --watchAll=false
+          npm run vitest -- --coverage --watchAll=false
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
