@@ -37,7 +37,7 @@ export default function App() {
   };
 
   const addNode = (node) => {
-    setNodes((nds) => nds.concat(node));
+    setNodes((nds) => nds.concat(node.serialize()));
   }
   
     return (

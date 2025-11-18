@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import { Menu, MenuItem } from "@mui/material";
-import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
+import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
 import { Node } from '../workspace/Node';
 
 const MUI_X_PRODUCTS = [
@@ -50,12 +50,10 @@ export default function PackageManager({ addNode, removeNode }) {
   };
 
   const handleAddNode = (item) => {
-    console.log("Ajouter", item);
     const newNode = {
-      id: `n${Math.floor(Math.random() * 10000)}-${item.id}`,
-      position: { x: Math.random() * 400, y: Math.random() * 400 },
+      id: `n${Math.floor(Math.random() * 10000)}-${item.id}`
     };
-    addNode(new Node({ id: newNode.id, title: item }).serialize());
+    addNode(new Node({ id: newNode.id, title: item.label }));
   }
 
   const [menu, setMenu] = React.useState(null);
@@ -81,12 +79,26 @@ export default function PackageManager({ addNode, removeNode }) {
     setMenu(null);
   };
 
+  const apiRef = useTreeViewApiRef();
+
   return (
     <Box sx={{ minHeight: 352, minWidth: 250 }} onContextMenu={handleRightClick}>
       <div>
         <RichTreeView
+          apiRef={apiRef}
           items={MUI_X_PRODUCTS}
-          onItemClick= {(event, item) => handleAddNode(item)}
+
+          onItemClick= {(event, item) => 
+            {
+              if (apiRef.current) {
+                item = apiRef.current.getItem(item);
+                if (item.children && item.children.length > 0) {
+                  return;
+                }
+                handleAddNode(item); 
+              }
+            }
+          }
         />
       </div>
       <Menu
