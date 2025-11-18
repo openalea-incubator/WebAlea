@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import { Menu, MenuItem } from "@mui/material";
 import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
 import { Node } from '../workspace/Node';
+import { useFlow } from '../../providers/FlowContext.jsx';
 
 const MUI_X_PRODUCTS = [
   {
@@ -40,20 +41,12 @@ const MUI_X_PRODUCTS = [
   },
 ];
 
-export default function PackageManager({ addNode, removeNode }) {
-  
-  const handleDelete = () => {
-    /*
-    const nodeIdToDelete = "n2";
-    removeNode(nodeIdToDelete);
-    */
-  };
+export default function PackageManager() {
+
+  const { addNode } = useFlow();
 
   const handleAddNode = (item) => {
-    const newNode = {
-      id: `n${Math.floor(Math.random() * 10000)}-${item.id}`
-    };
-    addNode(new Node({ id: newNode.id, title: item.label }));
+    addNode(new Node({ id: `n${Math.floor(Math.random() * 10000)}-${item.id}`, title: item.label }));
   }
 
   const [menu, setMenu] = React.useState(null);
@@ -88,7 +81,9 @@ export default function PackageManager({ addNode, removeNode }) {
           apiRef={apiRef}
           items={MUI_X_PRODUCTS}
 
-          onItemClick= {(event, item) => 
+          sx={{ userSelect: 'none' }}
+
+          onItemClick= {(_event, item) => 
             {
               if (apiRef.current) {
                 item = apiRef.current.getItem(item);

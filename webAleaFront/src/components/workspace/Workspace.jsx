@@ -6,17 +6,20 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import '../../assets/css/workspace.css'; // Css perso
+import { useFlow } from '../../providers/FlowContext.jsx';
 
-export default function WorkSpace({ useNodes, useEdges, applyNodeChanges, applyEdgeChanges, connectEdges, nodesTypes }) {
+export default function WorkSpace() {
+
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, nodesTypes } = useFlow();
 
   return (
     <div className="workspace-flow rounded shadow-sm border bg-white">
       <ReactFlow
-        nodes={useNodes}
-        edges={useEdges}
-        onNodesChange={applyNodeChanges}
-        onEdgesChange={applyEdgeChanges}
-        onConnect={connectEdges}
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
         fitView
         defaultEdgeOptions={{ type: 'smoothstep' }}
         nodeTypes={nodesTypes}
