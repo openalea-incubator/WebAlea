@@ -36,7 +36,7 @@ export default function CustomNode(nodeProps) {
 
     const {
         id,
-        data: { title, color, status, metadata }
+        data: { label, color, status, metadata }
     } = nodeProps;
 
 
@@ -79,10 +79,10 @@ export default function CustomNode(nodeProps) {
                         background: borderColor,
                         cursor: "pointer",
                     }}
-                    title={`status: ${status}`}
+                    title={`status: ${label}`}
                     onClick={handleStatusClick}
                 />
-                <strong style={{ fontSize: 13 }}>{title}</strong>
+                <strong style={{ fontSize: 13 }}>{label}</strong>
             </div>
 
             {metadata && typeof metadata === "object" && Object.keys(metadata).length > 0 && (

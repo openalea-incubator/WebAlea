@@ -23,11 +23,11 @@ export class Node {
      * Crée un objet nœud React Flow.
      * @param {object} props - Les propriétés du nœud.
      */
-    constructor({ id, position = { x: 0, y: 0 }, title, color, status, metadata }) {
+    constructor({ id, label, position = { x: 0, y: 0 }, color, status, metadata }) {
         this.id = id;
         this.position = position;
         this.data = {
-            title: title || null,
+            label: label || null,
             color: color || null,
             status: status || 'ready',
             metadata: metadata || {},
@@ -49,7 +49,7 @@ export class Node {
             type: 'custom',
             position: position ?? { x: 0, y: 0 },
             data: {
-                title: data.title ?? null,
+                label: data.label ?? null,
                 color: data.color ?? null,
                 status: data.status ?? 'ready',
                 metadata: data.metadata ?? {},

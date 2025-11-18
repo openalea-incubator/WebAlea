@@ -46,7 +46,7 @@ export default function PackageManager() {
   const { addNode } = useFlow();
 
   const handleAddNode = (item) => {
-    addNode(new Node({ id: `n${Math.floor(Math.random() * 10000)}-${item.id}`, title: item.label }));
+    addNode(new Node({ id: `n${Math.floor(Math.random() * 10000)}-${item.id}`, label: item.label }));
   }
 
   const [menu, setMenu] = React.useState(null);
