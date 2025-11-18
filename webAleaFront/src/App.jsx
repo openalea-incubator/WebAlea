@@ -5,37 +5,12 @@ import NodeDetailSection from './components/description/NodeDetailSection.jsx';
 import ToolBar from './components/toolbar/ToolBar.jsx';
 import PackageManager from './components/packagemanager/PackageManager.jsx';
 import ConsoleLog from './components/ConsoleLog/ConsoleLog.jsx';
-import { ReactFlowProvider, useNodesState, useEdgesState, addEdge } from '@xyflow/react';
-import { useCallback, useState } from 'react';
-
-const initialNodes = [
-  { id: 'n1', position: { x: 0, y: 0 }, data: { label: 'Node 1' } },
-  { id: 'n2', position: { x: 0, y: 100 }, data: { label: 'Node 2' } },
-  { id: 'n3', position: { x: 0, y: 200 }, data: { label: 'Node 3' } },
-];
-const initialEdges = [{ id: 'n1-n2', source: 'n1', target: 'n2' }];
+import { FlowProvider } from './providers/FlowContext.jsx';
+import { useState } from 'react';
 
 export default function App() {
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
-  const onConnect = useCallback(
-    (params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
-    [setEdges],
-  );
-
-  {/* const removeNode = (nodeId) => {
-    setNodes((nds) => nds.filter((n) => n.id !== nodeId));
-    setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
-  }; */}
-
-  const addNode = (node) => {
-    setNodes((nds) => nds.concat(node));
-  }
-
-  const [isNodeDetailOpen, setIsNodeDetailOpen] = useState(false); // TODO : Si un node est sélectionné, mettre a true, sinon false
-  const toggleNodeDetail = () => setIsNodeDetailOpen(prev => !prev);
+    const [isNodeDetailOpen, setIsNodeDetailOpen] = useState(false); // TODO : Si un node est sélectionné, mettre a true, sinon false
+    const toggleNodeDetail = () => setIsNodeDetailOpen(prev => !prev);
 
     return (
     <div className="min-vh-100 d-flex flex-column bg-light">
@@ -56,12 +31,12 @@ export default function App() {
         <ToolBar />
 
         {/* Tous les composants dans cette balise propre à ReactFlow auront accès aux données du workflow */}
-        <ReactFlowProvider>
+        <FlowProvider>
           <div className="row gx-4 gy-4 align-items-stretch main-layout">
             {/* Package Manager  */}
             <div className="col-lg-2 d-flex">
               <div className="package-manager-container flex-fill p-3 bg-white shadow-sm rounded">
-                <PackageManager addNode={addNode} />
+                <PackageManager/>
               </div>
             </div>
 
@@ -73,13 +48,7 @@ export default function App() {
                   <div className="workspace-container flex-fill bg-white shadow-sm rounded overflow-auto transition-width"
                   style={{
                       width: isNodeDetailOpen ? '75%' : '100%',}}>
-                    <WorkSpace
-                      useNodes={nodes}
-                      useEdges={edges}
-                      applyNodeChanges={onNodesChange}
-                      applyEdgeChanges={onEdgesChange}
-                      connectEdges={onConnect}
-                    />
+                    <WorkSpace/>
                   </div>
                 </div>
 
@@ -102,8 +71,6 @@ export default function App() {
               
             </div>
           </div>
-
-        </ReactFlowProvider>
         <button
           className="btn btn-secondary toggle-btn-nds position-absolute"
           style={{
@@ -117,6 +84,7 @@ export default function App() {
           {isNodeDetailOpen ? '>' : '<'}
         </button>
 
+        </FlowProvider>
       </main>
 
       {/* FOOTER */}
