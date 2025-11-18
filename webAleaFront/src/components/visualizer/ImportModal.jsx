@@ -1,10 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { Modal, Button } from "react-bootstrap";
+import { FiUpload, FiCheck } from "react-icons/fi";
+import "../../assets/css/modal.css"; 
 
 export default function ImportModal({ show, onClose, onImport }) {
     const [fileData, setFileData] = useState(null);
+    const [dragOver, setDragOver] = useState(false);
+    const fileInputRef = useRef(null);
+    const [isImported, setIsImported] = useState(false);
+    const ImportIcon = isImported ? FiCheck : FiUpload;
 
-    const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    useEffect(() => {
+    if (show) {
+        setIsImported(false);
+        setFileData(null); 
+    }
+    }, [show]);
+
+    const handleFile = (file) => {
     if (!file) return;
 
     const reader = new FileReader();
@@ -13,39 +26,69 @@ export default function ImportModal({ show, onClose, onImport }) {
         const json = JSON.parse(event.target.result);
         setFileData(json);
         } catch (err) {
-        alert("Fichier JSON invalide");
+        alert("Fichier JSON invalide : " + err);
+        setIsImported(false);
         }
     };
     reader.readAsText(file);
+    setIsImported(true);
+    };
+
+    const handleFileChange = (e) => {
+    handleFile(e.target.files[0]);
+    };
+
+    const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    handleFile(e.dataTransfer.files[0]);
     };
 
     const handleImport = () => {
     if (fileData) {
-        onImport(fileData); // renvoie les données au parent
+        onImport(fileData);
+        onClose();
     }
     };
 
-  if (!show) return null; // ne pas afficher si show=false
+    return (
+    <Modal show={show} onHide={onClose} centered size="lg">
+        <Modal.Header closeButton>
+        <Modal.Title>Import a workflow</Modal.Title>
+        </Modal.Header>
 
-return (
-<div className="modal d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-    <div className="modal-dialog">
-        <div className="modal-content">
-            <div className="modal-header">
-                <h5 className="modal-title">Importer JSON</h5>
-                <button type="button" className="btn-close" onClick={onClose}></button>
-            </div>
-            <div className="modal-body">
-                <input type="file" accept=".json" onChange={handleFileChange} />
-            </div>
-            <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
-                <button className="btn btn-primary" onClick={handleImport} disabled={!fileData}>
-                    Importer
-            </button>
-            </div>
-        </div>
-    </div>
-</div>
-);
+        <Modal.Body>
+        <button
+            type="button"
+            className={`container-fluid  drop-zone ${dragOver ? "drag-over" : ""}`}
+            onClick={() => fileInputRef.current.click()}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={(e) => { e.preventDefault(); setDragOver(false); }}
+            onDrop={handleDrop}
+            >
+            <ImportIcon size={40} className="upload-icon" />
+            <p className="drop-text">
+                Drag and drop a JSON file here <br /> or click to choose a file
+            </p>
+
+            <input
+                type="file"
+                accept=".json"
+                ref={fileInputRef}
+                className="file-input"
+                onChange={handleFileChange}
+            />
+        </button>
+        </Modal.Body>
+
+        <Modal.Footer>
+        <Button variant="secondary" onClick={onClose}>
+            Cancel
+        </Button>
+        <Button variant="primary" onClick={handleImport} disabled={!fileData}>
+            Import
+        </Button>
+        </Modal.Footer>
+    </Modal>
+    );
 }
