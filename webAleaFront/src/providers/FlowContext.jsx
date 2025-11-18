@@ -44,6 +44,13 @@ export const FlowProvider = ({ children }) => {
     setNodes((nds) => [...nds, newNode.serialize()]);
   }, [setNodes]);
 
+  // Fonction pour définir le workflow
+  const setNodesAndEdges = useCallback((newNodes, newEdges) => {
+    console.log("Setting nodes and edges...", newNodes, newEdges);
+    setNodes(newNodes);
+    setEdges(newEdges);
+  }, [setNodes, setEdges]);
+
   const updateNode = useCallback((id, updatedProperties) => {
     
     setNodes((nds) =>
@@ -72,6 +79,7 @@ export const FlowProvider = ({ children }) => {
     setEdges,
     nodesTypes,
     updateNode,
+    setNodesAndEdges,
     // reactFlowInstance,
   };
 

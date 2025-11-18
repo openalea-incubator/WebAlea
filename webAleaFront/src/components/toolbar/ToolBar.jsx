@@ -2,17 +2,30 @@ import { useState } from "react";
 import ButtonToolBar from "./ButtonToolBar";
 import ImportModal from "../visualizer/ImportModal";
 import { FaUpload, FaDownload, FaInfoCircle, FaPlay, FaStop } from "react-icons/fa";
+import { useFlow } from "../../providers/FlowContextDefinition";
 
 export default function ToolBar() {
     const [showImportModal, setShowImportModal] = useState(false);
+    const { setNodesAndEdges } = useFlow();
 
     const handleImportClick = () => setShowImportModal(true);
     const handleImportClose = () => setShowImportModal(false);
 
     const handleImportData = (data) => {
-    //setImportedData(data); // stocke les données importées
-    setShowImportModal(false);
-    console.log("Workflow importé :", data); // ou traitement du workflow
+        try {
+            if (!data.nodes || !data.edges) {
+                throw new Error("Données invalides : noeuds ou connexions manquants.");
+            }
+            else {
+                console.log("Importing workflow...", data);
+                setNodesAndEdges(data.nodes || [], data.edges || []);
+                setShowImportModal(false);
+                console.log("Workflow importé :", data); // ou traitement du workflow
+            }
+        }
+        catch(error) {
+            alert("Erreur lors de l'importation du workflow : " + error.message);
+        }
     };
 
     const handleExport = () => alert("Export workflow");
