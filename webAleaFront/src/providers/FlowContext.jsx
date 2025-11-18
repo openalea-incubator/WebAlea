@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   useNodesState,
   useEdgesState,
@@ -7,11 +7,26 @@ import {
 import { FlowContext } from './FlowContextDefinition';
 import CustomNode from '../components/workspace/CustomNode.jsx';
 
+const FLOW_KEY_NODES = 'reactFlowCacheNodes';
+const FLOW_KEY_EDGES = 'reactFlowCacheEdges';
+
+// Fonction utilitaire pour charger l'état initial
+const getInitialState = (key, fallback) => {
+  try {
+    const savedState = localStorage.getItem(key);
+    // Si des données existent, parsez-les. Sinon, utilisez le fallback (tableau vide).
+    return savedState ? JSON.parse(savedState) : fallback;
+  } catch (error) {
+    console.error(`Erreur de chargement du localStorage pour ${key}:`, error);
+    return fallback;
+  }
+};
+
 // Le Provider qui gère l'état et les fonctions
 export const FlowProvider = ({ children }) => {
-  
-  const initialNodes = [];
-  const initialEdges = [];
+
+  const initialNodes = getInitialState(FLOW_KEY_NODES, []);
+  const initialEdges = getInitialState(FLOW_KEY_EDGES, []);
 
   /*
   const initialNodes = [
@@ -28,7 +43,23 @@ export const FlowProvider = ({ children }) => {
   
   const nodesTypes = { custom: CustomNode };
 
-  // const reactFlowInstance = useReactFlow();
+  // --- Synchronisation avec localStorage ---
+
+  // Sauvegarde les nodes chaque fois que 'nodes' change
+  useEffect(() => {
+    if (nodes && nodes.length > 0) {
+      localStorage.setItem(FLOW_KEY_NODES, JSON.stringify(nodes));
+    } else if (nodes && nodes.length === 0) {
+      localStorage.setItem(FLOW_KEY_NODES, '[]');
+    }
+  }, [nodes]);
+
+  // Sauvegarde les edges chaque fois que 'edges' change
+  useEffect(() => {
+    if (edges) {
+      localStorage.setItem(FLOW_KEY_EDGES, JSON.stringify(edges));
+    }
+  }, [edges]);
 
   // --- Fonctions de gestion ---
   // Fonction pour ajouter une nouvelle connexion (edge)
