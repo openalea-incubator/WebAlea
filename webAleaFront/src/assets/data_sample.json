@@ -1,0 +1,52 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "type": "custom",
+      "data": {
+        "label": "Point de départ (Input)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": "2",
+      "type": "custom",
+      "data": {
+        "label": "Processus intermédiaire"
+      },
+      "position": {
+        "x": 400,
+        "y": 50
+      }
+    },
+    {
+      "id": "3",
+      "type": "custom",
+      "data": {
+        "label": "Résultat final (Output)"
+      },
+      "position": {
+        "x": 400,
+        "y": -50
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1-2",
+      "source": "1",
+      "target": "2",
+      "animated": true,
+      "label": "Flux A"
+    },
+    {
+      "id": "e1-3",
+      "source": "1",
+      "target": "3",
+      "label": "Flux B"
+    }
+  ]
+}
