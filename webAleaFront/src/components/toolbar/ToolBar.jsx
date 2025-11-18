@@ -25,8 +25,8 @@ export default function ToolBar() {
     <>
         <div className="row mb-4 px-4">
         <div className="col-md-6 d-flex gap-2 mb-2 mb-md-0">
-            <ButtonToolBar icon={FaUpload} onClick={handleImportClick} />
-            <ButtonToolBar icon={FaDownload} onClick={handleExport} />
+            <ButtonToolBar icon={FaUpload} onClick={handleExport} />
+            <ButtonToolBar icon={FaDownload} onClick={handleImportClick} />
             <ButtonToolBar icon={FaInfoCircle} onClick={handleInfo} />
         </div>
 
