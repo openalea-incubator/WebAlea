@@ -6,7 +6,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import '../../assets/css/workspace.css'; // Css perso
-import { useFlow } from '../../providers/FlowContext.jsx';
+import { useFlow } from '../../providers/FlowContextDefinition.jsx';
 
 export default function WorkSpace() {
 

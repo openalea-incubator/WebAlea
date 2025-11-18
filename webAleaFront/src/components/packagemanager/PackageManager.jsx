@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import { Menu, MenuItem } from "@mui/material";
 import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
 import { Node } from '../workspace/Node';
-import { useFlow } from '../../providers/FlowContext.jsx';
+import { useFlow } from '../../providers/FlowContextDefinition.jsx';
 
 const MUI_X_PRODUCTS = [
   {

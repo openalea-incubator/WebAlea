@@ -137,43 +137,31 @@ export class Node {
         this.data = { title, color, status, metadata };
     }
 
+    /**
+     * Sérialise un node (objet tel qu'il existe dans le state de React Flow)
+     * Renvoie un objet minimal prêt à être stocké.
+     */
     serialize() {
-        return serializeNode(this);
+        if (!this || typeof this !== "object") return null;
+        const { id, type, position, data = {} } = this;
+        return {
+            id,
+            type,
+            position: position ?? { x: 0, y: 0 },
+            data: {
+                title: data.title ?? null,
+                color: data.color ?? null,
+                status: data.status ?? null,
+                metadata: data.metadata ?? null,
+            },
+        };
     }
 
+    /**
+     * Sérialise et renvoie une chaîne JSON.
+     */
     serializeToJSON(spacing = 2) {
-        return serializeNodeToJSON(this, spacing);
+        const obj = this.serialize();
+        return obj ? JSON.stringify(obj, null, spacing) : null;
     }
-}
-/**
- * Sérialise un node (objet tel qu'il existe dans le state de React Flow)
- * Renvoie un objet minimal prêt à être stocké/transporté.
- *
- * NOTE: certains noeuds peuvent ne pas avoir de position (p.ex. en provenance d'un stockage),
- * on fournit donc une position par défaut pour éviter les erreurs dans React Flow.
- */
-export function serializeNode(node) {
-    if (!node || typeof node !== "object") return null;
-
-    const { id, type, position, data = {} } = node;
-
-    return {
-        id,
-        type,
-        position: position ?? { x: 0, y: 0 },
-        data: {
-            title: data.title ?? null,
-            color: data.color ?? null,
-            status: data.status ?? null,
-            metadata: data.metadata ?? null,
-        },
-    };
-}
-
-/**
- * Sérialise et renvoie une chaîne JSON.
- */
-export function serializeNodeToJSON(node, spacing = 2) {
-    const obj = serializeNode(node);
-    return obj ? JSON.stringify(obj, null, spacing) : null;
 }

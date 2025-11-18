@@ -1,21 +1,11 @@
-import { createContext, useContext, useCallback } from 'react';
+import { useCallback } from 'react';
 import {
   useNodesState,
   useEdgesState,
   addEdge,
 } from '@xyflow/react';
+import { FlowContext } from './FlowContextDefinition';
 import CustomNode from '../components/workspace/Node.jsx';
-
-const FlowContext = createContext(null);
-
-// Hook pour accéder facilement au context
-export const useFlow = () => {
-  const context = useContext(FlowContext);
-  if (!context) {
-    throw new Error('useFlow doit être utilisé à l\'intérieur d\'un FlowProvider');
-  }
-  return context;
-};
 
 // Le Provider qui gère l'état et les fonctions
 export const FlowProvider = ({ children }) => {

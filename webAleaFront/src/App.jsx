@@ -5,9 +5,8 @@ import NodeDetailSection from './components/description/NodeDetailSection.jsx';
 import ToolBar from './components/toolbar/ToolBar.jsx';
 import PackageManager from './components/packagemanager/PackageManager.jsx';
 import ConsoleLog from './components/ConsoleLog/ConsoleLog.jsx';
-import { ReactFlowProvider } from '@xyflow/react';
 import { FlowProvider } from './providers/FlowContext.jsx';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 export default function App() {
     const [isNodeDetailOpen, setIsNodeDetailOpen] = useState(false); // TODO : Si un node est sélectionné, mettre a true, sinon false
