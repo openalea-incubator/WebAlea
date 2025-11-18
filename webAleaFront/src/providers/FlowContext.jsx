@@ -5,7 +5,7 @@ import {
   addEdge,
 } from '@xyflow/react';
 import { FlowContext } from './FlowContextDefinition';
-import CustomNode from '../components/workspace/Node.jsx';
+import CustomNode from '../components/workspace/CustomNode.jsx';
 
 // Le Provider qui gère l'état et les fonctions
 export const FlowProvider = ({ children }) => {
@@ -44,6 +44,15 @@ export const FlowProvider = ({ children }) => {
     setNodes((nds) => [...nds, newNode.serialize()]);
   }, [setNodes]);
 
+  const updateNode = useCallback((id, updatedProperties) => {
+    
+    setNodes((nds) =>
+      nds.map((n) =>
+        n.id === id ? { ...n, data: { ...n.data, ...updatedProperties } } : n
+      )
+    );
+  }, [setNodes]);
+
   // Fonction pour supprimer un noeud
   const deleteNode = useCallback((nodeId) => {
     setNodes((nds) => nds.filter(node => node.id !== nodeId));
@@ -62,6 +71,7 @@ export const FlowProvider = ({ children }) => {
     setNodes,
     setEdges,
     nodesTypes,
+    updateNode,
     // reactFlowInstance,
   };
 
