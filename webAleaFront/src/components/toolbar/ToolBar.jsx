@@ -5,13 +5,12 @@ import { FaUpload, FaDownload, FaInfoCircle, FaPlay, FaStop } from "react-icons/
 
 export default function ToolBar() {
     const [showImportModal, setShowImportModal] = useState(false);
-    const [importedData, setImportedData] = useState(null);
 
     const handleImportClick = () => setShowImportModal(true);
     const handleImportClose = () => setShowImportModal(false);
 
     const handleImportData = (data) => {
-    setImportedData(data); // stocke les données importées
+    //setImportedData(data); // stocke les données importées
     setShowImportModal(false);
     console.log("Workflow importé :", data); // ou traitement du workflow
     };
