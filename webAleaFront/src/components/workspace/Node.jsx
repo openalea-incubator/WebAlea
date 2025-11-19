@@ -23,17 +23,27 @@ export class Node {
      * Crée un objet nœud React Flow.
      * @param {object} props - Les propriétés du nœud.
      */
-    constructor({ id, label, position = { x: 0, y: 0 }, color, status, metadata }) {
+    constructor({ id, label, position = { x: 0, y: 0 }, data}) {
         this.id = id;
         this.position = position;
         this.data = {
             label: label || null,
-            color: color || null,
-            status: status || 'ready',
-            metadata: metadata || {},
+            color: data.color || null,
+            status: data.status || 'ready',
+            metadata: data.metadata || {},
         };
     }
-    
+
+    /**
+     * Simule le traitement des données par le noeud.
+     * @param {object} newData - Les nouvelles données à traiter.
+     */
+    processData(newData) {
+        console.log(`Node ${this.id}: Processing new data...`);
+        this.data = { ...this.data, ...newData };
+        this.status = 'processed';
+    }
+
     /**
      * Sérialise l'instance du nœud en un objet JavaScript minimal.
      * @returns {object|null} L'objet nœud sérialisé.
