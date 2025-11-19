@@ -11,32 +11,21 @@ const FLOW_KEY_NODES = 'reactFlowCacheNodes';
 const FLOW_KEY_EDGES = 'reactFlowCacheEdges';
 
 // Fonction utilitaire pour charger l'état initial
-const getInitialState = (key, fallback) => {
+const getInitialState = (key) => {
   try {
     const savedState = localStorage.getItem(key);
-    // Si des données existent, parsez-les. Sinon, utilisez le fallback (tableau vide).
-    return savedState ? JSON.parse(savedState) : fallback;
+    return savedState ? JSON.parse(savedState) : [];
   } catch (error) {
     console.error(`Erreur de chargement du localStorage pour ${key}:`, error);
-    return fallback;
+    return [];
   }
 };
 
 // Le Provider qui gère l'état et les fonctions
 export const FlowProvider = ({ children }) => {
 
-  const initialNodes = getInitialState(FLOW_KEY_NODES, []);
-  const initialEdges = getInitialState(FLOW_KEY_EDGES, []);
-
-  /*
-  const initialNodes = [
-    new Node({ id: "n1", title: "Node 1", metadata: { info: "This is node 1", author: ["Author 1", "Author 2"] } }).serialize(),
-  ];
-
-  const initialEdges = [
-    { id: 'n1-n2', source: 'n1', target: 'n2' },
-  ];
-  */
+  const initialNodes = getInitialState(FLOW_KEY_NODES);
+  const initialEdges = getInitialState(FLOW_KEY_EDGES);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
