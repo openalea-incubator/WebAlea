@@ -166,6 +166,3 @@ class Conda:
                     check=True,
                 )
 
-
-conda = Conda()
-conda.install_all_packages("webalea_env")
