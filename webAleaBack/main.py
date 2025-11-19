@@ -27,10 +27,13 @@ webAleaBack.include_router(
 # A simple root endpoint
 @webAleaBack.get("/")
 def read_root():
+    """
+    Root endpoint that returns a welcome message and available routes.
+    """
+    # list available routes
+    routes = {route.path: route.name for route in webAleaBack.routes}
     # returns a welcome message with the differents routes available
     return {
         "message": f"Welcome to {settings.PROJECT_NAME}!",
-        "available_routes": {
-            "hello": f"{settings.API_V1_STR}/hello"
-        }
+        "available_routes": routes
     }
