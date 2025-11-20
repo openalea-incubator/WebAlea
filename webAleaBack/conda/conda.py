@@ -48,9 +48,6 @@ class Conda:
                 if not "alinea" in package_name:
                     latest_entry = max(package_list, key=lambda e: Version(e["version"]))
                     latest_versions[package_name] = latest_entry
-
-        with open(f"conda_{channel}_packages_last_version.json", "w", encoding="utf-8") as f:
-            json.dump(latest_versions, f, indent=2)
         return data
 
     @staticmethod
