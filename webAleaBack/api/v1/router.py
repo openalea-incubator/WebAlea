@@ -1,10 +1,14 @@
 from fastapi import APIRouter
-from api.v1.endpoints import helloWorld
+from api.v1.endpoints import manager
 from core.config import settings
 
 router = APIRouter()
 
 # Include the items router
-router.include_router(
-        helloWorld.router, prefix=f"{settings.API_V1_STR}/hello", tags=["hello"],
-    )
+# router list
+routers = [
+    (manager.router, f"{settings.API_V1_STR}/manager", ["manager"]),
+]
+
+for ruoter, prefix, tags in routers:
+    router.include_router(ruoter, prefix=prefix, tags=tags)
