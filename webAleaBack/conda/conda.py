@@ -2,6 +2,7 @@
 import json
 import os
 import subprocess
+from core.config import settings
 from packaging.version import Version
 
 class Conda:
@@ -10,11 +11,11 @@ class Conda:
     """
 
     @staticmethod
-    def list_packages(channel="openalea3"):
+    def list_packages(channel=settings.OPENALEA_CHANNEL):
         """List all packages in a conda channel.
 
         Args:
-            channel (str, optional): The conda channel to search. Defaults to "openalea3".
+            channel (str, optional): The conda channel to search. Defaults to settings.OPENALEA_CHANNEL.
 
         Returns:
             dict: A dictionary of packages and their versions.
@@ -29,11 +30,11 @@ class Conda:
         return data
 
     @staticmethod
-    def list_latest_packages(channel="openalea3"):
+    def list_latest_packages(channel=settings.OPENALEA_CHANNEL):
         """Get uniquely last version of package and create JSON
 
         Args:
-            channel (str, optional): The conda channel to search. Defaults to "openalea3".
+            channel (str, optional): The conda channel to search. Defaults to settings.OPENALEA_CHANNEL.
 
         Returns:
             dict: A dictionary with all last versions of package.
@@ -51,12 +52,12 @@ class Conda:
         return data
 
     @staticmethod
-    def get_versions(package_name, channel="openalea3"):
+    def get_versions(package_name, channel=settings.OPENALEA_CHANNEL):
         """Get all available versions of a package in a conda channel.
 
         Args:
             package_name (str): The name of the package to search for.
-            channel (str, optional): The conda channel to search. Defaults to "openalea3".
+            channel (str, optional): The conda channel to search. Defaults to settings.OPENALEA_CHANNEL.
 
         Returns:
             list: A list of available versions for the package.
@@ -66,26 +67,27 @@ class Conda:
         return versions
 
     @staticmethod
-    def install_package(env_name, package_name, version=None):
+    def install_package(package_name, version=None, env_name = None):
         """Install a package in a conda environment.
 
         Args:
-            env_name (str): The name of the conda environment.
             package_name (str): The name of the package to install.
             version (str, optional): The version of the package to install. Defaults to None.
+            env_name (str, optional): The name of the conda environment. Defaults to settings.CONDA_ENV_NAME.
         """
         pkg = f"{package_name}={version}" if version else package_name
+        env_name = env_name or settings.CONDA_ENV_NAME # Use default env name if none provided
         subprocess.run(
             ["conda", "install", "-n", env_name, pkg, "-y"],
             check=True,
         )
 
     @staticmethod
-    def install_all_packages_wget(env_name, channel="openalea3"):
+    def install_all_packages_wget(env_name, channel=settings.OPENALEA_CHANNEL):
         """Install all packages in a conda environment.
         Args:
             env_name (str): The name of the conda environment.
-            channel (str): The conda channel to search. Defaults to "openalea3".
+            channel (str): The conda channel to search. Defaults to settings.OPENALEA_CHANNEL.
         """
         filename = f"conda_{channel}_packages_last_version.json"
         if not os.path.exists(filename):
@@ -110,7 +112,7 @@ class Conda:
 
     @staticmethod
     def find_channel(package_name):
-        channels_to_test = ["openalea3", "conda-forge", "defaults"]
+        channels_to_test = [settings.OPENALEA_CHANNEL, "conda-forge", "defaults"]
         for ch in channels_to_test:
             try:
                 out = subprocess.check_output(
@@ -125,11 +127,11 @@ class Conda:
         return None
 
     @staticmethod
-    def install_all_packages(env_name, channel="openalea3"):
+    def install_all_packages(env_name, channel=settings.OPENALEA_CHANNEL):
         """Install all packages in a conda environment.
         Args:
             env_name (str): The name of the conda environment.
-            channel (str): The conda channel to search. Defaults to "openalea3".
+            channel (str): The conda channel to search. Defaults to settings.OPENALEA_CHANNEL.
         """
         filename = f"conda_{channel}_packages_last_version.json"
         if not os.path.exists(filename):
