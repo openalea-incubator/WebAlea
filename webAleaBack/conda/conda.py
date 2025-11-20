@@ -29,7 +29,7 @@ class Conda:
         return data
 
     @staticmethod
-    def get_list_last_version(channel="openalea3"):
+    def list_latest_packages(channel="openalea3"):
         """Get uniquely last version of package and create JSON
 
         Args:
