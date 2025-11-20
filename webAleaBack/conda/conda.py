@@ -26,8 +26,6 @@ class Conda:
             check=True,
         )
         data = json.loads(result.stdout)
-        with open(f"conda_{channel}_packages.json", "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
         return data
 
     @staticmethod
