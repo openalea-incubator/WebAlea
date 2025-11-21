@@ -11,7 +11,7 @@ class Conda:
     """
 
     @staticmethod
-    def list_packages(channel=settings.OPENALEA_CHANNEL):
+    def list_packages(channel : str =settings.OPENALEA_CHANNEL) -> dict:
         """List all packages in a conda channel.
 
         Args:
@@ -30,7 +30,7 @@ class Conda:
         return data
 
     @staticmethod
-    def list_latest_packages(channel=settings.OPENALEA_CHANNEL):
+    def list_latest_packages(channel : str=settings.OPENALEA_CHANNEL) -> dict:
         """Get uniquely last version of package and create JSON
 
         Args:
@@ -52,7 +52,7 @@ class Conda:
         return data
 
     @staticmethod
-    def get_versions(package_name, channel=settings.OPENALEA_CHANNEL):
+    def get_versions(package_name : str, channel : str=settings.OPENALEA_CHANNEL) -> list:
         """Get all available versions of a package in a conda channel.
 
         Args:
@@ -67,7 +67,7 @@ class Conda:
         return versions
 
     @staticmethod
-    def install_package(package_name, version=None, env_name = None):
+    def install_package(package_name: str, version: str = None, env_name: str = None):
         """Install a package in a conda environment.
 
         Args:
@@ -81,6 +81,27 @@ class Conda:
             ["conda", "install", "-n", env_name, pkg, "-y"],
             check=True,
         )
+
+    @staticmethod
+    def install_package_list(env_name : str, package_list: list) -> dict:
+        """Install a list of packages in a conda environment.
+
+        Args:
+            env_name (str): The name of the conda environment.
+            package_list (list): A list of package specifications (e.g. ["pkg1=1.2.3", "pkg2"]).
+
+        Returns:
+            dict: A dictionary with 'installed' and 'failed' lists.
+        """
+        results = {"installed": [], "failed": []}
+        for pkg in package_list:
+            try:
+                Conda.install_package(pkg, env_name=env_name)
+                results["installed"].append(pkg)
+            except Exception as e:
+                results["failed"].append({"package": pkg, "error": str(e)})
+        return results
+        
 
     @staticmethod
     def install_all_packages_wget(env_name, channel=settings.OPENALEA_CHANNEL):

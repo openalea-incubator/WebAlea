@@ -1,39 +1,54 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List, Optional
+
+from fastapi import APIRouter, HTTPException, status
+from pydantic import BaseModel
+
 from conda.conda import Conda
+from core.config import settings
 
 router = APIRouter()
+
+
+class PackageSpec(BaseModel):
+    name: str
+    version: Optional[str] = None
+
+
+class InstallRequest(BaseModel):
+    packages: List[PackageSpec]
+    env_name: Optional[str] = None
+
 
 @router.get("/")
 def fetch_package_list():
     """Fetch the list of all conda packages."""
     return Conda.list_packages()
 
+
 @router.get("/latest")
 def fetch_latest_package_versions():
     """Fetch the latest versions of all conda packages."""
     return Conda.list_latest_packages()
 
+
 @router.post("/install")
-def install_package_in_env(package_name: str, version: str = None, env_name: str = None):
-    """install a package from a specific environment, in a specific version
+def install_packages_in_env(request: InstallRequest):
+    """Install a list of packages into the given conda environment.
 
-    Args:
-        package_name (str): the package name to install
-        version (str, optional): the version of the package to install. Defaults to None.
-        env_name (str, optional): the name of the conda environment. Defaults to settings.CONDA_ENV_NAME.
-
-    Raises:
-        HTTPException: If installation fails.
-
-    Returns:
-        dict: A message indicating the result of the installation.
+    Body format:
+    {
+      "packages": [{"name": "pkg1", "version": "1.2.3"}, {"name": "pkg2"}],
+      "env_name": "webalea_env"  # optional
+    }
     """
-    try:
-        Conda.install_package(package_name, version, env_name)
-        env_name = env_name or "deafault environment"
-        return {"message": f"Package {package_name} installed successfully in environment : {env_name}."}
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+    env_name = request.env_name or settings.CONDA_ENV_NAME
+
+    # build package list with versions
+    package_list = [pkg.name + (f"={pkg.version}" if pkg.version else "") for pkg in request.packages]
+    
+    results = Conda.install_package_list(env_name, package_list)
+
+    if results["failed"]:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=results)
+
+    return results
