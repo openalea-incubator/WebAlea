@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
     app.state.shutdown_message = "Application has been shut down."
 
 # Initialize the main FastAPI application instance
-WEBALEA_BACK = FastAPI(
+webAleaBack = FastAPI(
     title=settings.PROJECT_NAME,
     version="1.0.0",
     description="",
@@ -27,18 +27,18 @@ WEBALEA_BACK = FastAPI(
 )
 
 # Include the API router
-WEBALEA_BACK.include_router(
+webAleaBack.include_router(
     v1_router.router,
 )
 
 # A simple root endpoint
-@WEBALEA_BACK.get("/")
+@webAleaBack.get("/")
 def read_root():
     """
     Root endpoint that returns a welcome message and available routes.
     """
     # list available routes
-    routes = {route.path: route.name for route in WEBALEA_BACK.routes}
+    routes = {route.path: route.name for route in webAleaBack.routes}
     # returns a welcome message with the differents routes available
     return {
         "message": f"Welcome to {settings.PROJECT_NAME}!",
