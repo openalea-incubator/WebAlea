@@ -1,3 +1,4 @@
+""""API endpoints for managing conda packages and environments."""
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, status
@@ -10,11 +11,13 @@ router = APIRouter()
 
 
 class PackageSpec(BaseModel):
+    """Specification for a conda package with optional version."""
     name: str
     version: Optional[str] = None
 
 
 class InstallRequest(BaseModel):
+    """Request model for installing packages into a conda environment."""
     packages: List[PackageSpec]
     env_name: Optional[str] = None
 
@@ -44,8 +47,10 @@ def install_packages_in_env(request: InstallRequest):
     env_name = request.env_name or settings.CONDA_ENV_NAME
 
     # build package list with versions
-    package_list = [pkg.name + (f"={pkg.version}" if pkg.version else "") for pkg in request.packages]
-    
+    package_list = [
+            pkg.name + (f"={pkg.version}" if pkg.version else "") for pkg in request.packages
+        ]
+
     results = Conda.install_package_list(env_name, package_list)
 
     if results["failed"]:

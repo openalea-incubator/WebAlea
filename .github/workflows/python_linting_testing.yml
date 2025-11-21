@@ -21,12 +21,12 @@ jobs:
           pip install pylint
           pip install pytest
           pip install pytest-cov
-          pip install -r requirements.txt
       
       # linting
       - name: Analysing the code with pylint
         working-directory: webAleaBack
-        run: pylint $(git ls-files '*.py')
+        # run and fail if the score is less than 8.0
+        run: pylint --fail-under=8.0 $(git ls-files '*.py')
 
       # testing
       - name: Running the tests with coverage

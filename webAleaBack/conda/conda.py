@@ -2,8 +2,8 @@
 import json
 import os
 import subprocess
-from core.config import settings
 from packaging.version import Version
+from core.config import settings
 
 class Conda:
     """
@@ -15,7 +15,8 @@ class Conda:
         """List all packages in a conda channel.
 
         Args:
-            channel (str, optional): The conda channel to search. Defaults to settings.OPENALEA_CHANNEL.
+            channel (str, optional): The conda channel to search.
+            Defaults to settings.OPENALEA_CHANNEL.
 
         Returns:
             dict: A dictionary of packages and their versions.
@@ -34,7 +35,8 @@ class Conda:
         """Get uniquely last version of package and create JSON
 
         Args:
-            channel (str, optional): The conda channel to search. Defaults to settings.OPENALEA_CHANNEL.
+            channel (str, optional): The conda channel to search.
+            Defaults to settings.OPENALEA_CHANNEL.
 
         Returns:
             dict: A dictionary with all last versions of package.
@@ -57,7 +59,8 @@ class Conda:
 
         Args:
             package_name (str): The name of the package to search for.
-            channel (str, optional): The conda channel to search. Defaults to settings.OPENALEA_CHANNEL.
+            channel (str, optional): The conda channel to search.
+            Defaults to settings.OPENALEA_CHANNEL.
 
         Returns:
             list: A list of available versions for the package.
@@ -72,8 +75,10 @@ class Conda:
 
         Args:
             package_name (str): The name of the package to install.
-            version (str, optional): The version of the package to install. Defaults to None.
-            env_name (str, optional): The name of the conda environment. Defaults to settings.CONDA_ENV_NAME.
+            version (str, optional): The version of the package to install.
+            Defaults to None.
+            env_name (str, optional): The name of the conda environment.
+            Defaults to settings.CONDA_ENV_NAME.
         """
         pkg = f"{package_name}={version}" if version else package_name
         env_name = env_name or settings.CONDA_ENV_NAME # Use default env name if none provided
@@ -98,13 +103,13 @@ class Conda:
             try:
                 Conda.install_package(pkg, env_name=env_name)
                 results["installed"].append(pkg)
-            except Exception as e:
+            except (subprocess.CalledProcessError, FileNotFoundError) as e:
                 results["failed"].append({"package": pkg, "error": str(e)})
         return results
-        
+
 
     @staticmethod
-    def install_all_packages_wget(env_name, channel=settings.OPENALEA_CHANNEL):
+    def install_all_packages_wget(env_name : str, channel : str =settings.OPENALEA_CHANNEL):
         """Install all packages in a conda environment.
         Args:
             env_name (str): The name of the conda environment.
@@ -112,10 +117,10 @@ class Conda:
         """
         filename = f"conda_{channel}_packages_last_version.json"
         if not os.path.exists(filename):
-            Conda.get_list_last_version()
+            Conda.list_latest_packages()
         with open(filename, "r", encoding="utf-8") as f:
             data = json.load(f)
-            for package_name, entries in data.items():
+            for _, entries in data.items():
                 url = entries["url"]
                 file_name = url.split("/")[-1]
 
@@ -132,7 +137,15 @@ class Conda:
 
 
     @staticmethod
-    def find_channel(package_name):
+    def find_channel(package_name: str):
+        """finds the channels in which a packafe is in
+
+        Args:
+            package_name (str): The name of the package to search for.
+
+        Returns:
+            str: The name of the channel where the package is found, or None if not found.
+        """
         channels_to_test = [settings.OPENALEA_CHANNEL, "conda-forge", "defaults"]
         for ch in channels_to_test:
             try:
@@ -148,7 +161,7 @@ class Conda:
         return None
 
     @staticmethod
-    def install_all_packages(env_name, channel=settings.OPENALEA_CHANNEL):
+    def install_all_packages(env_name: str, channel: str=settings.OPENALEA_CHANNEL):
         """Install all packages in a conda environment.
         Args:
             env_name (str): The name of the conda environment.
@@ -156,7 +169,7 @@ class Conda:
         """
         filename = f"conda_{channel}_packages_last_version.json"
         if not os.path.exists(filename):
-            Conda.get_list_last_version()
+            Conda.list_latest_packages()
         with open(filename, "r", encoding="utf-8") as f:
             data = json.load(f)
 
@@ -183,4 +196,3 @@ class Conda:
                     ["conda", "install", "-n", env_name,  "-c", channel, pkg, "-y"],
                     check=True,
                 )
-
