@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   useNodesState,
   useEdgesState,
@@ -39,6 +39,7 @@ export const FlowProvider = ({ children }) => {
   */
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [currentNode, setCurrentNode] = useState(null);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   
   const nodesTypes = { custom: CustomNode };
@@ -97,6 +98,11 @@ export const FlowProvider = ({ children }) => {
     setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
   }, [setNodes, setEdges]);
 
+  const onNodeClick = useCallback((event, node) => {
+    console.log('Node clicked:', node);
+    setCurrentNode(node);
+  }, []);
+
   // --- Valeur fournie par le Context ---
   const contextValue = {
     nodes,
@@ -111,6 +117,9 @@ export const FlowProvider = ({ children }) => {
     nodesTypes,
     updateNode,
     setNodesAndEdges,
+    currentNode,
+    setCurrentNode,
+    onNodeClick,
     // reactFlowInstance,
   };
 
