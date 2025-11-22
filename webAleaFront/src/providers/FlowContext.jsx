@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   useNodesState,
   useEdgesState,
@@ -6,6 +6,7 @@ import {
 } from '@xyflow/react';
 import { FlowContext } from './FlowContextDefinition';
 import CustomNode from '../components/workspace/CustomNode.jsx';
+import { useLog } from './LogContextDefinition.jsx';
 
 const FLOW_KEY_NODES = 'reactFlowCacheNodes';
 const FLOW_KEY_EDGES = 'reactFlowCacheEdges';
@@ -28,6 +29,8 @@ export const FlowProvider = ({ children }) => {
   const initialNodes = getInitialState(FLOW_KEY_NODES, []);
   const initialEdges = getInitialState(FLOW_KEY_EDGES, []);
 
+  const { addLog } = useLog()
+
   /*
   const initialNodes = [
     new Node({ id: "n1", title: "Node 1", metadata: { info: "This is node 1", author: ["Author 1", "Author 2"] } }).serialize(),
@@ -39,6 +42,7 @@ export const FlowProvider = ({ children }) => {
   */
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [currentNode, setCurrentNode] = useState(null);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   
   const nodesTypes = { custom: CustomNode };
@@ -68,19 +72,22 @@ export const FlowProvider = ({ children }) => {
       return;
     }
     setEdges((eds) => addEdge(params, eds));
-  }, [setEdges]);
+    addLog("Edge added", { source: params.source, target: params.target });
+  }, [setEdges, addLog]);
 
   // Fonction pour ajouter un nouveau noeud
   const addNode = useCallback((newNode) => {
     setNodes((nds) => [...nds, newNode.serialize()]);
-  }, [setNodes]);
+    addLog("Node added", {id : newNode.id, title: newNode.title});
+  }, [setNodes, addLog]);
 
   // Fonction pour définir le workflow
   const setNodesAndEdges = useCallback((newNodes, newEdges) => {
     console.log("Setting nodes and edges...", newNodes, newEdges);
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [setNodes, setEdges]);
+    addLog("Workflow updated", { nodes: newNodes.length, edges: newEdges.length });
+  }, [setNodes, setEdges, addLog]);
 
   const updateNode = useCallback((id, updatedProperties) => {
     
@@ -89,13 +96,21 @@ export const FlowProvider = ({ children }) => {
         n.id === id ? { ...n, data: { ...n.data, ...updatedProperties } } : n
       )
     );
-  }, [setNodes]);
+    addLog("Node updated", { id, updatedProperties });
+  }, [setNodes, addLog]);
 
   // Fonction pour supprimer un noeud
   const deleteNode = useCallback((nodeId) => {
     setNodes((nds) => nds.filter(node => node.id !== nodeId));
     setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
-  }, [setNodes, setEdges]);
+    addLog("Node deleted", { id: nodeId });
+  }, [setNodes, setEdges, addLog]);
+
+  const onNodeClick = useCallback((event, node) => {
+    console.log('Node clicked:', node);
+    setCurrentNode(node);
+    addLog("Node selected : ", { id: node.id, title: node.data.title});
+  }, [addLog]);
 
   // --- Valeur fournie par le Context ---
   const contextValue = {
@@ -111,6 +126,9 @@ export const FlowProvider = ({ children }) => {
     nodesTypes,
     updateNode,
     setNodesAndEdges,
+    currentNode,
+    setCurrentNode,
+    onNodeClick,
     // reactFlowInstance,
   };
 

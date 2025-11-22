@@ -17,7 +17,7 @@
     "@xyflow/react": "^12.8.6",
     "bootstrap": "^5.3.8",
     "node": "^24.9.0",
-    "npm": "^11.6.1",
+    "npm": "^11.6.0",
     "react": "^19.1.1",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.1.1",

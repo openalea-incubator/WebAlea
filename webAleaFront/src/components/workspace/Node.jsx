@@ -32,6 +32,8 @@ export class Node {
             status: status || 'ready',
             metadata: metadata || {},
         };
+        this.inputs = [];
+        this.outputs = [];
     }
     
     /**
@@ -54,6 +56,8 @@ export class Node {
                 status: data.status ?? 'ready',
                 metadata: data.metadata ?? {},
             },
+            inputs: this.inputs ?? [],
+            outputs: this.outputs ?? [],
         };
     }
 

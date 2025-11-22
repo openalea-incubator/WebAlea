@@ -6,11 +6,24 @@ import ToolBar from './components/toolbar/ToolBar.jsx';
 import PackageManager from './components/packagemanager/PackageManager.jsx';
 import ConsoleLog from './components/ConsoleLog/ConsoleLog.jsx';
 import { FlowProvider } from './providers/FlowContext.jsx';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useFlow } from './providers/FlowContextDefinition.jsx';
 
 export default function App() {
-    const [isNodeDetailOpen, setIsNodeDetailOpen] = useState(false); // TODO : Si un node est sélectionné, mettre a true, sinon false
+    const [isNodeDetailOpen, setIsNodeDetailOpen] = useState(false);
     const toggleNodeDetail = () => setIsNodeDetailOpen(prev => !prev);
+    const { currentNode } = useFlow();
+
+    useEffect(() => {
+        if (!currentNode) {
+            setIsNodeDetailOpen(false);
+        }
+        else {
+          setIsNodeDetailOpen(true);
+        }
+    }, [currentNode]);
+
+    
 
     return (
     <div className="min-vh-100 d-flex flex-column bg-light">
@@ -28,7 +41,6 @@ export default function App() {
 
       {/* MAIN */}
       <main className="container-fluid flex-grow-1 my-3">
-        <FlowProvider>
         <ToolBar />
 
         {/* Tous les composants dans cette balise propre à ReactFlow auront accès aux données du workflow */}
@@ -55,10 +67,11 @@ export default function App() {
                 {/* NodeDetailSection conditionnelle */}
                 <div className={isNodeDetailOpen ? "col-lg-3 d-flex" : "d-none"}>
                   <div className="node-detail-container flex-fill p-3 bg-white shadow-sm rounded transition-width">
-                    <NodeDetailSection />
+                    {currentNode && <NodeDetailSection />}
                   </div>
                 </div>
               </div>
+                
 
               {/* ConsoleLog */}
               <div className="row mt-3">
@@ -77,14 +90,13 @@ export default function App() {
             top: '50%',
             right: isNodeDetailOpen ? '20%' : '2%',
             transform: 'translateY(-50%)',
-            zIndex: 10
+            zIndex: 10,
+            display: currentNode ? 'block' : 'none',
           }}
           onClick={toggleNodeDetail}
         >
           {isNodeDetailOpen ? '>' : '<'}
         </button>
-
-        </FlowProvider>
       </main>
 
       {/* FOOTER */}
