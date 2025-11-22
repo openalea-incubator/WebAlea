@@ -1,5 +1,6 @@
 """Tests for the conda module."""
 import unittest
+from subprocess import CalledProcessError
 from conda.conda import Conda
 
 class TestCondaMethods(unittest.TestCase):
@@ -35,7 +36,7 @@ class TestCondaMethods(unittest.TestCase):
         """Test installing a package in a conda environment."""
         try:
             Conda.install_package("agroservices", env_name="test_env")
-        except Exception as e:
+        except (CalledProcessError, FileNotFoundError) as e:
             self.fail(f"install_package raised an exception: {e}")
 
     def test_install_package_list(self):
