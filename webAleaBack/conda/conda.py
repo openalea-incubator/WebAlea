@@ -107,59 +107,6 @@ class Conda:
                 results["failed"].append({"package": pkg, "error": str(e)})
         return results
 
-
-    @staticmethod
-    def install_all_packages_wget(env_name : str, channel : str =settings.OPENALEA_CHANNEL):
-        """Install all packages in a conda environment.
-        Args:
-            env_name (str): The name of the conda environment.
-            channel (str): The conda channel to search. Defaults to settings.OPENALEA_CHANNEL.
-        """
-        filename = f"conda_{channel}_packages_last_version.json"
-        if not os.path.exists(filename):
-            Conda.list_latest_packages()
-        with open(filename, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            for _, entries in data.items():
-                url = entries["url"]
-                file_name = url.split("/")[-1]
-
-                # Télécharger le fichier
-                subprocess.run(["wget", url], check=True)
-
-                # Installer le fichier téléchargé
-                subprocess.run(["conda", "install", "-n", env_name, file_name, "-y"], check=True)
-
-                # Supprimer le fichier après installation
-                if os.path.exists(file_name):
-                    os.remove(file_name)
-                    print(f"{file_name} deleted after install")
-
-
-    @staticmethod
-    def find_channel(package_name: str):
-        """finds the channels in which a packafe is in
-
-        Args:
-            package_name (str): The name of the package to search for.
-
-        Returns:
-            str: The name of the channel where the package is found, or None if not found.
-        """
-        channels_to_test = [settings.OPENALEA_CHANNEL, "conda-forge", "defaults"]
-        for ch in channels_to_test:
-            try:
-                out = subprocess.check_output(
-                    ["conda", "search", package_name, "-c", ch, "--json"],
-                    stderr=subprocess.DEVNULL
-                )
-                data = json.loads(out)
-                if package_name in data:
-                    return ch
-            except subprocess.CalledProcessError:
-                pass
-        return None
-
     @staticmethod
     def install_all_packages(env_name: str, channel: str=settings.OPENALEA_CHANNEL):
         """Install all packages in a conda environment.
