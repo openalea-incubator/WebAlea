@@ -4,7 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
-from conda.conda import Conda
+from conda_utils.conda_utils import Conda
 from core.config import settings
 
 router = APIRouter()

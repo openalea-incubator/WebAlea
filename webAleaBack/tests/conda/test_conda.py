@@ -1,7 +1,7 @@
 """Tests for the conda module."""
 import unittest
 from subprocess import CalledProcessError
-from conda.conda import Conda
+from conda_utils.conda_utils import Conda
 
 class TestCondaMethods(unittest.TestCase):
     """Unit tests for Conda class methods."""
