@@ -31,7 +31,8 @@ jobs:
       # testing
       - name: Running the tests with coverage
         working-directory: webAleaBack
-        run: pytest --cov=.
+        # run pytest with config file pytest.ini
+        run: pytest -c pytest.ini
       - name: Report coverage
         working-directory: webAleaBack
         run: |
