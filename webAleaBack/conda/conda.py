@@ -114,32 +114,6 @@ class Conda:
             env_name (str): The name of the conda environment.
             channel (str): The conda channel to search. Defaults to settings.OPENALEA_CHANNEL.
         """
-        filename = f"conda_{channel}_packages_last_version.json"
-        if not os.path.exists(filename):
-            Conda.list_latest_packages()
-        with open(filename, "r", encoding="utf-8") as f:
-            data = json.load(f)
-
-
-            def install_depends(depends):
-                for dep in depends:
-                    if dep in data:
-                        install_depends(data[dep]['depends'])
-                    dep_channel = Conda.find_channel(dep)
-                    if dep_channel:
-                        subprocess.run(
-                            ["conda", "install", "-n", env_name, "-c", dep_channel, dep, "-y"],
-                            check=True,
-                        )
-                    else:
-                        print(f"Impossible de trouver {dep} dans openalea3/conda-forge/defaults")
-
-            for package_name, entries in data.items():
-                install_depends(entries.get("depends", []))
-
-
-                pkg = f"{package_name}={entries['version']}" if entries["version"] else package_name
-                subprocess.run(
-                    ["conda", "install", "-n", env_name,  "-c", channel, pkg, "-y"],
-                    check=True,
-                )
+        packages = Conda.list_latest_packages(channel)
+        package_list = [f"{name}={info['version']}" for name, info in packages.items()]
+        return Conda.install_package_list(env_name, package_list)
