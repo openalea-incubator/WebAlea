@@ -1,6 +1,8 @@
 name: Python linting and testing
 
 on: [push, pull_request]
+env:
+  PYTHONPATH: "${{ github.workspace }}/webAleaBack:${PYTHONPATH}"
 
 jobs:
   build:
@@ -30,7 +32,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           environment-file: webAleaBack/tests/environment.yml
           activate-environment: test_env
-      
+
+      - name: activate conda environment
+        run: |
+          conda activate test_env
+
       # linting
       - name: Analysing the code with pylint
         working-directory: webAleaBack
@@ -42,11 +48,13 @@ jobs:
         working-directory: webAleaBack
         # run pytest with config file pytest.ini
         run: pytest -c pytest.ini
+
       - name: Report coverage
         working-directory: webAleaBack
         run: |
           coverage report --fail-under=80
           coverage xml
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
