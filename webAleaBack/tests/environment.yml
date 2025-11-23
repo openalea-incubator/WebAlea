@@ -11,8 +11,3 @@ dependencies:
   - pydantic-settings
   - aiofiles
   - packaging
-  - pytest
-  - pytest-cov
-  - pylint
-  - coverage
-  - codecov
