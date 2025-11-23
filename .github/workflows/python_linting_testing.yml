@@ -14,6 +14,7 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install dependencies
         working-directory: webAleaBack
         run: |
@@ -21,6 +22,14 @@ jobs:
           pip install pylint
           pip install pytest
           pip install pytest-cov
+        
+      - name: setup conda test environment
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          python-version: ${{ matrix.python-version }}
+          environment-file: webAleaBack/tests/environment.yml
+          activate-environment: test_env
       
       # linting
       - name: Analysing the code with pylint

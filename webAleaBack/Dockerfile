@@ -3,6 +3,7 @@ FROM continuumio/miniconda3:latest
 # set env variable here
 ENV PYTHONUNBUFFERED 1
 ENV APP_HOME /app
+ENV PYTHONPATH="${APP_HOME}:${PYTHONPATH}"
 
 WORKDIR /app
 
