@@ -4,7 +4,6 @@ channels:
   - openalea3
   - defaults
 dependencies:
-  - python=3.13
   - fastapi
   - uvicorn
   - pydantic
