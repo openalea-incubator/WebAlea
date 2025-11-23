@@ -41,17 +41,13 @@ class Conda:
         Returns:
             dict: A dictionary with all last versions of package.
         """
-        filename = f"conda_{channel}_packages.json"
-        if not os.path.exists(filename):
-            Conda.list_packages()
-        with open(filename, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            latest_versions = {}
-            for package_name, package_list in data.items():
-                if not "alinea" in package_name:
-                    latest_entry = max(package_list, key=lambda e: Version(e["version"]))
-                    latest_versions[package_name] = latest_entry
-        return data
+        packages = Conda.list_packages(channel)
+        latest_versions = {}
+        for package_name, package_list in packages.items():
+            if not "alinea" in package_name:
+                latest_entry = max(package_list, key=lambda e: Version(e["version"]))
+                latest_versions[package_name] = latest_entry
+        return latest_versions
 
     @staticmethod
     def get_versions(package_name : str, channel : str=settings.OPENALEA_CHANNEL) -> list:
