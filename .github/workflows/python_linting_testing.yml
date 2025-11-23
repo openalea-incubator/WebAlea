@@ -18,7 +18,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
         
       - name: setup conda test environment
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           auto-activate-base: false
           python-version: ${{ matrix.python-version }}
