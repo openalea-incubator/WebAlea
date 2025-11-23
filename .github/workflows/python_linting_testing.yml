@@ -16,14 +16,6 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        working-directory: webAleaBack
-        run: |
-          python -m pip install --upgrade pip
-          pip install pylint
-          pip install pytest
-          pip install pytest-cov
         
       - name: setup conda test environment
         uses: conda-incubator/setup-miniconda@v2
