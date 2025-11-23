@@ -25,33 +25,29 @@ jobs:
           python-version: ${{ matrix.python-version }}
           environment-file: webAleaBack/tests/environment.yml
           activate-environment: test_env
-
-      - name: activate conda environment
-        run: |
-          conda activate test_env
       
       # Install dependencies for linting and testing
       - name: Install testing and linting dependencies
         run: |
-          pip install pylint pytest pytest-cov coverage codecov
+          conda run -n test_env pip install pylint pytest pytest-cov coverage codecov
 
       # linting
       - name: Analysing the code with pylint
         working-directory: webAleaBack
         # run and fail if the score is less than 8.0
-        run: pylint --fail-under=8.0 $(git ls-files '*.py')
+        run: conda run -n test_env pylint --fail-under=8.0 $(git ls-files '*.py')
 
       # testing
       - name: Running the tests with coverage
         working-directory: webAleaBack
         # run pytest with config file pytest.ini
-        run: pytest -c pytest.ini
+        run: conda run -n test_env pytest -c pytest.ini
 
       - name: Report coverage
         working-directory: webAleaBack
         run: |
-          coverage report --fail-under=80
-          coverage xml
+          conda run -n test_env coverage report --fail-under=80
+          conda run -n test_env coverage xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
