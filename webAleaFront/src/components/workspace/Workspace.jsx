@@ -10,7 +10,7 @@ import { useFlow } from '../../providers/FlowContextDefinition.jsx';
 
 export default function WorkSpace() {
 
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, nodesTypes } = useFlow();
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, nodesTypes, onNodeClick } = useFlow();
 
   return (
     <div className="workspace-flow rounded shadow-sm border bg-white">
@@ -23,6 +23,7 @@ export default function WorkSpace() {
         fitView
         defaultEdgeOptions={{ type: 'smoothstep' }}
         nodeTypes={nodesTypes}
+        onNodeClick={onNodeClick}
       >
         <MiniMap />
         <Controls />
