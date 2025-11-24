@@ -1,11 +1,15 @@
 """"API endpoints for managing conda packages and environments."""
 from typing import List, Optional
 
+from debugpy.server.cli import switches
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from conda_utils.conda_utils import Conda
 from core.config import settings
+from pydantic.json_schema import model_json_schema
+
+from webAleaBack.api.v1.utils.POQ import *
 
 router = APIRouter()
 
@@ -57,3 +61,53 @@ def install_packages_in_env(request: InstallRequest):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=results)
 
     return results
+
+
+
+# POQ test 26/11
+@router.get("/poq/get_node")
+def poq_get_node():
+    """GET POQ fake type node"""
+    node_json = {
+        "concatenate" : {
+            "parameters": {
+                "parameter1": "string",
+                "parameter2": "string",
+            }
+        },
+        "addition": {
+            "parameters": {
+                "parameter1": "int",
+                "parameter2": "int",
+            }
+        },
+        "subtract": {
+            "parameters": {
+                "parameter1": "int",
+                "parameter2": "int",
+            }
+        }
+    }
+    return node_json
+
+class ExecuteNode(BaseModel):
+    """Request model for executing packages into a conda environment."""
+    name_node: str
+    parameters: dict
+
+@router.get("/poq/execute")
+def poq_execute(request: ExecuteNode):
+    """Execute POQ fake type node"""
+    res = {}
+    parameters = request.parameters
+    match request.name_node:
+        case "concatenate":
+            res["result"] = concatenate(parameters["parameters1"], parameters["parameters2"])
+        case "addition":
+            res["result"] = addition(parameters["parameter1"], parameters["parameter2"])
+        case "subtract":
+            res["result"] = subtraction(parameters["parameter1"], parameters["parameter2"])
+        case _:
+            pass
+    res["success"] = len(res) > 0
+    return res
