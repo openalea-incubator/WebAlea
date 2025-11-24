@@ -1,0 +1,13 @@
+name: webalea_env
+channels:
+  - conda-forge
+  - openalea3
+  - defaults
+dependencies:
+  - python=3.13
+  - fastapi
+  - uvicorn
+  - pydantic
+  - pydantic-settings
+  - aiofiles
+  - packaging
