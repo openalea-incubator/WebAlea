@@ -4,18 +4,19 @@ import NodeOutput from "./NodeOutputs";
 import { useFlow } from '../../providers/FlowContextDefinition.jsx';
 
 export default function NodeParameters() {
-    const { currentNode } = useFlow();
+    const { currentNode, nodes } = useFlow();
+    const node = nodes.find(n => n.id === currentNode);
     // Data d'exemple pour le modele static
-    const [inputs, setInputs] = useState(currentNode ? currentNode.inputs : [])
-    const [outputs, setOutputs] = useState(currentNode ? currentNode.outputs : [])
+    const [inputs, setInputs] = useState(node ? node.inputs : [])
+    const [outputs, setOutputs] = useState(node ? node.outputs : [])
 
     const [isChanged, setIsChanged] = useState(false); // Bouton "lancer" Réactif
 
     useEffect(() => {
-    setInputs(currentNode?.inputs ?? []);
-    setOutputs(currentNode?.outputs ?? []);
+    setInputs(node?.inputs ?? []);
+    setOutputs(node?.outputs ?? []);
     setIsChanged(false); // reset du bouton
-}, [currentNode]);
+}, [node]);
 
 
     // Fonction passer aux inputs enfants pour leurs permettre de mettre à jour leur valeur dans la liste au dessus
@@ -41,7 +42,7 @@ export default function NodeParameters() {
     // Traitements... TODO
     setIsChanged(false); // désactive le bouton
     };
-    if (!currentNode) {
+    if (!node) {
         return <div className="p-3 bg-white rounded shadow-sm">No node selected.</div>;
     }
     else {

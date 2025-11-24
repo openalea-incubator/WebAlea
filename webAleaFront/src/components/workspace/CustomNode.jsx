@@ -10,6 +10,7 @@ import { useFlow } from '../../providers/FlowContextDefinition.jsx';
  */
 
 const getBorderColor = (status) => {
+    console.log("Getting border color for status:", status);
     switch (status) {
         case "running":
             return "#2b8a3e"; // Vert
