@@ -1,0 +1,30 @@
+.drop-zone {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+    background-color: #fafafa;
+    }
+
+.drop-zone.drag-over {
+    border-color: #007bff;
+    background-color: #f0f8ff;
+    }
+
+.upload-icon {
+    color: #666;
+    }
+
+.drop-zone.drag-over .upload-icon {
+    color: #007bff;
+    }
+
+.drop-text {
+    margin-top: 10px;
+    }
+
+.file-input {
+    display: none;
+    }
