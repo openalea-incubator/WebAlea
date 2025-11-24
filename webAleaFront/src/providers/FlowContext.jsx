@@ -96,6 +96,9 @@ export const FlowProvider = ({ children }) => {
         n.id === id ? { ...n, data: { ...n.data, ...updatedProperties } } : n
       )
     );
+
+    setCurrentNode(id);
+
     addLog("Node updated", { id, updatedProperties });
   }, [setNodes, addLog]);
 
@@ -107,10 +110,11 @@ export const FlowProvider = ({ children }) => {
   }, [setNodes, setEdges, addLog]);
 
   const onNodeClick = useCallback((event, node) => {
-    console.log('Node clicked:', node);
-    setCurrentNode(node);
-    addLog("Node selected : ", { id: node.id, title: node.data.title});
-  }, [addLog]);
+    console.log("Clicked:", node.id);
+    setCurrentNode(node.id);   // OK
+    addLog("Node selected", { id: node.id, label: node.data.label });
+}, [addLog]);
+
 
   // --- Valeur fournie par le Context ---
   const contextValue = {
