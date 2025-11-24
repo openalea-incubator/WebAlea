@@ -3,13 +3,16 @@ import ButtonToolBar from "./ButtonToolBar";
 import ImportModal from "../visualizer/ImportModal";
 import { FaUpload, FaDownload, FaInfoCircle, FaPlay, FaStop } from "react-icons/fa";
 import { useFlow } from "../../providers/FlowContextDefinition";
+import { useLog } from "../../providers/LogContextDefinition";
 
 export default function ToolBar() {
     const [showImportModal, setShowImportModal] = useState(false);
-    const { setNodesAndEdges } = useFlow();
+    const { setNodesAndEdges, nodes, edges } = useFlow();
 
     const handleImportClick = () => setShowImportModal(true);
     const handleImportClose = () => setShowImportModal(false);
+
+    const { addLog } = useLog();
 
     const handleImportData = (data) => {
         try {
@@ -21,6 +24,7 @@ export default function ToolBar() {
                 setNodesAndEdges(data.nodes || [], data.edges || []);
                 setShowImportModal(false);
                 console.log("Workflow importé :", data); // ou traitement du workflow
+                addLog("Workflow imported", { nodes: data.nodes.length, edges: data.edges.length });
             }
         }
         catch(error) {
@@ -28,7 +32,25 @@ export default function ToolBar() {
         }
     };
 
-    const handleExport = () => alert("Export workflow");
+    const handleExport = () => {
+        const data = {
+            nodes: nodes,
+            edges: edges  
+        };
+        try {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "workflow_export.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            addLog("Workflow exported", { nodes: nodes.length, edges: edges.length });
+        } catch (error) {
+            alert("Erreur lors de l'exportation du workflow : " + error.message);
+        }
+    };
+
     const handleInfo = () => alert("Afficher les informations");
     const handleRun = () => alert("Exécution du workflow");
     const handleStop = () => alert("Arrêt du workflow");
