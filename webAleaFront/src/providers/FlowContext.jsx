@@ -28,7 +28,7 @@ export const FlowProvider = ({ children }) => {
   const initialNodes = getInitialState(FLOW_KEY_NODES);
   const initialEdges = getInitialState(FLOW_KEY_EDGES);
 
-    const { addLog } = useLog()
+  const { addLog } = useLog()
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [currentNode, setCurrentNode] = useState(null);
