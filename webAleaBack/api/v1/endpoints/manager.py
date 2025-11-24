@@ -57,3 +57,8 @@ def install_packages_in_env(request: InstallRequest):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=results)
 
     return results
+
+@router.get("/{package_name}/info")
+def fetch_package_info(package_name: str):
+    """Fetch detailed information about a specific conda package."""
+    return
