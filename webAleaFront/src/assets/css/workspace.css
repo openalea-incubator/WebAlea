@@ -1,0 +1,13 @@
+.workspace-flow {
+  height: 70vh;          /* prend 70% de la hauteur de la fenêtre */
+  min-height: 500px;     /* hauteur minimale confortable */
+  width: 100%;
+  overflow: hidden;      /* évite les scrolls indésirables */
+}
+
+/* Sur mobile, réduire la hauteur pour éviter le scroll excessif */
+@media (max-width: 768px) {
+  .workspace-flow {
+    height: 50vh;
+  }
+}
