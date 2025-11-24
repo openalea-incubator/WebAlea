@@ -1,6 +1,5 @@
 """Module to manage conda environments and packages."""
 import json
-import os
 import subprocess
 from packaging.version import Version
 from core.config import settings
