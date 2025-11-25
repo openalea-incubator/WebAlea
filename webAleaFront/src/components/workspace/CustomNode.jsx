@@ -80,7 +80,7 @@ export default function CustomNode(nodeProps) {
                         background: borderColor,
                         cursor: "pointer",
                     }}
-                    title={`status: ${label}`}
+                    title={`status: ${status}`}
                     onClick={handleStatusClick}
                 />
                 <strong style={{ fontSize: 13 }}>{label}</strong>
