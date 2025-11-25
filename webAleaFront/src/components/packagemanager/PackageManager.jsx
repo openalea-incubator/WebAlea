@@ -11,9 +11,10 @@ export default function PackageManager() {
   const [currentPanel, setCurrentPanel] = React.useState("conda");
 
   /* item is a TreeNode instance */
-  const handleAddNode = (item) => {
-    addNode(new Node({ id: `n${Math.floor(Math.random() * 10000)}-${item.id}`, label: item.label }, { data: { inputs: item.inputs, outputs: item.outputs } }));
-  }
+  const handleAddNode = (treeNode) => {
+    treeNode.node.id = `n${Math.floor(Math.random() * 10000)}-${treeNode.node.id}`;
+    addNode(treeNode.node);
+  };
 
   const renderTabContent = () => {
     switch (currentPanel) {
