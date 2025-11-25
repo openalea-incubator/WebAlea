@@ -42,12 +42,10 @@ export default function App() {
       {/* MAIN */}
       <main className="container-fluid flex-grow-1 my-3">
         <ToolBar />
-
-        {/* Tous les composants dans cette balise propre à ReactFlow auront accès aux données du workflow */}
           <div className="row gx-4 gy-4 align-items-stretch main-layout">
             {/* Package Manager  */}
             <div className="col-lg-2 d-flex">
-              <div className="package-manager-container flex-fill p-3 bg-white shadow-sm rounded">
+              <div className="package-manager-container flex-fill bg-white shadow-sm rounded">
                 <PackageManager/>
               </div>
             </div>
