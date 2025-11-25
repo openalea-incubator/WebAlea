@@ -7,10 +7,6 @@
  *  const node = new Node({
  *   id: 'n1',
  *   position: { x: 100, y: 200 },
- *   title: 'Mon Nœud',
- *   color: '#ffcc00',
- *   status: 'ready',
- *  metadata: { info: 'Ceci est un nœud personnalisé' }
  * });
  * 
  * const serializedNode = node.serialize();
@@ -23,19 +19,29 @@ export class Node {
      * Crée un objet nœud React Flow.
      * @param {object} props - Les propriétés du nœud.
      */
-    constructor({ id, label, position = { x: 0, y: 0 }, color, status, metadata }) {
+    constructor({ id, label, position = { x: 0, y: 0 }, data, inputs, outputs }) {
         this.id = id;
         this.position = position;
         this.data = {
             label: label || null,
-            color: color || null,
-            status: status || 'ready',
-            metadata: metadata || {},
+            color: data?.color || null,
+            status: data?.status || 'ready',
+            metadata: data?.metadata || {},
         };
-        this.inputs = [];
-        this.outputs = [];
+        this.inputs = inputs || [];
+        this.outputs = outputs || [];
     }
-    
+
+    /**
+     * Simule le traitement des données par le noeud.
+     * @param {object} newData - Les nouvelles données à traiter.
+     */
+    processData(newData) {
+        console.log(`Node ${this.id}: Processing new data...`);
+        this.data = { ...this.data, ...newData };
+        this.status = 'processed';
+    }
+
     /**
      * Sérialise l'instance du nœud en un objet JavaScript minimal.
      * @returns {object|null} L'objet nœud sérialisé.
@@ -70,4 +76,5 @@ export class Node {
         const obj = this.serialize();
         return obj ? JSON.stringify(obj, null, spacing) : null;
     }
+
 }
