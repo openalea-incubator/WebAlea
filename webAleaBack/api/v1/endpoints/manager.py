@@ -1,7 +1,6 @@
 """"API endpoints for managing conda packages and environments."""
 from typing import List, Optional
 
-from debugpy.server.cli import switches
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
@@ -9,7 +8,7 @@ from conda_utils.conda_utils import Conda
 from core.config import settings
 from pydantic.json_schema import model_json_schema
 
-from webAleaBack.api.v1.utils.POQ import *
+from api.v1.utils.POC import *
 
 router = APIRouter()
 
@@ -64,10 +63,10 @@ def install_packages_in_env(request: InstallRequest):
 
 
 
-# POQ test 26/11
-@router.get("/poq/get_node")
-def poq_get_node():
-    """GET POQ fake type node"""
+# POC test 26/11
+@router.get("/poc/get_node")
+def poc_get_node():
+    """GET POC fake type node"""
     node_json = {
         "concatenate" : {
             "parameters": {
@@ -95,18 +94,18 @@ class ExecuteNode(BaseModel):
     name_node: str
     parameters: dict
 
-@router.get("/poq/execute")
-def poq_execute(request: ExecuteNode):
-    """Execute POQ fake type node"""
+@router.post("/poc/execute_nodes")
+def poc_execute_nodes(request: ExecuteNode):
+    """Execute POC fake type node"""
     res = {}
     parameters = request.parameters
     match request.name_node:
         case "concatenate":
             res["result"] = concatenate(parameters["parameters1"], parameters["parameters2"])
         case "addition":
-            res["result"] = addition(parameters["parameter1"], parameters["parameter2"])
+            res["result"] = addition(parameters["parameters1"], parameters["parameters2"])
         case "subtract":
-            res["result"] = subtraction(parameters["parameter1"], parameters["parameter2"])
+            res["result"] = subtraction(parameters["parameters1"], parameters["parameters2"])
         case _:
             pass
     res["success"] = len(res) > 0
