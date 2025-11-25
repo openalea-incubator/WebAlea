@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from conda_utils.conda_utils import Conda
+from conda_utils.conda_inspector import OpenAleaInspector
 from core.config import settings
 
 router = APIRouter()
@@ -61,4 +62,8 @@ def install_packages_in_env(request: InstallRequest):
 @router.get("/{package_name}/info")
 def fetch_package_info(package_name: str):
     """Fetch detailed information about a specific conda package."""
-    return
+    try :
+        description = OpenAleaInspector.describe_openalea_package(package_name)
+        return description
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

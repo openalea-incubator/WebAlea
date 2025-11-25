@@ -1,70 +1,40 @@
-"""This module inspects conda packages for their contents."""
-import subprocess
-import inspect
-import importlib
+from openalea.core.pkgmanager import PackageManager
 
-class CondaInspector:
-    """
-    Class to inspect conda packages for their functions and classes.
-    This class uses introspection to extract information about functions and classes
-    defined in a given package.
-    """
+class OpenAleaInspector:
+    """Class to inspect OpenAlea packages installed in the current environment."""
 
     @staticmethod
-    def describe_function(func: callable) -> dict:
-        """Extract description, parameters, and return info from a function.
-        
+
+    def describe_openalea_package(package_name: str) -> dict:
+        """Describes the nodes contained with an openalea package
+
         Args:
-            func (callable): The function to inspect.
+            package_name (str): the name of a package
+
+        Raises:
+            ValueError: the package was not found
 
         Returns:
-            dict: A dictionary with 'description', 'parameters', and 'return' info.
+            dict: the package decription
         """
-        signature = inspect.signature(func) # Get function signature
-        params = {}
-        for name, param in signature.parameters.items():
-            params[name] = str(param)
+        pm = PackageManager()
+        pm.init()
+        print( pm.get_packages() )
 
-        doc = inspect.getdoc(func) or ""
-        return {
-            "description": doc.split("\n", maxsplit=1)[0] if doc else "",
-            "parameters": params,
-            "return": str(signature.return_annotation) if signature.return_annotation is not inspect.Signature.empty else ""
-        }
-    
-    @staticmethod
-    def describe_class(cls: type) -> dict:
-        """Extract description and methods from a class."""
-        doc = inspect.getdoc(cls) or ""
+        if package_name not in pm:
+            raise ValueError(f"No OpenAlea package named '{package_name}' found.")
 
-        methods = {}
-        for name, member in inspect.getmembers(cls, inspect.isfunction):
-            # Filter out private or magic methods if desired
-            if name.startswith("_"):
-                continue
-            methods[name] = CondaInspector.describe_function(member)
+        pkg = pm[package_name]
+        nodes = {}
 
-        return {
-            "description": doc.split("\n", maxsplit=1)[0] if doc else "",
-            "methods": methods
-        }
-    
-    @staticmethod
-    def describe_module(package_name):
-        """Return a dict describing all functions and classes in a module."""
-        module = importlib.import_module(package_name)
+        for node_factory in pkg.values():
+            node_desc = {
+                "description": node_factory.description,
+                "inputs": {port['name']: str(port['interface']) for port in node_factory.inputs},
+                "outputs": {port['name']: str(port['interface']) for port in node_factory.outputs},
+                "module": node_factory.nodemodule,
+                "callable": node_factory.nodeclass,
+            }
+            nodes[node_factory.name] = node_desc
 
-        functions = {}
-        classes = {}
-
-        for name, member in inspect.getmembers(module):
-            if inspect.isfunction(member) and member.__module__ == module.__name__:
-                functions[name] = CondaInspector.describe_function(member)
-    
-            if inspect.isclass(member) and member.__module__ == module.__name__:
-                classes[name] = CondaInspector.describe_class(member)
-
-        return {
-            "functions": functions,
-            "classes": classes
-        }
+        return {"nodes": nodes}

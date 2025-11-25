@@ -22,7 +22,7 @@ class Conda:
             dict: A dictionary of packages and their versions.
         """
         result = subprocess.run(
-            ["conda", "search", "--override-channels", "-c", channel, "*", "--json"],
+            ["conda", "search", "--override-channels", "-c", channel, "openalea*", "--json"],
             stdout=subprocess.PIPE,
             text=True,
             check=True,
