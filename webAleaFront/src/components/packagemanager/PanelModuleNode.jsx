@@ -4,7 +4,7 @@ import { Menu, MenuItem } from "@mui/material";
 import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
 
 const OPENALEA_NODES = [
-    {
+    { 
         id: 'openalea',
         label: 'OpenAlea',
         children: [
