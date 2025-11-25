@@ -13,9 +13,9 @@ export default function NodeParameters() {
     const [isChanged, setIsChanged] = useState(false); // Bouton "lancer" Réactif
 
     useEffect(() => {
-    setInputs(node?.data.inputs ?? []);
-    setOutputs(node?.data.outputs ?? []);
-    setIsChanged(false); // reset du bouton
+        setInputs(node?.data.inputs ?? []);
+        setOutputs(node?.data.outputs ?? []);
+        setIsChanged(false); // reset du bouton
 }, [node]);
 
 

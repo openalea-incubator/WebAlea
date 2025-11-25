@@ -61,9 +61,9 @@ export class Node {
                 color: data.color ?? null,
                 status: data.status ?? 'ready',
                 metadata: data.metadata ?? {},
+                inputs: this.inputs ?? [],
+                outputs: this.outputs ?? [],
             },
-            inputs: this.inputs ?? [],
-            outputs: this.outputs ?? [],
         };
     }
 

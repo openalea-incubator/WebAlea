@@ -8,33 +8,33 @@ const OPENALEA_NODES = [
         id: 'openalea',
         label: 'OpenAlea',
         children: [
-            { id: 'grid-community', label: '@mui/x-data-grid' },
-            { id: 'grid-pro', label: '@mui/x-data-grid-pro' },
-            { id: 'grid-premium', label: '@mui/x-data-grid-premium', },
+            { id: 'grid-community', label: '@mui/x-data-grid', data: {inputs: [{name: "input1", type: "float", default: 0}], outputs: [{name: "output1", type: "float", value: 0}]} },
+            { id: 'grid-pro', label: '@mui/x-data-grid-pro', data: {inputs: [{name: "input1", type: "float", default: 0}], outputs: [{name: "output1", type: "float", value: 0}]} },
+            { id: 'grid-premium', label: '@mui/x-data-grid-premium', data: {inputs: [{name: "input1", type: "float", default: 0}], outputs: [{name: "output1", type: "float", value: 0}]} },
         ],
     },
     {
         id: 'pickers',
         label: 'Date and Time Pickers',
         children: [
-            { id: 'pickers-community', label: '@mui/x-date-pickers' },
-            { id: 'pickers-pro', label: '@mui/x-date-pickers-pro' },
+            { id: 'pickers-community', label: '@mui/x-date-pickers', data: {inputs: [{name: "input1", type: "float", default: 0}], outputs: [{name: "output1", type: "float", value: 0}, {name: "output2", type: "float", value: 0}]} },
+            { id: 'pickers-pro', label: '@mui/x-date-pickers-pro', data: {inputs: [{name: "input1", type: "float", default: 0}, {name: "input2", type: "float", default: 0}], outputs: [{name: "output1", type: "float", value: 0}]} },
         ],
     },
     {
         id: 'charts',
         label: 'Charts',
         children: [
-            { id: 'charts-community', label: '@mui/x-charts' },
-            { id: 'charts-pro', label: '@mui/charts-pro' },
+            { id: 'charts-community', label: '@mui/x-charts', data: {inputs: [{name: "input1", type: "float", default: 0}], outputs: [{name: "output1", type: "float", value: 0}]} },
+            { id: 'charts-pro', label: '@mui/charts-pro', data: {inputs: [{name: "input1", type: "float", default: 0}], outputs: [{name: "output1", type: "float", value: 0}]} },
         ],
     },
     {
         id: 'tree-view',
         label: 'Tree View',
         children: [
-            { id: 'tree-view-community', label: '@mui/x-tree-view' },
-            { id: 'tree-view-pro', label: '@mui/x-tree-view-pro' },
+            { id: 'tree-view-community', label: '@mui/x-tree-view', data: {inputs: [{name: "input1", type: "float", default: 0}], outputs: [{name: "output1", type: "float", value: 0}]} },
+            { id: 'tree-view-pro', label: '@mui/x-tree-view-pro', data: {inputs: [{name: "input1", type: "float", default: 0}], outputs: [{name: "output1", type: "float", value: 0}]} },
         ],
     },
 ];
