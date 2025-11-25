@@ -112,7 +112,7 @@ export default function CustomNode(nodeProps) {
                 return (
                     <Handle
                         key={"in-" + index}
-                        type="target" // les inputs sont des "targets"
+                        type="source" // les inputs sont des "targets"
                         position={Position.Left}
                         id={`in-${id}-${index}`}
                         style={{
@@ -130,7 +130,7 @@ export default function CustomNode(nodeProps) {
                 return (
                     <Handle
                         key={"out-" + index}
-                        type="source" // les outputs sont des "sources"
+                        type="target" // les outputs sont des "sources"
                         position={Position.Right}
                         id={`out-${id}-${index}`}
                         style={{
