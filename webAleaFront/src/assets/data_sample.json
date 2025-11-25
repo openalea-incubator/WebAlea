@@ -4,40 +4,55 @@
       "id": "1",
       "type": "custom",
       "data": {
-        "label": "Point de départ (Input)"
+        "label": "Point de départ (Input)",
+        "inputs": [
+          {"name": "input1", "type": "float", "default": 0}
+        ],
+        "outputs": [
+          {"name": "output1", "type": "float", "value": 0}
+        ]
       },
       "position": {
         "x": 0,
         "y": 0
-      },
-      "inputs": [],
-      "outputs": []
+      }
     },
     {
       "id": "2",
       "type": "custom",
       "data": {
-        "label": "Processus intermédiaire"
+        "label": "Processus intermédiaire",
+        "inputs": [
+          {"name": "input1", "type": "float", "default": 0},
+          {"name": "input2", "type": "string"},
+          {"name": "input3", "type": "boolean", "optional": true}
+        ],
+        "outputs": [
+          {"name": "output1", "type": "float", "value": 42},
+          {"name": "output2", "type": "string", "value": "exemple"}
+        ]
       },
       "position": {
         "x": 400,
         "y": 50
-      },
-      "inputs": [{"name": "input1", "type": "float", "default": 0}, {"name": "input2", "type": "string"}, {"name": "input3", "type": "boolean", "optional": true}],
-      "outputs": [{"name": "output1", "type": "float", "value": 42}, {"name": "output2", "type": "string", "value": "exemple"}]
+      }
     },
     {
       "id": "3",
       "type": "custom",
       "data": {
-        "label": "Résultat final (Output)"
+        "label": "Résultat final (Output)",
+        "inputs": [
+          {"name": "input1", "type": "float", "default": 0}
+        ],
+        "outputs": [
+          {"name": "output1", "type": "float", "value": 0}
+        ]
       },
       "position": {
         "x": 400,
         "y": -50
-      },
-      "inputs": [],
-      "outputs": []
+      }
     }
   ],
   "edges": [

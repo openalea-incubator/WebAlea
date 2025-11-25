@@ -31,13 +31,22 @@ const getNextStatus = (currentStatus) => {
     }
 };
 
-export default function CustomNode(nodeProps) {
+const typeColors = {
+    string: "#1976d2",   // bleu
+    float: "#8e24aa",    // violet
+    boolean: "#2b8a3e",  // vert
+    default: "#555"
+};
 
+const getTypeColor = (t) => typeColors[t] || typeColors.default;
+
+
+export default function CustomNode(nodeProps) {
     const { updateNode } = useFlow();
 
     const {
         id,
-        data: { label, color, status, metadata }
+        data: { label, color, status, metadata, inputs, outputs },
     } = nodeProps;
 
 
@@ -97,22 +106,41 @@ export default function CustomNode(nodeProps) {
                 </div>
             )}
 
-            <Handle
-                type="source"
-                position={Position.Right}
-                style={{
-                    ...handleStyle,
-                    background: "#2b8a3e",
-                }}
-            />
-            <Handle
-                type="target"
-                position={Position.Left}
-                style={{
-                    ...handleStyle,
-                    background: "#555",
-                }}
-            />
+            {/* INPUTS (LEFT) */}
+            {Array.isArray(inputs) && inputs.map((input, index) => {
+                const topPercent = ((index + 1) / (inputs.length + 1)) * 100;
+                return (
+                    <Handle
+                        key={"in-" + index}
+                        type="target" // les inputs sont des "targets"
+                        position={Position.Left}
+                        id={`in-${id}-${index}`}
+                        style={{
+                            ...handleStyle,
+                            background: getTypeColor(input.type),
+                            top: `${topPercent}%`, // espace uniformément
+                        }}
+                    />
+                )
+            })}
+
+            {/* OUTPUTS (RIGHT) */}
+            {Array.isArray(outputs) && outputs.map((output, index) => {
+                const topPercent = ((index + 1) / (outputs.length + 1)) * 100;
+                return (
+                    <Handle
+                        key={"out-" + index}
+                        type="source" // les outputs sont des "sources"
+                        position={Position.Right}
+                        id={`out-${id}-${index}`}
+                        style={{
+                            ...handleStyle,
+                            background: getTypeColor(output.type),
+                            top: `${topPercent}%`, // espace uniformément   
+                        }}
+                    />
+                )
+            })}
         </div>
     );
 }
