@@ -14,7 +14,9 @@ export default function PackageManager() {
     addNode(
       new Node({
         id: `n${Math.floor(Math.random() * 10000)}-${item.id}`,
-        label: item.label
+        label: item.label,
+        inputs: item?.inputs || [],
+        outputs: item?.outputs || [],
       })
     );
   };

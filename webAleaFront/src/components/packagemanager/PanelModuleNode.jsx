@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import { Menu, MenuItem } from "@mui/material";
 import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
 
-const MUI_X_PRODUCTS = [
+const OPENALEA_NODES = [
     {
     id: 'openalea',
     label: 'OpenAlea',
@@ -72,18 +72,18 @@ export default function PanelModuleNode({ onAddNode }) {
         <div>
         <RichTreeView
             apiRef={apiRef}
-            items={MUI_X_PRODUCTS}
+            items={OPENALEA_NODES}
 
             sx={{ userSelect: 'none' }}
 
             onItemClick= {(_event, item) => 
             {
                 if (apiRef.current) {
-                item = apiRef.current.getItem(item);
-                if (item.children && item.children.length > 0) {
-                    return;
-                }
-                onAddNode(item);
+                    item = apiRef.current.getItem(item);
+                    if (item.children && item.children.length > 0) {
+                        return;
+                    }
+                    onAddNode(item);
                 }
             }
             }

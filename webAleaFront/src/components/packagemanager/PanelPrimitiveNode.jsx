@@ -3,10 +3,10 @@ import Box from '@mui/material/Box';
 import { Menu, MenuItem } from "@mui/material";
 import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
 
-const MUI_X_PRODUCTS = [
-    { id: 'float', label: 'Float input' },
-    { id: 'string', label: 'String input' },
-    { id: 'boolean', label: 'Boolean input' }
+const PRIMITIVE_NODES = [
+    { id: 'float', label: 'Float input', outputs: [{"name": "outputs", "type": "float", "default": 0}] },
+    { id: 'string', label: 'String input', outputs: [{"name": "outputs", "type": "string", "default": ""}] },
+    { id: 'boolean', label: 'Boolean input', outputs: [{"name": "outputs", "type": "boolean", "default": false}] }
 ];
 
 
@@ -26,7 +26,7 @@ export default function PanelPrimitiveNode({ onAddNode }) {
         const range = selection.getRangeAt(0);
 
         setTimeout(() => {
-        selection.addRange(range);
+            selection.addRange(range);
         });
     }
     };
@@ -42,18 +42,18 @@ export default function PanelPrimitiveNode({ onAddNode }) {
         <div>
         <RichTreeView
             apiRef={apiRef}
-            items={MUI_X_PRODUCTS}
+            items={PRIMITIVE_NODES}
 
             sx={{ userSelect: 'none' }}
 
             onItemClick= {(_event, item) => 
             {
                 if (apiRef.current) {
-                item = apiRef.current.getItem(item);
-                if (item.children && item.children.length > 0) {
-                    return;
-                }
-                onAddNode(item);
+                    item = apiRef.current.getItem(item);
+                    if (item.children && item.children.length > 0) {
+                        return;
+                    }
+                    onAddNode(item);
                 }
             }
             }
