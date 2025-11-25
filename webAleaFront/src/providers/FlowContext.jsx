@@ -6,6 +6,9 @@ import {
 } from '@xyflow/react';
 import { FlowContext } from './FlowContextDefinition';
 import CustomNode from '../components/workspace/CustomNode.jsx';
+import FloatNode from '../components/workspace/FloatNode.jsx';
+import StringNode from '../components/workspace/StringNode.jsx';
+import BoolNode from '../components/workspace/BoolNode.jsx';
 import { useLog } from './LogContextDefinition.jsx';
 
 const FLOW_KEY_NODES = 'reactFlowCacheNodes';
@@ -34,7 +37,12 @@ export const FlowProvider = ({ children }) => {
   const [currentNode, setCurrentNode] = useState(null);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   
-  const nodesTypes = { custom: CustomNode };
+  const nodesTypes = { 
+    custom: CustomNode,
+    float: FloatNode,
+    string: StringNode,
+    boolean: BoolNode,
+};
 
   // --- Synchronisation avec localStorage ---
 
@@ -103,6 +111,8 @@ export const FlowProvider = ({ children }) => {
     setCurrentNode(node.id);   // OK
     addLog("Node selected", { id: node.id, label: node.data.label });
 }, [addLog]);
+
+
 
 
   // --- Valeur fournie par le Context ---
