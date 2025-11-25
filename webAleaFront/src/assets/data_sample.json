@@ -50,6 +50,16 @@
             "name": "input3",
             "type": "boolean",
             "optional": true
+          },
+          {
+            "name": "input4",
+            "type": "float",
+            "default": 1.5
+          },
+          {
+            "name": "input5",
+            "type": "integer",
+            "default": 10
           }
         ],
         "outputs": [

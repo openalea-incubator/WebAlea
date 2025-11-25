@@ -1,25 +1,19 @@
 import React, { useCallback, useMemo } from "react";
 import { Handle, Position } from "@xyflow/react";
 import { useFlow } from '../../providers/FlowContextDefinition.jsx';
+import "../../assets/css/custom_node.css";
 
 /**
  * CustomNode.jsx
- * Un noeud React Flow "custom" basique, avec titre, couleur, statut et métadonnées.
- * Le statut peut être cliqué pour changer entre "ready", "running" et "error".
- * Les métadonnées sont affichées dans un panneau déroulant.
+ * Noeud React Flow custom.
  */
 
 const getBorderColor = (status) => {
-    console.log("Getting border color for status:", status);
     switch (status) {
-        case "running":
-            return "#2b8a3e"; // Vert
-        case "error":
-            return "#c62828"; // Rouge
-        case "ready":
-            return "#1976d2"; // Bleu
-        default:
-            return "#999"; // Gris
+        case "running": return "#2b8a3e";
+        case "error": return "#c62828";
+        case "ready": return "#1976d2";
+        default: return "#999";
     }
 };
 
@@ -32,10 +26,10 @@ const getNextStatus = (currentStatus) => {
 };
 
 const typeColors = {
-    string: "#1976d2",   // bleu
-    float: "#8e24aa",    // violet
-    boolean: "#2b8a3e",  // vert
-    default: "#555"
+    string: "#1976d2",
+    float: "#8e24aa",
+    boolean: "#2b8a3e",
+    default: "#555",
 };
 
 const getTypeColor = (t) => typeColors[t] || typeColors.default;
@@ -49,7 +43,6 @@ export default function CustomNode(nodeProps) {
         data: { label, color, status, metadata, inputs, outputs },
     } = nodeProps;
 
-
     const borderColor = useMemo(() => getBorderColor(status), [status]);
     const nextStatus = useMemo(() => getNextStatus(status), [status]);
 
@@ -57,38 +50,19 @@ export default function CustomNode(nodeProps) {
         updateNode(id, { status: nextStatus });
     }, [id, nextStatus, updateNode]);
 
-    // Style principal du noeud
-    const nodeStyle = {
-        minWidth: 160,
-        padding: 10,
-        borderRadius: 6,
+    // Dynamiques : couleur, status, height selon inputs
+    const dynamicNodeStyle = {
         backgroundColor: color || "#f0f0f0",
         border: `2px solid ${borderColor}`,
-        boxShadow: "0 1px 4px rgba(0,0,0,0.15)",
-        fontFamily: "sans-serif",
-    };
-
-    // Style des handles (connecteurs)
-    const handleStyle = {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        border: "2px solid rgba(255,255,255,0.6)",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-        cursor: "pointer",
+        height: 44 + 12 * inputs.length - 3,
     };
 
     return (
-        <div style={nodeStyle} data-node-id={id}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div className="custom-node" style={dynamicNodeStyle} data-node-id={id}>
+            <div className="custom-node-header">
                 <div
-                    style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 2,
-                        background: borderColor,
-                        cursor: "pointer",
-                    }}
+                    className="custom-node-status"
+                    style={{ background: borderColor }}
                     title={`status: ${status}`}
                     onClick={handleStatusClick}
                 />
@@ -96,51 +70,51 @@ export default function CustomNode(nodeProps) {
             </div>
 
             {metadata && typeof metadata === "object" && Object.keys(metadata).length > 0 && (
-                <div style={{ marginTop: 8, fontSize: 12, color: "#333" }}>
+                <div className="custom-node-metadata">
                     <details>
-                        <summary style={{ cursor: "pointer", userSelect: "none" }}>Détails</summary>
-                        <pre style={{ whiteSpace: "pre-wrap", marginTop: 6, background: "#e9e9e9", fontSize: 8, padding: 6, borderRadius: 4, maxHeight: 100, overflow: "auto" }}>
-                            {JSON.stringify(metadata, null, 2)}
-                        </pre>
+                        <summary>Détails</summary>
+                        <pre>{JSON.stringify(metadata, null, 2)}</pre>
                     </details>
                 </div>
             )}
 
-            {/* INPUTS (LEFT) */}
-            {Array.isArray(inputs) && inputs.map((input, index) => {
-                const topPercent = ((index + 1) / (inputs.length + 1)) * 100;
-                return (
-                    <Handle
-                        key={"in-" + index}
-                        type="source" // les inputs sont des "targets"
-                        position={Position.Left}
-                        id={`in-${id}-${index}`}
-                        style={{
-                            ...handleStyle,
-                            background: getTypeColor(input.type),
-                            top: `${topPercent}%`, // espace uniformément
-                        }}
-                    />
-                )
-            })}
+            {/* INPUTS */}
+            {Array.isArray(inputs) &&
+                inputs.map((input, index) => {
+                    const topPercent = ((index + 1) / (inputs.length + 1)) * 100;
+                    return (
+                        <Handle
+                            key={`in-${index}`}
+                            type="source"
+                            position={Position.Left}
+                            id={`in-${id}-${index}`}
+                            className="node-handle"
+                            style={{
+                                background: getTypeColor(input.type),
+                                top: `${topPercent}%`,
+                            }}
+                        />
+                    );
+                })}
 
-            {/* OUTPUTS (RIGHT) */}
-            {Array.isArray(outputs) && outputs.map((output, index) => {
-                const topPercent = ((index + 1) / (outputs.length + 1)) * 100;
-                return (
-                    <Handle
-                        key={"out-" + index}
-                        type="target" // les outputs sont des "sources"
-                        position={Position.Right}
-                        id={`out-${id}-${index}`}
-                        style={{
-                            ...handleStyle,
-                            background: getTypeColor(output.type),
-                            top: `${topPercent}%`, // espace uniformément   
-                        }}
-                    />
-                )
-            })}
+            {/* OUTPUTS */}
+            {Array.isArray(outputs) &&
+                outputs.map((output, index) => {
+                    const topPercent = ((index + 1) / (outputs.length + 1)) * 100;
+                    return (
+                        <Handle
+                            key={`out-${index}`}
+                            type="target"
+                            position={Position.Right}
+                            id={`out-${id}-${index}`}
+                            className="node-handle"
+                            style={{
+                                background: getTypeColor(output.type),
+                                top: `${topPercent}%`,
+                            }}
+                        />
+                    );
+                })}
         </div>
     );
 }
