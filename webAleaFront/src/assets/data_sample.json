@@ -4,7 +4,7 @@
       "id": "1",
       "type": "custom",
       "data": {
-        "label": "Point de départ (Input)",
+        "label": "Point de départ",
         "inputs": [
           {"name": "input1", "type": "float", "default": 0}
         ],
@@ -41,7 +41,7 @@
       "id": "3",
       "type": "custom",
       "data": {
-        "label": "Résultat final (Output)",
+        "label": "Résultat final",
         "inputs": [
           {"name": "input1", "type": "float", "default": 0}
         ],
