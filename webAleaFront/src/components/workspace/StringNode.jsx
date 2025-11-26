@@ -36,7 +36,7 @@ export default function StringNode({ id, data, selected }) {
             </div>
 
             {/* handles */}
-            <Handle type="source" position={Position.Right} isConnectable={isConnectable} />
+            <Handle type="target" position={Position.Right} isConnectable={isConnectable} />
         </div>
     );
 }

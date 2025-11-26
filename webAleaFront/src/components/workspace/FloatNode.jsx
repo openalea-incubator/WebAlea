@@ -40,7 +40,7 @@ export default function FloatNode({ id, data }) {
             {data.description && <div className="text-xs text-gray-500 mt-1">{data.description}</div>}
 
             {/* named handles to match typical CustomNode patterns */}
-            <Handle id={`${id}-out`} type="source" position={Position.Right} />
+            <Handle id={`${id}-out`} type="target" position={Position.Right} />
         </div>
     );
 }
