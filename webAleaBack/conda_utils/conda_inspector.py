@@ -1,12 +1,80 @@
+"""Module to inspect OpenAlea packages in the current conda environment."""
+import logging
+
+from typing import Any, Dict, List
+
 from openalea.core.pkgmanager import PackageManager
 
 class OpenAleaInspector:
     """Class to inspect OpenAlea packages installed in the current environment."""
 
-    @staticmethod
 
-    def describe_openalea_package(package_name: str) -> dict:
-        """Describes the nodes contained with an openalea package
+    @staticmethod
+    def list_installed_openalea_packages() -> List[str]:
+        """Lists all installed OpenAlea packages in the current conda environment.
+
+        Returns:
+            list: A list of installed OpenAlea package names.
+        """
+        pm = PackageManager()
+        pm.init()
+        return list(pm.keys())
+    
+    @staticmethod
+    def _serialize_node_puts(puts) -> dict:
+        """serialize inputs and outputs of a list inputs/outputs
+
+        Args:
+            node_factory : the flow node factory
+
+        Returns:
+            dict: serialized inputs and outputs
+        """
+        serialized = []
+        if not puts:
+            return serialized
+        for put in puts:
+            try:
+                put_dict = {
+                    "name": put.name,
+                    "interface": str(put.interface),
+                    "optional": put.optional,
+                    "desc": put.desc,
+                }
+                serialized.append(put_dict)
+            except AttributeError:
+                serialized.append(str(put))
+        return serialized
+    
+    @staticmethod
+    def _serialize_node(node_factory) -> dict:
+        """describes a node from its factory
+
+        Args:
+            node_factory : the node factory
+
+        Raises:
+            ValueError: if no node was found
+
+        Returns:
+            dict: the node description
+        """
+        # serialize node factory information
+        print(node_factory.nodeclass)
+        inputs = OpenAleaInspector._serialize_node_puts(node_factory.inputs)
+        outputs = OpenAleaInspector._serialize_node_puts(node_factory.outputs)
+        
+        return {
+            "description": node_factory.description,
+            "inputs": inputs,
+            "outputs": outputs,
+            "callable": node_factory.nodeclass,
+        }
+
+
+    @staticmethod
+    def describe_openalea_package(package_name: str) -> Dict[str, Any]:
+        """Describes the nodes contained in an OpenAlea package.
 
         Args:
             package_name (str): the name of a package
@@ -15,26 +83,19 @@ class OpenAleaInspector:
             ValueError: the package was not found
 
         Returns:
-            dict: the package decription
+            dict: the package description (JSON-serializable)
         """
         pm = PackageManager()
         pm.init()
-        print( pm.get_packages() )
 
         if package_name not in pm:
+            logging.error("No OpenAlea package named '%s' found.", package_name)
             raise ValueError(f"No OpenAlea package named '{package_name}' found.")
 
         pkg = pm[package_name]
-        nodes = {}
+        nodes: Dict[str, Any] = {}
 
         for node_factory in pkg.values():
-            node_desc = {
-                "description": node_factory.description,
-                "inputs": {port['name']: str(port['interface']) for port in node_factory.inputs},
-                "outputs": {port['name']: str(port['interface']) for port in node_factory.outputs},
-                "module": node_factory.nodemodule,
-                "callable": node_factory.nodeclass,
-            }
-            nodes[node_factory.name] = node_desc
+            nodes[getattr(node_factory, "name", str(node_factory))] = OpenAleaInspector._serialize_node(node_factory)
 
         return {"nodes": nodes}
