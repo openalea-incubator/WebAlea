@@ -5,54 +5,151 @@
       "type": "custom",
       "data": {
         "label": "Point de départ",
-        "inputs": [],
-        "outputs": []
+        "inputs": [
+          {
+            "name": "input1",
+            "type": "float",
+            "default": 0
+          }
+        ],
+        "outputs": [
+          {
+            "name": "output1",
+            "type": "float",
+            "value": 0
+          }
+        ]
       },
       "position": {
-        "x": 0,
-        "y": 0
-      }
+        "x": -3.8641665495480026,
+        "y": -39.99112119973868
+      },
+      "measured": {
+        "width": 160,
+        "height": 44
+      },
+      "selected": true,
+      "dragging": false
     },
     {
       "id": "2",
       "type": "custom",
       "data": {
         "label": "Processus intermédiaire",
-        "inputs": [{"name": "input1", "type": "float", "default": 0}, {"name": "input2", "type": "string"}, {"name": "input3", "type": "boolean", "optional": true}],
-        "outputs": [{"name": "output1", "type": "float", "value": 42}, {"name": "output2", "type": "string", "value": "exemple"}]
+        "inputs": [
+          {
+            "name": "input1",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "input2",
+            "type": "string"
+          },
+          {
+            "name": "input3",
+            "type": "boolean",
+            "optional": true
+          },
+          {
+            "name": "input4",
+            "type": "float",
+            "default": 1.5
+          },
+          {
+            "name": "input5",
+            "type": "integer",
+            "default": 10
+          }
+        ],
+        "outputs": [
+          {
+            "name": "output1",
+            "type": "float",
+            "value": 42
+          },
+          {
+            "name": "output2",
+            "type": "string",
+            "value": "exemple"
+          }
+        ]
       },
       "position": {
-        "x": 400,
-        "y": 50
-      }
+        "x": 234.5,
+        "y": 29
+      },
+      "measured": {
+        "width": 193,
+        "height": 44
+      },
+      "selected": false,
+      "dragging": false
     },
     {
       "id": "3",
       "type": "custom",
       "data": {
         "label": "Résultat final",
-        "inputs": [],
-        "outputs": []
+        "inputs": [
+          {
+            "name": "input1",
+            "type": "float",
+            "default": 0
+          }
+        ],
+        "outputs": [
+          {
+            "name": "output1",
+            "type": "float",
+            "value": 0
+          }
+        ]
       },
       "position": {
-        "x": 400,
-        "y": -50
-      }
+        "x": 272.5,
+        "y": -64.5
+      },
+      "measured": {
+        "width": 160,
+        "height": 44
+      },
+      "selected": false,
+      "dragging": false
     }
   ],
   "edges": [
     {
-      "id": "e1-2",
-      "source": "1",
-      "target": "2",
-      "animated": true,
-      "label": "Flux A"
+      "type": "smoothstep",
+      "source": "3",
+      "sourceHandle": "in-3-0",
+      "target": "1",
+      "targetHandle": "out-1-0",
+      "id": "xy-edge__3in-3-0-1out-1-0"
     },
     {
-      "id": "e1-3",
-      "source": "1",
-      "target": "3",
-      "label": "Flux B"
+      "type": "smoothstep",
+      "source": "2",
+      "sourceHandle": "in-2-0",
+      "target": "1",
+      "targetHandle": "out-1-0",
+      "id": "xy-edge__2in-2-0-1out-1-0"
+    },
+    {
+      "type": "smoothstep",
+      "source": "2",
+      "sourceHandle": "in-2-1",
+      "target": "1",
+      "targetHandle": "out-1-0",
+      "id": "xy-edge__2in-2-1-1out-1-0"
+    },
+    {
+      "type": "smoothstep",
+      "source": "2",
+      "sourceHandle": "in-2-2",
+      "target": "1",
+      "targetHandle": "out-1-0",
+      "id": "xy-edge__2in-2-2-1out-1-0"
     }
   ]
 }

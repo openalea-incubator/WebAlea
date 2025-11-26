@@ -10,8 +10,11 @@ export default function PackageManager() {
   const { addNode } = useFlow();
   const [currentPanel, setCurrentPanel] = React.useState("conda");
 
-  /* item is a TreeNode instance */
-  const handleAddNode = (treeNode) => {
+  const handleAddNode = (item) => {
+    addNode(new Node({id : `n${Math.floor(Math.random() * 10000)}-${item.id}`, type: "custom", label : item.label, inputs: item.data.inputs ? item.data.inputs : [], outputs: item.data.outputs ? item.data.outputs : []}));
+  };
+
+  const handleAddPrimitiveNode = (treeNode) => {
     treeNode.node.id = `n${Math.floor(Math.random() * 10000)}-${treeNode.node.id}`;
     addNode(treeNode.node);
   };
@@ -21,7 +24,7 @@ export default function PackageManager() {
       case "conda":
         return <PanelModuleNode onAddNode={handleAddNode} />;
       case "primitive":
-        return <PanelPrimitiveNode onAddNode={handleAddNode} />;
+        return <PanelPrimitiveNode onAddNode={handleAddPrimitiveNode} />;
       default:
         return null;
     }
