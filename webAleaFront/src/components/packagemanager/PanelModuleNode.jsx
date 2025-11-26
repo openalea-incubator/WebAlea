@@ -2,41 +2,33 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import { Menu, MenuItem } from "@mui/material";
 import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
+import TreePackage from './TreePackage.jsx';
+import TreeNode from './TreeNode.jsx';
+import {Node} from "../workspace/Node.jsx";
+
+const ALEA_NODES = [
+    new Node({ id: 'grid-community', label: '@mui/x-data-grid', inputs: [{"name": "Test"}], outputs: [{ "name": "Value", "type": "float", "default": 0 }] }),
+    new Node({ id: 'grid-pro', label: '@mui/x-data-grid-pro', inputs: [{ "name": "Value", "type": "string", "default": "" }] }),
+    new Node({ id: 'grid-premium', label: '@mui/x-data-grid-premium', outputs: [{ "name": "Value1", "type": "boolean", "default": false }, { "name": "Value2", "type": "boolean", "default": false }] })
+];
+
+const TREE_VIEW_NODES = [
+    new Node({ id: 'tree-view-community', label: '@mui/x-tree-view', inputs: [{"name": "Test"}], outputs: [{ "name": "Value", "type": "float", "default": 0 }] }),
+    new Node({ id: 'tree-view-pro', label: '@mui/x-tree-view-pro', inputs: [{ "name": "Value", "type": "string", "default": "" }] })
+];
 
 const OPENALEA_NODES = [
-    {
-        id: 'openalea',
-        label: 'OpenAlea',
-        children: [
-            { id: 'grid-community', label: '@mui/x-data-grid' },
-            { id: 'grid-pro', label: '@mui/x-data-grid-pro' },
-            { id: 'grid-premium', label: '@mui/x-data-grid-premium', },
-        ],
-    },
-    {
-        id: 'pickers',
-        label: 'Date and Time Pickers',
-        children: [
-            { id: 'pickers-community', label: '@mui/x-date-pickers' },
-            { id: 'pickers-pro', label: '@mui/x-date-pickers-pro' },
-        ],
-    },
-    {
-        id: 'charts',
-        label: 'Charts',
-        children: [
-            { id: 'charts-community', label: '@mui/x-charts' },
-            { id: 'charts-pro', label: '@mui/charts-pro' },
-        ],
-    },
-    {
-        id: 'tree-view',
-        label: 'Tree View',
-        children: [
-            { id: 'tree-view-community', label: '@mui/x-tree-view' },
-            { id: 'tree-view-pro', label: '@mui/x-tree-view-pro' },
-        ],
-    },
+    new TreePackage('openalea', 'OpenAlea', [
+        new TreeNode(ALEA_NODES[0]),
+        new TreeNode(ALEA_NODES[1]),
+        new TreeNode(ALEA_NODES[2])
+        ]
+    ),
+    new TreePackage('tree-view', 'Tree View', [
+        new TreeNode(TREE_VIEW_NODES[0]),
+        new TreeNode(TREE_VIEW_NODES[1])
+        ]
+    )
 ];
 
 
@@ -72,17 +64,17 @@ export default function PanelModuleNode({ onAddNode }) {
             <div>
                 <RichTreeView
                     apiRef={apiRef}
-                    items={OPENALEA_NODES}
+                    items={OPENALEA_NODES.map(node => node.serialize())}
 
                     sx={{ userSelect: 'none' }}
 
-                    onItemClick={(_event, item) => {
+                    onItemClick={(_event, treeNode) => {
                         if (apiRef.current) {
-                            item = apiRef.current.getItem(item);
-                            if (item.children && item.children.length > 0) {
+                            treeNode = apiRef.current.getItem(treeNode);
+                            if (treeNode.children && treeNode.children.length > 0) {
                                 return;
                             }
-                            onAddNode(item);
+                            onAddNode(treeNode);
                         }
                     }
                     }
