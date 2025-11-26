@@ -1,14 +1,15 @@
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
+import "../../assets/css/custom_node.css";
 
 export default function StringNode({ id, data, selected }) {
     const { value = "", label = "String", onChange, onDelete, isConnectable } = data;
 
     return (
         <div
-            className={`bg-white rounded shadow w-[180px] text-sm overflow-hidden ${
-                selected ? "ring-2 ring-indigo-400" : ""
-            }`}
+            className="custom-node"
+            data-node-id={id}
+            data-selected={selected ? "true" : "false"}
         >
             {/* header */}
             <div className="flex items-center justify-between bg-gray-100 px-2 py-1 text-xs">
@@ -35,7 +36,6 @@ export default function StringNode({ id, data, selected }) {
             </div>
 
             {/* handles */}
-            <Handle type="target" position={Position.Left} isConnectable={isConnectable} />
             <Handle type="source" position={Position.Right} isConnectable={isConnectable} />
         </div>
     );
