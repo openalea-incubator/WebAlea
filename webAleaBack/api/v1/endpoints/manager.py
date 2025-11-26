@@ -6,6 +6,9 @@ from pydantic import BaseModel
 
 from conda_utils.conda_utils import Conda
 from core.config import settings
+from pydantic.json_schema import model_json_schema
+
+from api.v1.utils.POC import *
 
 router = APIRouter()
 
@@ -57,3 +60,53 @@ def install_packages_in_env(request: InstallRequest):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=results)
 
     return results
+
+
+
+# POC test 26/11
+@router.get("/poc/get_node")
+def poc_get_node():
+    """GET POC fake type node"""
+    node_json = {
+        "concatenate" : {
+            "parameters": {
+                "parameter1": "string",
+                "parameter2": "string",
+            }
+        },
+        "addition": {
+            "parameters": {
+                "parameter1": "int",
+                "parameter2": "int",
+            }
+        },
+        "subtract": {
+            "parameters": {
+                "parameter1": "int",
+                "parameter2": "int",
+            }
+        }
+    }
+    return node_json
+
+class ExecuteNode(BaseModel):
+    """Request model for executing packages into a conda environment."""
+    name_node: str
+    parameters: dict
+
+@router.post("/poc/execute_nodes")
+def poc_execute_nodes(request: ExecuteNode):
+    """Execute POC fake type node"""
+    res = {}
+    parameters = request.parameters
+    match request.name_node:
+        case "concatenate":
+            res["result"] = concatenate(parameters["parameters1"], parameters["parameters2"])
+        case "addition":
+            res["result"] = addition(parameters["parameters1"], parameters["parameters2"])
+        case "subtract":
+            res["result"] = subtraction(parameters["parameters1"], parameters["parameters2"])
+        case _:
+            pass
+    res["success"] = len(res) > 0
+    return res
