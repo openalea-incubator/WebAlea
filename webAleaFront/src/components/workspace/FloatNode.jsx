@@ -1,46 +1,64 @@
-import React, { useState, useEffect } from "react";
 import { Handle, Position } from "@xyflow/react";
 import "../../assets/css/custom_node.css";
+import { useFlow } from "../../providers/FlowContextDefinition";
+import { useEffect, useState } from "react";
 
-export default function FloatNode({ id, data }) {
-    // local state to avoid uncontrolled -> controlled warnings and to format value
-    const [value, setValue] = useState(
-        typeof data.value === "number" ? data.value : 0
-    );
+export default function FloatNode(nodeProps) {
+    const { id, data = {} } = nodeProps;
+    const { updateNode } = useFlow();
+
+    const [value, setValue] = useState(data.outputs?.[0]?.value ?? 0);
 
     useEffect(() => {
-        if (typeof data.value === "number" && data.value !== value) {
-            setValue(data.value);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [data.value]);
+        updateNode(id, { outputs: [{ value }] });
+    }, []);
 
-    const onChange = (e) => {
-        const parsed = parseFloat(e.target.value);
-        const newVal = Number.isNaN(parsed) ? 0 : parsed;
-        setValue(newVal);
-        if (typeof data.onChange === "function") {
-            data.onChange(id, newVal);
-        }
+    const handleChange = (e) => {
+        setValue(e.target.value);
+        updateNode(id, { outputs: [{ value: e.target.value ? Number.parseFloat(e.target.value) : 0 }] });
+    };
+
+    const handleBlur = () => {
+        let next = Number.parseFloat(value);
+
+        if (Number.isNaN(next)) next = 0;
+
+        setValue(next);
+        updateNode(id, { outputs: [{ value: next }] });
     };
 
     return (
-        <div className="custom-node">
-            {data.label && <div className="text-sm font-medium mb-2">{data.label}</div>}
-
+        <div className="custom-node"
+            style={{
+                background: "#f0f0f0",
+                border: `2px solid #8e24aa`,
+                padding: 10,
+                borderRadius: 6,
+            }}>
             <input
                 type="number"
-                step="0.01"
+                step="1"
                 value={value}
-                onChange={onChange}
-                className="border rounded px-2 py-1 w-full"
+                onChange={handleChange}
+                onBlur={handleBlur}  
+                className="node-input"
+                style={{ width: "100%" }}
             />
 
-            {/* optional description */}
-            {data.description && <div className="text-xs text-gray-500 mt-1">{data.description}</div>}
-
-            {/* named handles to match typical CustomNode patterns */}
-            <Handle id={`${id}-out`} type="target" position={Position.Right} />
+            <Handle
+                type="source"
+                position={Position.Right}
+                id={`out-${id}-value`}
+                className="node-handle"
+                style={{
+                    background: "#8e24aa",
+                    width: 12,
+                    height: 12,
+                    borderRadius: 6,
+                    border: "2px solid rgba(255,255,255,0.6)",
+                    cursor: "pointer",
+                }}
+            />
         </div>
     );
 }

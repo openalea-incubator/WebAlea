@@ -1,15 +1,28 @@
 import { Handle, Position } from "@xyflow/react";
 import "../../assets/css/custom_node.css";
 import { useFlow } from "../../providers/FlowContextDefinition";
+import { useEffect, useState } from "react";
 
 export default function BoolNode(nodeProps) {
     const { id, data = {}, selected } = nodeProps;
     const { updateNode } = useFlow();
 
+    const [value, setValue] = useState(data.outputs?.[0]?.value ?? false);
+
+    useEffect(() => {
+        updateNode(id, { outputs: [{ value }] });
+    }, []);
+
     const handleChange = (e) => {
-        const next = e.target.value === "true";
-        updateNode(id, { outputs: [{ value: next }] });  
+        const boolValue = e.target.value === "true";
+        setValue(boolValue);
+        updateNode(id, { outputs: [{ value: boolValue }] }); 
     };
+
+    useEffect(() => {
+        data.outputs[0].value = data.outputs?.[0]?.value ?? false;
+        console.log(`BoolNode ${id} mounted.`);
+    }, [data.outputs, id]);
 
     return (
         <div
