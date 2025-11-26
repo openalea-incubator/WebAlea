@@ -6,7 +6,7 @@ import { Node } from '../workspace/Node.jsx';
 import TreeNode from './TreeNode.jsx';
 
 const FLOAT_NODE = new Node({ id: 'float', label: 'Float input', type: "float", outputs: [{ "name": "Value", "type": "float", "default": 0 }] })
-const STRING_NODE = new Node({ id: 'string', label: 'StringA input', type: "string", outputs: [{ "name": "Value", "type": "string", "default": "" }] })
+const STRING_NODE = new Node({ id: 'string', label: 'String input', type: "string", outputs: [{ "name": "Value", "type": "string", "default": "" }] })
 const BOOLEAN_NODE = new Node({ id: 'boolean', label: 'Boolean input', type: "boolean", outputs: [{ "name": "Value", "type": "boolean", "default": false }] })
 
 const PRIMITIVE_NODES = [
