@@ -55,6 +55,7 @@ export default function CustomNode(nodeProps) {
         backgroundColor: color || "#f0f0f0",
         border: `2px solid ${borderColor}`,
         height: 44 + 12 * inputs.length - 3,
+        height: 44 + 12 * ((inputs.length > 0 || outputs.length > 0) ? Math.max(inputs.length, outputs.length) : 1), 
     };
 
     return (
