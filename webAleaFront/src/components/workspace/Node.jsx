@@ -19,9 +19,10 @@ export class Node {
      * Crée un objet nœud React Flow.
      * @param {object} props - Les propriétés du nœud.
      */
-    constructor({ id, label, position = { x: 0, y: 0 }, data, inputs, outputs }) {
+    constructor({ id, label, type = "custom", position = { x: 0, y: 0 }, data, inputs, outputs }) {
         this.id = id;
         this.position = position;
+        this.type = type;
         this.data = {
             label: label || null,
             color: data?.color || null,
@@ -49,12 +50,12 @@ export class Node {
     serialize() {
         if (!this.id) return null; // Un nœud sans ID n'est pas valide
         
-        const { id, position, data } = this;
+        const { id, position, type, data } = this;
         
         // Assure que les propriétés sont définies même si elles sont nulles
         return {
             id,
-            type: 'custom',
+            type: type,
             position: position ?? { x: 0, y: 0 },
             data: {
                 label: data.label ?? null,
