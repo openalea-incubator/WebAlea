@@ -7,15 +7,15 @@ export default function NodeParameters() {
     const { currentNode, nodes } = useFlow();
     const node = nodes.find(n => n.id === currentNode);
     // Data d'exemple pour le modele static
-    const [inputs, setInputs] = useState(node ? node.inputs : [])
-    const [outputs, setOutputs] = useState(node ? node.outputs : [])
+    const [inputs, setInputs] = useState(node ? node.data.inputs : [])
+    const [outputs, setOutputs] = useState(node ? node.data.outputs : [])
 
     const [isChanged, setIsChanged] = useState(false); // Bouton "lancer" Réactif
 
     useEffect(() => {
-    setInputs(node?.inputs ?? []);
-    setOutputs(node?.outputs ?? []);
-    setIsChanged(false); // reset du bouton
+        setInputs(node?.data.inputs ?? []);
+        setOutputs(node?.data.outputs ?? []);
+        setIsChanged(false); // reset du bouton
 }, [node]);
 
 

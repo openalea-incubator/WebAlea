@@ -1,0 +1,22 @@
+
+
+
+.tabStylesActive {
+    cursor: pointer;
+    padding-bottom: 4px;
+    border-bottom: 2px solid black;
+    font-weight: bold;
+}
+
+.tabStylesNotActive {
+    cursor: pointer;
+    padding-bottom: 4px;
+    border-bottom: 2px solid transparent;
+    font-weight: normal;
+}
+
+.tabStyles {
+    margin: auto;
+    padding: 8px 12px;
+    user-select: none;
+}
