@@ -48,7 +48,7 @@ def install_packages_in_env(request: InstallRequest):
       "env_name": "webalea_env"  # optional
     }
     """
-    logging.info(f"Installing packages: {request.packages} into environment: {request.env_name}")
+    logging.info("Installing packages: %s into environment: %s", request.packages, request.env_name)
     env_name = request.env_name or settings.CONDA_ENV_NAME
 
     # build package list with versions
@@ -57,9 +57,7 @@ def install_packages_in_env(request: InstallRequest):
         ]
 
     results = Conda.install_package_list(env_name, package_list)
-    
-    logging.info(f"Installation results: {results}")
-
+    logging.info("Installation results: %s", results)
     return results
 
 @router.get("/installed")

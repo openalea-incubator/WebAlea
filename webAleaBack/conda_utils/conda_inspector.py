@@ -16,10 +16,11 @@ class OpenAleaInspector:
         Returns:
             list: A list of installed OpenAlea package names.
         """
+        # initalize package manager
         pm = PackageManager()
         pm.init()
         return list(pm.keys())
-    
+
     @staticmethod
     def _serialize_node_puts(puts) -> dict:
         """serialize inputs and outputs of a list inputs/outputs
@@ -32,9 +33,10 @@ class OpenAleaInspector:
         """
         serialized = []
         if not puts:
-            return serialized
-        for put in puts:
+            return serialized # empty array if no inputs/outputs
+        for put in puts: # for each input/output
             try:
+                # serialize into a json dict
                 put_dict = {
                     "name": put.name,
                     "interface": str(put.interface),
@@ -45,7 +47,7 @@ class OpenAleaInspector:
             except AttributeError:
                 serialized.append(str(put))
         return serialized
-    
+
     @staticmethod
     def _serialize_node(node_factory) -> dict:
         """describes a node from its factory
@@ -63,7 +65,7 @@ class OpenAleaInspector:
         print(node_factory.nodeclass)
         inputs = OpenAleaInspector._serialize_node_puts(node_factory.inputs)
         outputs = OpenAleaInspector._serialize_node_puts(node_factory.outputs)
-        
+
         return {
             "description": node_factory.description,
             "inputs": inputs,
@@ -85,17 +87,19 @@ class OpenAleaInspector:
         Returns:
             dict: the package description (JSON-serializable)
         """
+        # initalize package manager
         pm = PackageManager()
         pm.init()
-
-        if package_name not in pm:
+        # check package existence
+        if package_name not in pm.keys():
             logging.error("No OpenAlea package named '%s' found.", package_name)
             raise ValueError(f"No OpenAlea package named '{package_name}' found.")
-
-        pkg = pm[package_name]
+        # retrieve package
+        pkg = pm.get(package_name)
         nodes: Dict[str, Any] = {}
-
+        # describe each node in the package
         for node_factory in pkg.values():
-            nodes[getattr(node_factory, "name", str(node_factory))] = OpenAleaInspector._serialize_node(node_factory)
+            node_name = getattr(node_factory, "name", str(node_factory))
+            nodes[node_name] = OpenAleaInspector._serialize_node(node_factory)
 
         return {"nodes": nodes}
