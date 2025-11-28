@@ -8,7 +8,7 @@ class TestCondaMethods(unittest.TestCase):
 
     def test_get_versions_existing_package(self):
         """Test getting versions for an existing package."""
-        versions = Conda.get_versions("agroservices")
+        versions = Conda.get_versions("openalea.astk")
         self.assertIsInstance(versions, list)
         self.assertGreater(len(versions), 0)
 
@@ -35,17 +35,17 @@ class TestCondaMethods(unittest.TestCase):
     def test_install_package(self):
         """Test installing a package in a conda environment."""
         try:
-            Conda.install_package("agroservices", env_name="test_env")
+            Conda.install_package("openalea.astk", env_name="test_env")
         except (CalledProcessError, FileNotFoundError) as e:
             self.fail(f"install_package raised an exception: {e}")
 
     def test_install_package_list(self):
         """Test installing a list of packages in a conda environment."""
-        package_list = ["agroservices", "nonexistent_package_12345"]
+        package_list = ["openalea.astk", "nonexistent_package_12345"]
         results = Conda.install_package_list("test_env", package_list)
         self.assertIn("installed", results)
         self.assertIn("failed", results)
-        self.assertIn("agroservices", results["installed"])
+        self.assertIn("openalea.astk", results["installed"])
         self.assertTrue(any(
                 failure["package"] == "nonexistent_package_12345" for failure in results["failed"]
             ))

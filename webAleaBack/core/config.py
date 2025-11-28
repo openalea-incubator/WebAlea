@@ -1,6 +1,5 @@
 """Configuration settings for the application using Pydantic BaseSettings."""
 import logging
-import os
 from pathlib import Path
 from typing import Optional
 from logging.config import dictConfig
