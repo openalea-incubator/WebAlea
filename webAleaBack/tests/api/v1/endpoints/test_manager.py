@@ -62,16 +62,13 @@ class TestManagerEndpoints(unittest.TestCase):
             ],
             env_name="test_env"
         )
-        try:
-            mock_install_package_list.return_value = {
-                "installed": ["agroservices"],
-                "failed": []
-            }
-            results = manager.install_packages_in_env(request)
-            self.assertIn("installed", results)
-            self.assertIn("agroservices", results["installed"])
-        except HTTPException as e:
-            self.fail(f"install_packages_in_env raised HTTPException: {e.detail}")
+        mock_install_package_list.return_value = {
+            "installed": ["agroservices"],
+            "failed": []
+        }
+        results = manager.install_packages_in_env(request)
+        self.assertIn("installed", results)
+        self.assertIn("agroservices", results["installed"])
 
     @unittest.mock.patch("api.v1.endpoints.manager.Conda.install_package_list")
     def test_install_packages_in_env_with_failure(self, mock_install_package_list):

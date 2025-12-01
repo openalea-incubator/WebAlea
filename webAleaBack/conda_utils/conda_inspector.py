@@ -62,7 +62,6 @@ class OpenAleaInspector:
             dict: the node description
         """
         # serialize node factory information
-        print(node_factory.nodeclass)
         inputs = OpenAleaInspector._serialize_node_puts(node_factory.inputs)
         outputs = OpenAleaInspector._serialize_node_puts(node_factory.outputs)
 
