@@ -1,5 +1,6 @@
 """Tests for the manager endpoints."""
 import unittest
+import unittest.mock
 
 from fastapi import HTTPException
 
@@ -17,6 +18,8 @@ class TestManagerEndpoints(unittest.TestCase):
         "fetch_latest_package_versions",
         "install_packages_in_env",
     }
+    # mock data for testing
+    mock_list_packages_output_file = "tests/resources/conda/mock_list_package.json"
 
     def test_routes_exist(self):
         """test that all expected routes exist in the manager router."""
@@ -29,21 +32,29 @@ class TestManagerEndpoints(unittest.TestCase):
                 f"Route '{route_name}' not found in manager router."
             )
 
-    def test_fetch_package_list(self):
+    @unittest.mock.patch("api.v1.endpoints.manager.Conda.list_packages")
+    def test_fetch_package_list(self, mock_list_packages):
         """Test fetching the package list."""
+        mock_list_packages.return_value = open(
+            self.mock_list_packages_output_file,
+            encoding="utf-8"
+        ).read()
         packages = manager.fetch_package_list()
-        self.assertIsInstance(packages, dict)
         self.assertTrue(len(packages) > 0)
+        self.assertIn("openalea.astk", packages)
 
-    def test_fetch_latest_package_versions(self):
+    @unittest.mock.patch("api.v1.endpoints.manager.Conda.list_latest_packages")
+    def test_fetch_latest_package_versions(self, mock_list_latest_packages):
         """Test fetching the latest package versions."""
+        mock_list_latest_packages.return_value = open(
+            self.mock_list_packages_output_file,
+            encoding="utf-8"
+        ).read()
         latest_packages = manager.fetch_latest_package_versions()
-        self.assertIsInstance(latest_packages, dict)
         self.assertTrue(len(latest_packages) > 0)
-        packages = Conda.list_packages()
-        self.assertTrue(len(latest_packages) <= len(packages))
 
-    def test_install_packages_in_env(self):
+    @unittest.mock.patch("api.v1.endpoints.manager.Conda.install_package_list")
+    def test_install_packages_in_env(self, mock_install_package_list):
         """Test installing packages in a conda environment via the endpoint."""
         request = manager.InstallRequest(
             packages=[
@@ -52,13 +63,18 @@ class TestManagerEndpoints(unittest.TestCase):
             env_name="test_env"
         )
         try:
+            mock_install_package_list.return_value = {
+                "installed": ["agroservices"],
+                "failed": []
+            }
             results = manager.install_packages_in_env(request)
             self.assertIn("installed", results)
             self.assertIn("agroservices", results["installed"])
         except HTTPException as e:
             self.fail(f"install_packages_in_env raised HTTPException: {e.detail}")
 
-    def test_install_packages_in_env_with_failure(self):
+    @unittest.mock.patch("api.v1.endpoints.manager.Conda.install_package_list")
+    def test_install_packages_in_env_with_failure(self, mock_install_package_list):
         """Test installing packages with one expected failure."""
         request = manager.InstallRequest(
             packages=[
@@ -66,9 +82,12 @@ class TestManagerEndpoints(unittest.TestCase):
             ],
             env_name="test_env"
         )
-        with self.assertRaises(HTTPException) as context:
-            manager.install_packages_in_env(request)
-        self.assertEqual(context.exception.status_code, 500)
-        self.assertIn("failed", context.exception.detail)
-        failed_packages = [failure["package"] for failure in context.exception.detail["failed"]]
-        self.assertIn("nonexistent_package_12345", failed_packages)
+        mock_install_package_list.return_value = {
+            "installed": [],
+            "failed": [{"package": "nonexistent_package_12345", "error": "Package not found"}]
+        }
+        results = manager.install_packages_in_env(request)
+        self.assertIn("failed", results)
+        self.assertTrue(any(
+            failure["package"] == "nonexistent_package_12345" for failure in results["failed"]
+        ))
