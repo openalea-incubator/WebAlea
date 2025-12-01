@@ -42,11 +42,8 @@ class TestCondaMethods(TestCase):
     @unittest.mock.patch("subprocess.run")
     def test_install_package(self, mock_run):
         """Test installing a package in a conda environment."""
-        try:
-            mock_run.return_value = None
-            Conda.install_package("openalea.astk", env_name="test_env")
-        except (CalledProcessError, FileNotFoundError) as e:
-            self.fail(f"install_package raised an exception: {e}")
+        mock_run.return_value = None
+        Conda.install_package("openalea.astk", env_name="test_env")
 
 
 class TestCondaIntegration(TestCase):
