@@ -50,22 +50,6 @@ class Conda:
         return latest_versions
 
     @staticmethod
-    def get_versions(package_name : str, channel : str=settings.OPENALEA_CHANNEL) -> list:
-        """Get all available versions of a package in a conda channel.
-
-        Args:
-            package_name (str): The name of the package to search for.
-            channel (str, optional): The conda channel to search.
-            Defaults to settings.OPENALEA_CHANNEL.
-
-        Returns:
-            list: A list of available versions for the package.
-        """
-        data = Conda.list_packages(channel)
-        versions = sorted({pkg["version"] for pkg in data.get(package_name, [])})
-        return versions
-
-    @staticmethod
     def install_package(package_name: str, version: str = None, env_name: str = None):
         """Install a package in a conda environment.
 
