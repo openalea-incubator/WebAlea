@@ -23,7 +23,7 @@ jobs:
         with:
           auto-activate-base: false
           python-version: ${{ matrix.python-version }}
-          environment-file: webAleaBack/tests/environment.yml
+          environment-file: webAleaBack/tests/resources/environment.yml
           activate-environment: test_env
       
       # Install dependencies for linting and testing
