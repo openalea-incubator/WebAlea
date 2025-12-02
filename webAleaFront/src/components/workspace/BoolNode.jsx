@@ -53,6 +53,7 @@ export default function BoolNode(nodeProps) {
                 type="target"
                 position={Position.Right}
                 id={`out-${id}-value`}
+                data-handle={data.outputs[0].id ? data.outputs[0].id : `out-${id}-0`}
                 className="node-handle"
                 style={{
                     background: "#2b8a3e",

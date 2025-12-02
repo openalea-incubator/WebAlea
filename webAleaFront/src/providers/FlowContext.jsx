@@ -75,7 +75,7 @@ export const FlowProvider = ({ children }) => {
   // Fonction pour ajouter un nouveau noeud
   const addNode = useCallback((newNode) => {
     setNodes((nds) => [...nds, newNode.serialize()]);
-    addLog("Node added", {id : newNode.id, title: newNode.title});
+    addLog("Node added", {id : newNode.id, title: newNode.title, inputs: newNode.inputs , outputs: newNode.outputs});
   }, [setNodes, addLog]);
 
   // Fonction pour définir le workflow
@@ -96,7 +96,7 @@ export const FlowProvider = ({ children }) => {
 
     setCurrentNode(id);
 
-    addLog("Node updated", { id, updatedProperties });
+    addLog("Node updated", { id, updatedProperties, inputs: updatedProperties.inputs, outputs: updatedProperties.outputs });
   }, [setNodes, addLog]);
 
   // Fonction pour supprimer un noeud
