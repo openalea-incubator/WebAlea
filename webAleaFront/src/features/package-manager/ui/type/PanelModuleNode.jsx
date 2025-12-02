@@ -4,7 +4,7 @@ import { Menu, MenuItem } from "@mui/material";
 import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
 import TreePackage from '../../model/TreePackage.jsx';
 import TreeNode from '../../model/TreeNode.jsx';
-import {Node} from "../workspace/Node.jsx";
+import { Node } from '../../../workspace/model/Node.jsx';
 
 const ALEA_NODES = [
     new Node({ id: 'grid-community', label: '@mui/x-data-grid', inputs: [{"name": "Test"}], outputs: [{ "name": "Value", "type": "float", "default": 0 }] }),

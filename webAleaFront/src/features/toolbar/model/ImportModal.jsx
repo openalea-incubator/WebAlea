@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Modal, Button } from "react-bootstrap";
 import { FiUpload, FiCheck } from "react-icons/fi";
-import "../../assets/css/modal.css"; 
+import "../../../assets/css/modal.css"; 
 
 export default function ImportModal({ show, onClose, onImport }) {
     const [fileData, setFileData] = useState(null);

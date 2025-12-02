@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useLog } from "../../providers/LogContextDefinition.jsx";
+import { useLog } from "../providers/LogContextDefinition.jsx";
 import LogLine from "./LogLine.jsx";
 
 export default function ConsoleLog() {

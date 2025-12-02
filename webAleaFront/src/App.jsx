@@ -1,13 +1,12 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './assets/css/app.css'; // Css perso
-import WorkSpace from './components/workspace/Workspace.jsx';
-import NodeDetailSection from './components/description/NodeDetailSection.jsx';
-import ToolBar from './components/toolbar/ToolBar.jsx';
-import PackageManager from './components/packagemanager/PackageManager.jsx';
-import ConsoleLog from './components/ConsoleLog/ConsoleLog.jsx';
-import { FlowProvider } from './providers/FlowContext.jsx';
+import WorkSpace from './features/workspace/Workspace.jsx';
+import NodeDetailSection from './features/nodes/ui/sidebar_detail/NodeDetailSection.jsx';
+import ToolBar from './features/toolbar/ui/ToolBar.jsx';
+import PackageManager from './features/package-manager/ui/PackageManager.jsx';
+import ConsoleLog from './features/logger/ui/ConsoleLog.jsx';
 import { useState, useEffect } from 'react';
-import { useFlow } from './providers/FlowContextDefinition.jsx';
+import { useFlow } from './features/workspace/providers/FlowContextDefinition.jsx';
 
 export default function App() {
     const [isNodeDetailOpen, setIsNodeDetailOpen] = useState(false);
