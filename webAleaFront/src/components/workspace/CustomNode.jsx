@@ -88,6 +88,7 @@ export default function CustomNode(nodeProps) {
                             type="source"
                             position={Position.Left}
                             id={`in-${id}-${index}`}
+                            data-handle={input.id}
                             className="node-handle"
                             style={{
                                 background: getTypeColor(input.type),
@@ -107,6 +108,7 @@ export default function CustomNode(nodeProps) {
                             type="target"
                             position={Position.Right}
                             id={`out-${id}-${index}`}
+                            data-handle={output.id}
                             className="node-handle"
                             style={{
                                 background: getTypeColor(output.type),

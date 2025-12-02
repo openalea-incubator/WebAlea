@@ -30,8 +30,21 @@ export class Node {
             status: data?.status || 'ready',
             metadata: data?.metadata || {},
         };
+
         this.inputs = inputs || [];
         this.outputs = outputs || [];
+
+        this.inputs = this.inputs.map((input, index) => ({
+            ...input,
+            id: input.id || `in-${this.id}-${index}`,
+        }));
+
+        this.outputs = this.outputs.map((output, index) => ({
+            ...output,
+            id: output.id || `out-${this.id}-${index}`,
+        }));
+
+        console.log(this.inputs, this.outputs);
     }
 
     /**

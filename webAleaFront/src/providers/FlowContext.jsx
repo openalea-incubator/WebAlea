@@ -69,7 +69,7 @@ export const FlowProvider = ({ children }) => {
       return;
     }
     setEdges((eds) => addEdge(params, eds));
-    addLog("Edge added", { source: params.source, target: params.target });
+    addLog("Edge added", { param: params });
   }, [setEdges, addLog]);
 
   // Fonction pour ajouter un nouveau noeud

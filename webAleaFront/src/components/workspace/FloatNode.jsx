@@ -46,7 +46,7 @@ export default function FloatNode(nodeProps) {
             />
 
             <Handle
-                type="source"
+                type="target"
                 position={Position.Right}
                 id={`out-${id}-value`}
                 className="node-handle"
