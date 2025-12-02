@@ -1,5 +1,5 @@
 import React from "react";
-import { useFlow } from '../../providers/FlowContextDefinition.jsx';
+import { useFlow } from "../../../workspace/providers/FlowContextDefinition.jsx";
 
 export default function NodeDescription() {
     const { currentNode, nodes } = useFlow();

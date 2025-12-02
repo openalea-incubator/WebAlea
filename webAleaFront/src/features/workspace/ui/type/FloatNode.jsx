@@ -1,7 +1,7 @@
 import { Handle, Position } from "@xyflow/react";
-import "../../assets/css/custom_node.css";
+import "../../../../assets/css/custom_node.css";
 import { useFlow } from "../../providers/FlowContextDefinition";
-import { useLog } from "../../providers/log/LogContextDefinition.jsx";
+import { useLog } from "../../../logger/providers/LogContextDefinition.jsx";
 import { useEffect, useState } from "react";
 
 export default function FloatNode(nodeProps) {

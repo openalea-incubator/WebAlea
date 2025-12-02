@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import NodeInput from "../NodeInputs.jsx";
 import NodeOutput from "../NodeOutputs.jsx";
-import { useFlow } from '../../providers/FlowContextDefinition.jsx';
+import { useFlow } from "../../../workspace/providers/FlowContextDefinition.jsx";
 
 export default function NodeParameters() {
     const { currentNode, nodes } = useFlow();

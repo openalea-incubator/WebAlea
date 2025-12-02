@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { LogContext } from "../LogContextDefinition.jsx";  
+import { LogContext } from "./LogContextDefinition.jsx";  
 
 export function LogProvider({ children }) {
     const [logs, setLogs] = useState([]);

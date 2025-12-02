@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Handle, Position } from "@xyflow/react";
-import "../../assets/css/custom_node.css";
+import "../../../../assets/css/custom_node.css";
 import { useLog } from "../../../logger/providers/LogContextDefinition.jsx";
 import { useFlow } from "../../providers/FlowContextDefinition";
 

@@ -4,9 +4,9 @@ import {
   useEdgesState,
   addEdge,
 } from '@xyflow/react';
-import { FlowContext } from '../../../providers/flow/FlowContextDefinition.jsx';
+import { FlowContext } from './FlowContextDefinition.jsx';
 import CustomNode from '../ui/CustomNode.jsx';
-import FloatNode from '../../features/workspace/FloatNode.jsx';
+import FloatNode from '../ui/type/FloatNode.jsx';
 import StringNode from '../ui/type/StringNode.jsx';
 import BoolNode from '../ui/type/BoolNode.jsx';
 import { useLog } from '../../logger/providers/LogContextDefinition.jsx';

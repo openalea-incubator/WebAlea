@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import { useFlow } from '../../providers/FlowContextDefinition.jsx';
-import "../../assets/css/custom_node.css";
+import { useFlow } from '../providers/FlowContextDefinition.jsx';
+import "../../../assets/css/custom_node.css";
 
 /**
  * CustomNode.jsx
