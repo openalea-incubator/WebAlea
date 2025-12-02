@@ -12,3 +12,4 @@ dependencies:
   - packaging
   - setuptools
   - openalea.core
+  - openalea.astk
