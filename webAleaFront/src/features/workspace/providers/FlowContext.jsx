@@ -4,12 +4,12 @@ import {
   useEdgesState,
   addEdge,
 } from '@xyflow/react';
-import { FlowContext } from './FlowContextDefinition';
-import CustomNode from '../components/workspace/CustomNode.jsx';
-import FloatNode from '../components/workspace/FloatNode.jsx';
-import StringNode from '../components/workspace/StringNode.jsx';
-import BoolNode from '../components/workspace/BoolNode.jsx';
-import { useLog } from './LogContextDefinition.jsx';
+import { FlowContext } from '../../../providers/flow/FlowContextDefinition.jsx';
+import CustomNode from '../ui/CustomNode.jsx';
+import FloatNode from '../../features/workspace/FloatNode.jsx';
+import StringNode from '../ui/type/StringNode.jsx';
+import BoolNode from '../ui/type/BoolNode.jsx';
+import { useLog } from '../../logger/providers/LogContextDefinition.jsx';
 
 const FLOW_KEY_NODES = 'reactFlowCacheNodes';
 const FLOW_KEY_EDGES = 'reactFlowCacheEdges';

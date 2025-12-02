@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ButtonToolBar from "./ButtonToolBar";
-import ImportModal from "../visualizer/ImportModal";
+import ImportModal from "../model/ImportModal";
 import { FaUpload, FaDownload, FaInfoCircle, FaPlay, FaStop } from "react-icons/fa";
 import { useFlow } from "../../providers/FlowContextDefinition";
 import { useLog } from "../../providers/LogContextDefinition";
