@@ -1,31 +1,69 @@
-import { Handle, Position } from "@xyflow/react"
+import { Handle, Position } from "@xyflow/react";
+import "../../assets/css/custom_node.css";
+import { useFlow } from "../../providers/FlowContextDefinition";
+import { useLog } from "../../providers/LogContextDefinition.jsx";
+import { useEffect, useState } from "react";
 
 export default function BoolNode(nodeProps) {
-    const { id, data = {}, isConnectable, selected } = nodeProps;
-    const value = !!data.value;
+    const { id, data = {}, selected } = nodeProps;
+    const { updateNode } = useFlow();
+    const { addLog } = useLog();
+
+    const initialValue = data.outputs?.[0]?.value ?? false;
+    const initialOutputId = data.outputs?.[0]?.id ?? `out-${id}-0`;
+
+    const [value, setValue] = useState(initialValue);
+    const [outputId] = useState(initialOutputId); 
+
+    useEffect(() => {
+        updateNode(id, { outputs: [{ value, id: outputId }] });
+        addLog(`BoolNode ${id} updated. value = ${value}`);
+    }, [id, value, outputId, updateNode, addLog]);
 
     const handleChange = (e) => {
-        const next = e.target.value === "true";
-        if (typeof data.onChange === "function") {
-            data.onChange(id, next);
-        } else if (typeof nodeProps.onChange === "function") {
-            nodeProps.onChange(id, next);
-        }
+        const boolValue = e.target.value === "true";
+        setValue(boolValue);
     };
 
     return (
-        <div className={`bg-white px-3 py-2 rounded shadow w-[140px] text-center ${selected ? "ring-2 ring-blue-400" : ""}`}>
+        <div
+            className="custom-node"
+            style={{
+                background: "#f0f0f0",
+                border: `2px solid #2b8a3e`,
+                padding: 10,
+                borderRadius: 6,
+                minWidth: 120,
+            }}
+            data-node-id={id}
+            data-selected={selected ? "true" : "false"}
+        >
+            {/* Selector boolean */}
             <select
                 value={value ? "true" : "false"}
                 onChange={handleChange}
-                className="border rounded px-2 py-1 w-full"
+                className="node-select w-full px-2 py-1 border rounded"
             >
                 <option value="true">true</option>
                 <option value="false">false</option>
             </select>
 
-            <Handle type="target" position={Position.Left} isConnectable={isConnectable} />
-            <Handle type="source" position={Position.Right} isConnectable={isConnectable} />
+            {/* OUTPUT */}
+            <Handle
+                type="target"
+                position={Position.Right}
+                id={`out-${id}-value`}
+                data-handle={outputId}
+                className="node-handle"
+                style={{
+                    background: "#2b8a3e",
+                    width: 12,
+                    height: 12,
+                    borderRadius: 6,
+                    border: "2px solid rgba(255,255,255,0.6)",
+                    cursor: "pointer",
+                }}
+            />
         </div>
     );
 }

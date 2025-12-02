@@ -54,7 +54,7 @@ export default function CustomNode(nodeProps) {
     const dynamicNodeStyle = {
         backgroundColor: color || "#f0f0f0",
         border: `2px solid ${borderColor}`,
-        height: 44 + 12 * inputs.length - 3,
+        height: 44 + 12 * ((inputs.length > 0 || outputs.length > 0) ? Math.max(inputs.length, outputs.length) : 1), 
     };
 
     return (
@@ -88,6 +88,7 @@ export default function CustomNode(nodeProps) {
                             type="source"
                             position={Position.Left}
                             id={`in-${id}-${index}`}
+                            data-handle={input.id}
                             className="node-handle"
                             style={{
                                 background: getTypeColor(input.type),
@@ -107,6 +108,7 @@ export default function CustomNode(nodeProps) {
                             type="target"
                             position={Position.Right}
                             id={`out-${id}-${index}`}
+                            data-handle={output.id}
                             className="node-handle"
                             style={{
                                 background: getTypeColor(output.type),

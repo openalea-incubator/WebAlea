@@ -21,6 +21,7 @@ export class Node {
      */
     constructor({ id, label, type = "custom", position = { x: 0, y: 0 }, data, inputs, outputs }) {
         this.id = id;
+        this.type = type;
         this.position = position;
         this.type = type;
         this.data = {
@@ -29,8 +30,21 @@ export class Node {
             status: data?.status || 'ready',
             metadata: data?.metadata || {},
         };
+
         this.inputs = inputs || [];
         this.outputs = outputs || [];
+
+        this.inputs = this.inputs.map((input, index) => ({
+            ...input,
+            id: input.id || `in-${this.id}-${index}`,
+        }));
+
+        this.outputs = this.outputs.map((output, index) => ({
+            ...output,
+            id: output.id || `out-${this.id}-${index}`,
+        }));
+
+        console.log(this.inputs, this.outputs);
     }
 
     /**
