@@ -1,11 +1,11 @@
 import { Handle, Position } from "@xyflow/react";
 import "../../assets/css/custom_node.css";
 import { useFlow } from "../../providers/FlowContextDefinition";
-import { useLog } from "../../providers/LogContextDefinition.jsx";
+import { useLog } from "../../../logger/providers/LogContextDefinition.jsx";
 import { useEffect, useState } from "react";
 
-export default function FloatNode(nodeProps) {
-    const { id, data = {} } = nodeProps;
+export default function BoolNode(nodeProps) {
+    const { id, data = {}, selected } = nodeProps;
     const { updateNode } = useFlow();
     const { addLog } = useLog();
 
@@ -17,48 +17,46 @@ export default function FloatNode(nodeProps) {
 
     useEffect(() => {
         updateNode(id, { outputs: [{ value, id: outputId }] });
-        addLog(`FloatNode ${id} updated. value = ${value}`);
+        addLog(`BoolNode ${id} updated. value = ${value}`);
     }, [id, value, outputId, updateNode, addLog]);
 
     const handleChange = (e) => {
-        setValue(e.target.value);
-    };
-
-    const handleBlur = () => {
-        let next = Number.parseFloat(value);
-
-        if (Number.isNaN(next)) next = 0;
-
-        setValue(next);
-        updateNode(id, { outputs: [{ value: next }] });
+        const boolValue = e.target.value === "true";
+        setValue(boolValue);
     };
 
     return (
-        <div className="custom-node"
+        <div
+            className="custom-node"
             style={{
                 background: "#f0f0f0",
-                border: `2px solid #8e24aa`,
+                border: `2px solid #2b8a3e`,
                 padding: 10,
                 borderRadius: 6,
-            }}>
-            <input
-                type="number"
-                step="1"
-                value={value}
+                minWidth: 120,
+            }}
+            data-node-id={id}
+            data-selected={selected ? "true" : "false"}
+        >
+            {/* Selector boolean */}
+            <select
+                value={value ? "true" : "false"}
                 onChange={handleChange}
-                onBlur={handleBlur}  
-                className="node-input"
-                style={{ width: "100%" }}
-            />
+                className="node-select w-full px-2 py-1 border rounded"
+            >
+                <option value="true">true</option>
+                <option value="false">false</option>
+            </select>
 
+            {/* OUTPUT */}
             <Handle
                 type="target"
                 position={Position.Right}
                 id={`out-${id}-value`}
-                data-handle={data.outputs[0].id ? data.outputs[0].id : `out-${id}-0`}
+                data-handle={outputId}
                 className="node-handle"
                 style={{
-                    background: "#8e24aa",
+                    background: "#2b8a3e",
                     width: 12,
                     height: 12,
                     borderRadius: 6,

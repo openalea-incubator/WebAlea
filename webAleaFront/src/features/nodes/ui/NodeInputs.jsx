@@ -1,7 +1,7 @@
 import React from "react";
-import NodeInputFloat from "./NodeInputFloat";
-import NodeInputString from "./NodeInputStr";
-import NodeInputBoolean from "./NodeInputBool";
+import NodeInputFloat from "../model/NodeInputFloat";
+import NodeInputString from "../model/NodeInputStr";
+import NodeInputBoolean from "../model/NodeInputBool";
 
 export default function NodeInput({ inputs, onValueChange }) {
     return (

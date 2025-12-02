@@ -2,37 +2,20 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import { Menu, MenuItem } from "@mui/material";
 import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
-import TreePackage from './TreePackage.jsx';
-import TreeNode from './TreeNode.jsx';
-import {Node} from "../workspace/Node.jsx";
+import { Node } from '../../../workspace/model/Node.jsx';
+import TreeNode from '../../model/TreeNode.jsx';
 
-const ALEA_NODES = [
-    new Node({ id: 'grid-community', label: '@mui/x-data-grid', inputs: [{"name": "Test"}], outputs: [{ "name": "Value", "type": "float", "default": 0 }] }),
-    new Node({ id: 'grid-pro', label: '@mui/x-data-grid-pro', inputs: [{ "name": "Value", "type": "string", "default": "" }] }),
-    new Node({ id: 'grid-premium', label: '@mui/x-data-grid-premium', outputs: [{ "name": "Value1", "type": "boolean", "default": false }, { "name": "Value2", "type": "boolean", "default": false }] })
+const FLOAT_NODE = new Node({ id: 'float', label: 'Float input', type: "float", outputs: [{ "name": "Value", "type": "float", "default": 0 }] })
+const STRING_NODE = new Node({ id: 'string', label: 'String input', type: "string", outputs: [{ "name": "Value", "type": "string", "default": "" }] })
+const BOOLEAN_NODE = new Node({ id: 'boolean', label: 'Boolean input', type: "boolean", outputs: [{ "name": "Value", "type": "boolean", "default": false }] })
+
+const PRIMITIVE_NODES = [
+    new TreeNode(FLOAT_NODE),
+    new TreeNode(STRING_NODE),
+    new TreeNode(BOOLEAN_NODE)
 ];
 
-const TREE_VIEW_NODES = [
-    new Node({ id: 'tree-view-community', label: '@mui/x-tree-view', inputs: [{"name": "Test"}], outputs: [{ "name": "Value", "type": "float", "default": 0 }] }),
-    new Node({ id: 'tree-view-pro', label: '@mui/x-tree-view-pro', inputs: [{ "name": "Value", "type": "string", "default": "" }] })
-];
-
-const OPENALEA_NODES = [
-    new TreePackage('openalea', 'OpenAlea', [
-        new TreeNode(ALEA_NODES[0]),
-        new TreeNode(ALEA_NODES[1]),
-        new TreeNode(ALEA_NODES[2])
-        ]
-    ),
-    new TreePackage('tree-view', 'Tree View', [
-        new TreeNode(TREE_VIEW_NODES[0]),
-        new TreeNode(TREE_VIEW_NODES[1])
-        ]
-    )
-];
-
-
-export default function PanelModuleNode({ onAddNode }) {
+export default function PanelPrimitiveNode({ onAddNode }) {
 
     const [menu, setMenu] = React.useState(null);
     const [selectedItem, setSelectedItem] = React.useState(null);
@@ -64,7 +47,7 @@ export default function PanelModuleNode({ onAddNode }) {
             <div>
                 <RichTreeView
                     apiRef={apiRef}
-                    items={OPENALEA_NODES.map(node => node.serialize())}
+                    items={PRIMITIVE_NODES.map(node => node.serialize())}
 
                     sx={{ userSelect: 'none' }}
 

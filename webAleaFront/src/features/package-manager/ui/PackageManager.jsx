@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Node } from '../workspace/Node.jsx';
 import { useFlow } from '../../providers/FlowContextDefinition.jsx';
-import PanelModuleNode from './PanelModuleNode.jsx';
-import PanelPrimitiveNode from './PanelPrimitiveNode.jsx';
+import PanelModuleNode from './type/PanelModuleNode.jsx';
+import PanelPrimitiveNode from './type/PanelPrimitiveNode.jsx';
 import '../../assets/css/package_manager.css'; // Css perso
 
 export default function PackageManager() {

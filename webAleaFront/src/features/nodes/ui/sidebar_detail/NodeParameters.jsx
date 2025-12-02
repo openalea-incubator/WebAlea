@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import NodeInput from "./NodeInputs";
-import NodeOutput from "./NodeOutputs";
+import NodeInput from "../NodeInputs.jsx";
+import NodeOutput from "../NodeOutputs.jsx";
 import { useFlow } from '../../providers/FlowContextDefinition.jsx';
 
 export default function NodeParameters() {
