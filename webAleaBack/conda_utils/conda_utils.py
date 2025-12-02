@@ -1,6 +1,7 @@
 """Module to manage conda environments and packages."""
 import json
 import subprocess
+
 from packaging.version import Version
 from core.config import settings
 
@@ -21,7 +22,7 @@ class Conda:
             dict: A dictionary of packages and their versions.
         """
         result = subprocess.run(
-            ["conda", "search", "--override-channels", "-c", channel, "*", "--json"],
+            ["conda", "search", "--override-channels", "-c", channel, "openalea*", "--json"],
             stdout=subprocess.PIPE,
             text=True,
             check=True,
@@ -47,22 +48,6 @@ class Conda:
                 latest_entry = max(package_list, key=lambda e: Version(e["version"]))
                 latest_versions[package_name] = latest_entry
         return latest_versions
-
-    @staticmethod
-    def get_versions(package_name : str, channel : str=settings.OPENALEA_CHANNEL) -> list:
-        """Get all available versions of a package in a conda channel.
-
-        Args:
-            package_name (str): The name of the package to search for.
-            channel (str, optional): The conda channel to search.
-            Defaults to settings.OPENALEA_CHANNEL.
-
-        Returns:
-            list: A list of available versions for the package.
-        """
-        data = Conda.list_packages(channel)
-        versions = sorted({pkg["version"] for pkg in data.get(package_name, [])})
-        return versions
 
     @staticmethod
     def install_package(package_name: str, version: str = None, env_name: str = None):

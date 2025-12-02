@@ -11,3 +11,5 @@ dependencies:
   - pydantic-settings
   - aiofiles
   - packaging
+  - setuptools
+  - openalea.core

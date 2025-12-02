@@ -2,3 +2,4 @@
 .coverage
 htmlcov/
 conda_openalea_packages.json
+logs/
