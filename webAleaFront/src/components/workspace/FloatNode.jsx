@@ -1,21 +1,27 @@
 import { Handle, Position } from "@xyflow/react";
 import "../../assets/css/custom_node.css";
 import { useFlow } from "../../providers/FlowContextDefinition";
+import { useLog } from "../../providers/LogContextDefinition.jsx";
 import { useEffect, useState } from "react";
 
 export default function FloatNode(nodeProps) {
     const { id, data = {} } = nodeProps;
     const { updateNode } = useFlow();
+    const { addLog } = useLog();
 
-    const [value, setValue] = useState(data.outputs?.[0]?.value ?? 0);
+    const initialValue = data.outputs?.[0]?.value ?? false;
+    const initialOutputId = data.outputs?.[0]?.id ?? `out-${id}-0`;
+
+    const [value, setValue] = useState(initialValue);
+    const [outputId] = useState(initialOutputId); 
 
     useEffect(() => {
-        updateNode(id, { outputs: [{ value }] });
-    }, []);
+        updateNode(id, { outputs: [{ value, id: outputId }] });
+        addLog(`FloatNode ${id} updated. value = ${value}`);
+    }, [id, value, outputId, updateNode, addLog]);
 
     const handleChange = (e) => {
         setValue(e.target.value);
-        updateNode(id, { outputs: [{ value: e.target.value ? Number.parseFloat(e.target.value) : 0 }] });
     };
 
     const handleBlur = () => {

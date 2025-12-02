@@ -1,28 +1,29 @@
 import { Handle, Position } from "@xyflow/react";
 import "../../assets/css/custom_node.css";
 import { useFlow } from "../../providers/FlowContextDefinition";
+import { useLog } from "../../providers/LogContextDefinition.jsx";
 import { useEffect, useState } from "react";
 
 export default function BoolNode(nodeProps) {
     const { id, data = {}, selected } = nodeProps;
     const { updateNode } = useFlow();
+    const { addLog } = useLog();
 
-    const [value, setValue] = useState(data.outputs?.[0]?.value ?? false);
+    const initialValue = data.outputs?.[0]?.value ?? false;
+    const initialOutputId = data.outputs?.[0]?.id ?? `out-${id}-0`;
+
+    const [value, setValue] = useState(initialValue);
+    const [outputId] = useState(initialOutputId); 
 
     useEffect(() => {
-        updateNode(id, { outputs: [{ value }] });
-    }, []);
+        updateNode(id, { outputs: [{ value, id: outputId }] });
+        addLog(`BoolNode ${id} updated. value = ${value}`);
+    }, [id, value, outputId, updateNode, addLog]);
 
     const handleChange = (e) => {
         const boolValue = e.target.value === "true";
         setValue(boolValue);
-        updateNode(id, { outputs: [{ value: boolValue }] }); 
     };
-
-    useEffect(() => {
-        data.outputs[0].value = data.outputs?.[0]?.value ?? false;
-        console.log(`BoolNode ${id} mounted.`);
-    }, [data.outputs, id]);
 
     return (
         <div
@@ -39,7 +40,7 @@ export default function BoolNode(nodeProps) {
         >
             {/* Selector boolean */}
             <select
-                value={data.outputs?.[0]?.value ? "true" : "false"}
+                value={value ? "true" : "false"}
                 onChange={handleChange}
                 className="node-select w-full px-2 py-1 border rounded"
             >
@@ -47,13 +48,12 @@ export default function BoolNode(nodeProps) {
                 <option value="false">false</option>
             </select>
 
-
             {/* OUTPUT */}
             <Handle
                 type="target"
                 position={Position.Right}
                 id={`out-${id}-value`}
-                data-handle={data.outputs[0].id ? data.outputs[0].id : `out-${id}-0`}
+                data-handle={outputId}
                 className="node-handle"
                 style={{
                     background: "#2b8a3e",

@@ -1,24 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { Handle, Position } from "@xyflow/react";
 import "../../assets/css/custom_node.css";
+import { useLog } from "../../providers/LogContextDefinition.jsx";
 import { useFlow } from "../../providers/FlowContextDefinition";
 
 export default function StringNode(nodeProps) {
     const { id, data = {} } = nodeProps;
     const { updateNode } = useFlow();
+    const { addLog } = useLog();
 
-    // --- valeur locale contrôlée ---
-    const [value, setValue] = useState(data.outputs?.[0]?.value ?? "");
+    const initialValue = data.outputs?.[0]?.value ?? "";
+    const initialOutputId = data.outputs?.[0]?.id ?? `out-${id}-0`;
+
+    const [value, setValue] = useState(initialValue);
+    const [outputId] = useState(initialOutputId); 
 
     // Sync initial value
     useEffect(() => {
-        updateNode(id, { outputs: [{ value }] });
-    }, []);
+        updateNode(id, { outputs: [{ value, id: outputId }] });
+        addLog(`StringNode ${id} updated. value = ${value}`);
+    }, [id, value, outputId, updateNode, addLog]);
 
     const handleChange = (e) => {
-        const nextValue = e.target.value;
-        setValue(nextValue);
-        updateNode(id, { outputs: [{ value: nextValue }] });
+        setValue(e.target.value);
     };
 
     const handleBlur = () => {
@@ -62,7 +66,7 @@ export default function StringNode(nodeProps) {
                 type="target"
                 position={Position.Right}
                 id={`out-${id}-value`}
-                data-handle={data.outputs[0].id ? data.outputs[0].id : `out-${id}-0`}
+                data-handle={outputId}
                 className="node-handle"
                 style={{
                     background: "#1976d2",
