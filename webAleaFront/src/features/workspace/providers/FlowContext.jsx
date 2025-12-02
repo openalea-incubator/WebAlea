@@ -10,6 +10,7 @@ import FloatNode from '../ui/type/FloatNode.jsx';
 import StringNode from '../ui/type/StringNode.jsx';
 import BoolNode from '../ui/type/BoolNode.jsx';
 import { useLog } from '../../logger/providers/LogContextDefinition.jsx';
+import { WorkflowEngine } from '../engine/WorkflowEngine.jsx';
 
 const FLOW_KEY_NODES = 'reactFlowCacheNodes';
 const FLOW_KEY_EDGES = 'reactFlowCacheEdges';
@@ -36,6 +37,13 @@ export const FlowProvider = ({ children }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [currentNode, setCurrentNode] = useState(null);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  const bindEngine = (engine) => {
+    engine.onUpdate((event, payload) => {
+      handleEngineEvent(event, payload);
+    });
+  };
+
   
   const nodesTypes = { 
     custom: CustomNode,
@@ -108,9 +116,26 @@ export const FlowProvider = ({ children }) => {
 
   const onNodeClick = useCallback((event, node) => {
     console.log("Clicked:", node.id);
-    setCurrentNode(node.id);   // OK
+    setCurrentNode(node.id);  
     addLog("Node selected", { id: node.id, label: node.data.label });
 }, [addLog]);
+
+  const onNodeExecute = useCallback((nodeId, engine) => {
+    console.log("Executing node:", nodeId);
+    engine.executeNode(nodeId);
+    addLog("Node execution started", { id: nodeId });
+}, [addLog]);
+
+
+  const handleEngineEvent = (event, payload) => {
+  if (event === "node-output") {
+    const { id, result } = payload;
+    console.log("Updating node result in FlowContext:", id, result);
+
+    updateNode(id, { result });
+    console.log("Node updated with result:", id, result);
+  }
+};
 
 
 
@@ -132,6 +157,8 @@ export const FlowProvider = ({ children }) => {
     currentNode,
     setCurrentNode,
     onNodeClick,
+    onNodeExecute,
+    bindEngine,
     // reactFlowInstance,
   };
 

@@ -1,6 +1,7 @@
 import React from "react";
 
 export default function NodeOutput({ outputs }) {
+    console.log("Rendering NodeOutput with outputs:", outputs);
     return (
         <div className="node-outputs">
             {outputs.map((output, index) => (

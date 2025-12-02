@@ -11,6 +11,8 @@ export default function NodeInputFloat({ inputName, value = "", onChangeValueCha
     }
     };
 
+    console.log("Rendering NodeInputFloat with value:", internalValue);
+
     return (
     <div className="mb-3">
         <label className="form-label fw-semibold">{inputName}</label>

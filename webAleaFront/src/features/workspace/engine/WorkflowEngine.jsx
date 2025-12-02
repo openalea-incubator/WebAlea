@@ -1,33 +1,53 @@
-class WorkflowEngine {
-    constructor(graph) {
-        this.graph = graph; // modèle 
-        this.current = null;
-        this.listeners = []; // UI listeners (React Flow)
+export class WorkflowEngine {
+    constructor(graphModel) {
+        this.model = graphModel;  // instance de WorkflowGraph
+        this.listeners = [];
     }
 
-    onUpdate(callback) {
-        this.listeners.push(callback);
+    onUpdate(cb) {
+        this.listeners.push(cb);
     }
 
-    start(startNodeId) {
-        this.current = startNodeId;
-        this._emit("start", this.current);
-        this._executeNode(this.current);
+    start(nodeId) {
+        this._emit("start", nodeId);
+        this._execute(nodeId);
     }
 
-    _executeNode(id) {
-        const node = this.graph[id];
+    _execute(id) {
+        const node = this.model.nodes[id];
+        if (!node) return;
 
         this._emit("node-start", id);
 
-        // simulate processing...
         setTimeout(() => {
             this._emit("node-done", id);
 
-            const nextNodes = node.next;
-            nextNodes.forEach(n => this._executeNode(n));
+            node.next.forEach(nextId => {
+                this._execute(nextId);
+            });
         }, 500);
     }
+
+    executeNode(node) {
+        console.log("a", node.id);
+        this._emit("node-start", node.id);
+        console.log("b", node.id);
+
+        // simulate processing + result
+        setTimeout(() => {
+            const result = this._executeLogic(node); 
+            this._emit("node-output", { id: node.id, result });
+
+            this._emit("node-done", node.id);
+
+        }, 500);
+    }
+
+    _executeLogic(node) {
+        // exemple pour le moment
+        return Math.random() * 10; 
+    }
+
 
     _emit(event, payload) {
         this.listeners.forEach(l => l(event, payload));
