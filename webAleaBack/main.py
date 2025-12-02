@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from core.config import settings
 from api.v1 import router as v1_router
+from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,6 +25,14 @@ webAleaBack = FastAPI(
     version="1.0.0",
     description="",
     lifespan=lifespan
+)
+
+webAleaBack.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Ou ["*"] pour dev
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Include the API router
