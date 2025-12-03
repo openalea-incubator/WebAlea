@@ -5,6 +5,8 @@ import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
 import TreePackage from '../../model/TreePackage.jsx';
 import TreeNode from '../../model/TreeNode.jsx';
 import { Node } from '../../../workspace/model/Node.jsx';
+import { fetchInstalledOpenAleaPackages, installPackages, fetchPackageList } from '../../../../api/managerAPI.jsx';
+import { useEffect } from 'react';
 
 const ALEA_NODES = [
     new Node({ id: 'grid-community', label: '@mui/x-data-grid', inputs: [{"name": "Test"}], outputs: [{ "name": "Value", "type": "float", "default": 0 }] }),
@@ -31,8 +33,14 @@ const OPENALEA_NODES = [
     )
 ];
 
-
 export default function PanelModuleNode({ onAddNode }) {
+
+    // Fetching all packages
+    useEffect(() => {
+        const allPackages = fetchPackageList().then(console.log);
+        installPackages(allPackages).then(console.log);
+        fetchInstalledOpenAleaPackages().then(console.log);
+    }, []);
 
     const [menu, setMenu] = React.useState(null);
     const [selectedItem, setSelectedItem] = React.useState(null);
