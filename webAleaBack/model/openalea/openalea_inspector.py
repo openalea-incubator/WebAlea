@@ -66,11 +66,3 @@ class OpenAleaInspector:
                 logging.error("Failed to parse package description output: %s", result.stdout)
                 description = {}
         return description
-
-if __name__ == "__main__":
-    inspector = OpenAleaInspector()
-    packages = inspector.list_installed_openalea_packages()
-    print("Installed OpenAlea packages:", packages)
-    if packages:
-        package_desc = inspector.describe_openalea_package("openalea.flow control")
-        print(f"Description of package openalea.flow control:", package_desc)
