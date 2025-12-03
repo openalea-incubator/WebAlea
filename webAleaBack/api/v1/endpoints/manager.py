@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from conda_utils.conda_utils import Conda
-from conda_utils.conda_inspector import OpenAleaInspector
+from model.openalea.inspector.openalea_inspector import OpenAleaInspector
 from core.config import settings
 
 router = APIRouter()

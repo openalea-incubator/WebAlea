@@ -21,7 +21,7 @@ class OpenAleaInspector:
         """
         # run the subprocess to get installed packages list
         result = subprocess.run(
-            ["python3", "model/openalea/runnable/list_installed_openalea_packages.py"],
+            ["python3", "model/openalea/inspector/runnable/list_installed_openalea_packages.py"],
             stdout=subprocess.PIPE,
             text=True,
             check=True,
@@ -51,7 +51,7 @@ class OpenAleaInspector:
             dict: the package description (JSON-serializable)
         """
         result = subprocess.run(
-            ["python3", "model/openalea/runnable/describe_openalea_package.py", package_name],
+            ["python3", "model/openalea/inspector/runnable/describe_openalea_package.py", package_name],
             stdout=subprocess.PIPE,
             text=True,
             check=True,
