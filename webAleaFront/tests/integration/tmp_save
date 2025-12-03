@@ -1,0 +1,54 @@
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import App from "../../src/App.jsx";
+
+import { renderWithProviders } from "../utils/renderWithProviders.jsx";
+
+// Mock du provider FlowContext
+jest.mock("../../src/providers/FlowContextDefinition.jsx", () => ({
+    useFlow: () => ({
+        currentNode: null
+    })
+}));
+
+
+describe("App component", () => {
+    test("ne montre pas NodeDetailSection si aucun node sélectionné", () => {
+        renderWithProviders(<App />);
+
+        // NodeDetailSection ne doit pas être visible
+        expect(screen.queryByText(/NodeDetail/i)).not.toBeInTheDocument();
+    });
+});
+
+jest.mock("../../src/providers/FlowContextDefinition.jsx", () => ({
+    useFlow: () => ({
+        currentNode: { id: 1, label: "Test Node" }
+    })
+}));
+
+test("affiche NodeDetailSection quand currentNode existe", () => {
+    render(<App />);
+
+    const detailSection = screen.getByText(/Test Node/i);
+    expect(detailSection).toBeInTheDocument();
+
+    const toggleButton = screen.getByRole("button");
+    expect(toggleButton).toBeVisible();
+});
+
+test("toggleNodeDetail ouvre/ferme le panneau", async () => {
+    render(<App />);
+    const user = userEvent.setup();
+
+    const button = screen.getByRole("button");
+
+    // 1ère pression → fermer
+    await user.click(button);
+    expect(screen.queryByText(/NodeDetail/i)).not.toBeInTheDocument();
+
+    // 2ème pression → ré-ouvrir
+    await user.click(button);
+    expect(screen.getByText(/NodeDetail/i)).toBeInTheDocument();
+});
