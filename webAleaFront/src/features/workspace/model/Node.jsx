@@ -29,32 +29,10 @@ export class Node {
             color: data?.color || null,
             status: data?.status || 'ready',
             metadata: data?.metadata || {},
+            inputs: inputs || [],
+            outputs: outputs || [],
+            endpoint: data?.endpoint || null,
         };
-
-        this.inputs = inputs || [];
-        this.outputs = outputs || [];
-
-        this.inputs = this.inputs.map((input, index) => ({
-            ...input,
-            id: input.id || `in-${this.id}-${index}`,
-        }));
-
-        this.outputs = this.outputs.map((output, index) => ({
-            ...output,
-            id: output.id || `out-${this.id}-${index}`,
-        }));
-
-        console.log(this.inputs, this.outputs);
-    }
-
-    /**
-     * Simule le traitement des données par le noeud.
-     * @param {object} newData - Les nouvelles données à traiter.
-     */
-    processData(newData) {
-        console.log(`Node ${this.id}: Processing new data...`);
-        this.data = { ...this.data, ...newData };
-        this.status = 'processed';
     }
 
     /**
@@ -62,11 +40,9 @@ export class Node {
      * @returns {object|null} L'objet nœud sérialisé.
      */
     serialize() {
-        if (!this.id) return null; // Un nœud sans ID n'est pas valide
+        if (!this.id) return null;
         
         const { id, position, type, data } = this;
-        
-        // Assure que les propriétés sont définies même si elles sont nulles
         return {
             id,
             type: type,
@@ -76,8 +52,9 @@ export class Node {
                 color: data.color ?? null,
                 status: data.status ?? 'ready',
                 metadata: data.metadata ?? {},
-                inputs: this.inputs ?? [],
-                outputs: this.outputs ?? [],
+                inputs: data.inputs ?? [],
+                outputs: data.outputs ?? [],
+                endpoint: data.endpoint ?? null,
             },
         };
     }

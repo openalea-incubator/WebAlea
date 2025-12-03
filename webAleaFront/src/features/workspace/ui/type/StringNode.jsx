@@ -63,7 +63,7 @@ export default function StringNode(nodeProps) {
             />
 
             <Handle
-                type="target"
+                type="source"
                 position={Position.Right}
                 id={`out-${id}-value`}
                 data-handle={outputId}

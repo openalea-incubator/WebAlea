@@ -50,7 +50,7 @@ export default function BoolNode(nodeProps) {
 
             {/* OUTPUT */}
             <Handle
-                type="target"
+                type="source"
                 position={Position.Right}
                 id={`out-${id}-value`}
                 data-handle={outputId}

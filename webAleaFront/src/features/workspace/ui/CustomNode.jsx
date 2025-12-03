@@ -2,6 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import { Handle, Position } from "@xyflow/react";
 import { useFlow } from '../providers/FlowContextDefinition.jsx';
 import "../../../assets/css/custom_node.css";
+import CustomHandle from "./CustomHandle.jsx";
 
 /**
  * CustomNode.jsx
@@ -34,7 +35,6 @@ const typeColors = {
 
 const getTypeColor = (t) => typeColors[t] || typeColors.default;
 
-
 export default function CustomNode(nodeProps) {
     const { updateNode } = useFlow();
 
@@ -54,7 +54,7 @@ export default function CustomNode(nodeProps) {
     const dynamicNodeStyle = {
         backgroundColor: color || "#f0f0f0",
         border: `2px solid ${borderColor}`,
-        height: 44 + 12 * ((inputs.length > 0 || outputs.length > 0) ? Math.max(inputs.length, outputs.length) : 1), 
+        height: 44 + 12 * ((inputs.length > 0 || outputs.length > 0) ? Math.max(inputs.length, outputs.length) : 1),
     };
 
     return (
@@ -83,20 +83,21 @@ export default function CustomNode(nodeProps) {
                 inputs.map((input, index) => {
                     const topPercent = ((index + 1) / (inputs.length + 1)) * 100;
                     return (
-                        <Handle
-                            key={`in-${index}`}
-                            type="source"
-                            position={Position.Left}
-                            id={`in-${id}-${index}`}
-                            data-handle={input.id}
-                            className="node-handle"
+                        <CustomHandle
+                            key={input.name}
+                            id={input.name}
                             style={{
                                 background: getTypeColor(input.type),
                                 top: `${topPercent}%`,
                             }}
+                            onChange={(value) => {
+                                input.value = value;
+                                console.log(`Input ${input.id} changed to`, value);
+                            }}
                         />
                     );
-                })}
+                })
+            }
 
             {/* OUTPUTS */}
             {Array.isArray(outputs) &&
@@ -104,11 +105,9 @@ export default function CustomNode(nodeProps) {
                     const topPercent = ((index + 1) / (outputs.length + 1)) * 100;
                     return (
                         <Handle
-                            key={`out-${index}`}
-                            type="target"
+                            key={output.id}
+                            type="source"
                             position={Position.Right}
-                            id={`out-${id}-${index}`}
-                            data-handle={output.id}
                             className="node-handle"
                             style={{
                                 background: getTypeColor(output.type),

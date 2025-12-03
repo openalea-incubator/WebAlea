@@ -52,7 +52,7 @@ export default function FloatNode(nodeProps) {
             />
 
             <Handle
-                type="target"
+                type="source"
                 position={Position.Right}
                 id={`out-${id}-value`}
                 data-handle={data.outputs[0].id ? data.outputs[0].id : `out-${id}-0`}

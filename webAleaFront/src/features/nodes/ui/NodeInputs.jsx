@@ -4,7 +4,6 @@ import NodeInputString from "../model/NodeInputStr";
 import NodeInputBoolean from "../model/NodeInputBool";
 
 export default function NodeInput({ inputs, onValueChange }) {
-    console.log("Rendering NodeInput with inputs:", inputs);
     return (
     <div className="node-inputs">
         {inputs.map((input) => {

@@ -38,37 +38,40 @@ export const FlowProvider = ({ children }) => {
   const [currentNode, setCurrentNode] = useState(null);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  const bindEngine = (engine) => {
-    engine.onUpdate((event, payload) => {
-      handleEngineEvent(event, payload);
-    });
+
+  //TODO: Création de l'engine
+  //const engine = WorkflowEngine.getInstance();
+  //engine.initialize(nodes, edges);
+  
+  const handleEngineEvent = (event, payload) => {
+    if (event === "node-output") {
+      const { id, result } = payload;
+      console.log("Updating node result in FlowContext:", id, result);
+
+      updateNode(id, { result });
+      console.log("Node updated with result:", id, result);
+    }
   };
 
-  
-  const nodesTypes = { 
+  const nodesTypes = {
     custom: CustomNode,
     float: FloatNode,
     string: StringNode,
     boolean: BoolNode,
-};
+  };
 
   // --- Synchronisation avec localStorage ---
-
-  // Sauvegarde les nodes chaque fois que 'nodes' change
+  // Sauvegarde automatique des nodes et edges dans le localStorage
   useEffect(() => {
+    if (edges) {
+      localStorage.setItem(FLOW_KEY_EDGES, JSON.stringify(edges));
+    }
     if (nodes && nodes.length > 0) {
       localStorage.setItem(FLOW_KEY_NODES, JSON.stringify(nodes));
     } else if (nodes && nodes.length === 0) {
       localStorage.setItem(FLOW_KEY_NODES, '[]');
     }
-  }, [nodes]);
-
-  // Sauvegarde les edges chaque fois que 'edges' change
-  useEffect(() => {
-    if (edges) {
-      localStorage.setItem(FLOW_KEY_EDGES, JSON.stringify(edges));
-    }
-  }, [edges]);
+  }, [nodes, edges]);
 
   // --- Fonctions de gestion ---
   // Fonction pour ajouter une nouvelle connexion (edge)
@@ -83,7 +86,7 @@ export const FlowProvider = ({ children }) => {
   // Fonction pour ajouter un nouveau noeud
   const addNode = useCallback((newNode) => {
     setNodes((nds) => [...nds, newNode.serialize()]);
-    addLog("Node added", {id : newNode.id, title: newNode.title, inputs: newNode.inputs , outputs: newNode.outputs});
+    addLog("Node added", { id: newNode.id, title: newNode.title, inputs: newNode.inputs, outputs: newNode.outputs });
   }, [setNodes, addLog]);
 
   // Fonction pour définir le workflow
@@ -95,15 +98,12 @@ export const FlowProvider = ({ children }) => {
   }, [setNodes, setEdges, addLog]);
 
   const updateNode = useCallback((id, updatedProperties) => {
-    
     setNodes((nds) =>
       nds.map((n) =>
         n.id === id ? { ...n, data: { ...n.data, ...updatedProperties } } : n
       )
     );
-
     setCurrentNode(id);
-
     addLog("Node updated", { id, updatedProperties, inputs: updatedProperties.inputs, outputs: updatedProperties.outputs });
   }, [setNodes, addLog]);
 
@@ -116,28 +116,15 @@ export const FlowProvider = ({ children }) => {
 
   const onNodeClick = useCallback((event, node) => {
     console.log("Clicked:", node.id);
-    setCurrentNode(node.id);  
+    setCurrentNode(node.id);
     addLog("Node selected", { id: node.id, label: node.data.label });
-}, [addLog]);
+  }, [addLog]);
 
-  const onNodeExecute = useCallback((nodeId, engine) => {
+  const onNodeExecute = useCallback((nodeId) => {
     console.log("Executing node:", nodeId);
     engine.executeNode(nodeId);
     addLog("Node execution started", { id: nodeId });
-}, [addLog]);
-
-
-  const handleEngineEvent = (event, payload) => {
-  if (event === "node-output") {
-    const { id, result } = payload;
-    console.log("Updating node result in FlowContext:", id, result);
-
-    updateNode(id, { result });
-    console.log("Node updated with result:", id, result);
-  }
-};
-
-
+  }, [addLog]);
 
 
   // --- Valeur fournie par le Context ---
@@ -158,8 +145,6 @@ export const FlowProvider = ({ children }) => {
     setCurrentNode,
     onNodeClick,
     onNodeExecute,
-    bindEngine,
-    // reactFlowInstance,
   };
 
   return (

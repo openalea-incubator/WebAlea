@@ -8,7 +8,7 @@ import { Node } from '../../../workspace/model/Node.jsx';
 
 const ALEA_NODES = [
     new Node({ id: 'grid-community', label: '@mui/x-data-grid', inputs: [{"name": "Test"}], outputs: [{ "name": "Value", "type": "float", "default": 0 }] }),
-    new Node({ id: 'grid-pro', label: '@mui/x-data-grid-pro', inputs: [{ "name": "Value", "type": "string", "default": "" }] }),
+    new Node({ id: 'grid-pro', label: '@mui/x-data-grid-pro', inputs: [{ "name": "a", "type": "float", "value": 0 }, { "name": "b", "type": "float", "value": 0 }] }),
     new Node({ id: 'grid-premium', label: '@mui/x-data-grid-premium', outputs: [{ "name": "Value1", "type": "boolean", "default": false }, { "name": "Value2", "type": "boolean", "default": false }] })
 ];
 
