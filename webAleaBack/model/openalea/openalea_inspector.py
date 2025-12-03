@@ -2,6 +2,7 @@
 import logging
 import subprocess
 import ast
+import json
 
 from typing import Any, Dict, List
 
@@ -25,65 +26,16 @@ class OpenAleaInspector:
             text=True,
             check=True,
         )
-        # parse output safely using ast.literal_eval instead of eval
+        # parse output: prefer JSON, fallback to Python literal
         try:
-            packages = ast.literal_eval(result.stdout)
-        except (ValueError, SyntaxError):
-            logging.error("Failed to parse package list output: %s", result.stdout)
-            packages = []
-        return packages
-
-    @staticmethod
-    def _serialize_node_puts(puts) -> dict:
-        """serialize inputs and outputs of a list inputs/outputs
-
-        Args:
-            node_factory : the flow node factory
-
-        Returns:
-            dict: serialized inputs and outputs
-        """
-        serialized = []
-        if not puts:
-            return serialized # empty array if no inputs/outputs
-        for put in puts: # for each input/output
+            packages = json.loads(result.stdout)
+        except (json.JSONDecodeError, TypeError, ValueError):
             try:
-                # serialize into a json dict
-                put_dict = {
-                    "name": put.name,
-                    "interface": str(put.interface),
-                    "optional": put.optional,
-                    "desc": put.desc,
-                }
-                serialized.append(put_dict)
-            except AttributeError:
-                serialized.append(str(put))
-        return serialized
-
-    @staticmethod
-    def _serialize_node(node_factory) -> dict:
-        """describes a node from its factory
-
-        Args:
-            node_factory : the node factory
-
-        Raises:
-            ValueError: if no node was found
-
-        Returns:
-            dict: the node description
-        """
-        # serialize node factory information
-        inputs = OpenAleaInspector._serialize_node_puts(node_factory.inputs)
-        outputs = OpenAleaInspector._serialize_node_puts(node_factory.outputs)
-
-        return {
-            "description": node_factory.description,
-            "inputs": inputs,
-            "outputs": outputs,
-            "callable": node_factory.nodeclass,
-        }
-
+                packages = ast.literal_eval(result.stdout)
+            except (ValueError, SyntaxError):
+                logging.error("Failed to parse package list output: %s", result.stdout)
+                packages = []
+        return packages
 
     @staticmethod
     def describe_openalea_package(package_name: str) -> Dict[str, Any]:
@@ -98,19 +50,27 @@ class OpenAleaInspector:
         Returns:
             dict: the package description (JSON-serializable)
         """
-        # initalize package manager
-        pm = PackageManager()
-        pm.init()
-        # check package existence
-        if package_name not in pm.keys():
-            logging.error("No OpenAlea package named '%s' found.", package_name)
-            raise ValueError(f"No OpenAlea package named '{package_name}' found.")
-        # retrieve package
-        pkg = pm.get(package_name)
-        nodes: Dict[str, Any] = {}
-        # describe each node in the package
-        for node_factory in pkg.values():
-            node_name = getattr(node_factory, "name", str(node_factory))
-            nodes[node_name] = OpenAleaInspector._serialize_node(node_factory)
+        result = subprocess.run(
+            ["python3", "model/openalea/runnable/describe_openalea_package.py", package_name],
+            stdout=subprocess.PIPE,
+            text=True,
+            check=True,
+        )
+        # parse output: prefer JSON, fallback to Python literal
+        try:
+            description = json.loads(result.stdout)
+        except (json.JSONDecodeError, TypeError, ValueError):
+            try:
+                description = ast.literal_eval(result.stdout)
+            except (ValueError, SyntaxError):
+                logging.error("Failed to parse package description output: %s", result.stdout)
+                description = {}
+        return description
 
-        return {"nodes": nodes}
+if __name__ == "__main__":
+    inspector = OpenAleaInspector()
+    packages = inspector.list_installed_openalea_packages()
+    print("Installed OpenAlea packages:", packages)
+    if packages:
+        package_desc = inspector.describe_openalea_package("openalea.flow control")
+        print(f"Description of package openalea.flow control:", package_desc)
