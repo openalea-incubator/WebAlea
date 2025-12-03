@@ -1,9 +1,11 @@
 """Module to inspect OpenAlea packages in the current conda environment."""
 import logging
+import subprocess
+import ast
 
 from typing import Any, Dict, List
 
-from openalea.core.pkgmanager import PackageManager
+
 
 class OpenAleaInspector:
     """Class to inspect OpenAlea packages installed in the current environment."""
@@ -16,10 +18,20 @@ class OpenAleaInspector:
         Returns:
             list: A list of installed OpenAlea package names.
         """
-        # initalize package manager
-        pm = PackageManager()
-        pm.init()
-        return list(pm.keys())
+        # run the subprocess to get installed packages list
+        result = subprocess.run(
+            ["python3", "model/openalea/runnable/list_installed_openalea_packages.py"],
+            stdout=subprocess.PIPE,
+            text=True,
+            check=True,
+        )
+        # parse output safely using ast.literal_eval instead of eval
+        try:
+            packages = ast.literal_eval(result.stdout)
+        except (ValueError, SyntaxError):
+            logging.error("Failed to parse package list output: %s", result.stdout)
+            packages = []
+        return packages
 
     @staticmethod
     def _serialize_node_puts(puts) -> dict:
