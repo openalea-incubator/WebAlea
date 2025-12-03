@@ -5,7 +5,7 @@ import logging
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
-from conda_utils.conda_utils import Conda
+from model.utils.conda_utils import Conda
 from model.openalea.inspector.openalea_inspector import OpenAleaInspector
 from core.config import settings
 

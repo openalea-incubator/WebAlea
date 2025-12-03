@@ -3,10 +3,10 @@ from unittest import TestCase
 import unittest.mock
 import json
 
-from conda_utils.conda_inspector import OpenAleaInspector
+from model.openalea.inspector.openalea_inspector import OpenAleaInspector
 
-class TestCondaInspectorMethods(TestCase):
-    """Unit tests for OpenAleaInpector class"""
+class TestOpenAleaInspectorMethods(TestCase):
+    """Unit tests for OpenAleaInspector class"""
 
     # data for testing
     mock_openalea_desc_file = "tests/resources/conda/openalea_package_desc.json"
@@ -30,8 +30,7 @@ class TestCondaInspectorMethods(TestCase):
     # @unittest.skip("Skipping test that requires actual OpenAlea package.")
     def test_describe_openalea_package(self):
         """Test describing an OpenAlea package."""
-        inspector = OpenAleaInspector()
-        pkg_description = inspector.describe_openalea_package("openalea.astk")
+        pkg_description = OpenAleaInspector.describe_openalea_package("openalea.astk")
 
         expected_description = open(
             self.mock_openalea_desc_file,
