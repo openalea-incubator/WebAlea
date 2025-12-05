@@ -5,7 +5,7 @@ import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
 import TreePackage from '../../model/TreePackage.jsx';
 import TreeNode from '../../model/TreeNode.jsx';
 import { Node } from '../../../workspace/model/Node.jsx';
-import { fetchInstalledOpenAleaPackages, installPackages, fetchPackageList } from '../../../../api/managerAPI.jsx';
+import { getNodesList, getPackagesList } from '../../../../service/PackageService.js';
 import { useEffect } from 'react';
 
 const ALEA_NODES = [
@@ -37,9 +37,9 @@ export default function PanelModuleNode({ onAddNode }) {
 
     // Fetching all packages
     useEffect(() => {
-        const allPackages = fetchPackageList().then(console.log);
-        installPackages(allPackages).then(console.log);
-        fetchInstalledOpenAleaPackages().then(console.log);
+        const packages = getPackagesList();
+        console.log(packages);
+        // const nodesFromPackages = getNodesList(packages["openalea.alep"]); 
     }, []);
 
     const [menu, setMenu] = React.useState(null);

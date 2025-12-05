@@ -31,7 +31,8 @@ export async function fetchInstalledOpenAleaPackages() {
 }
 
 export async function fetchPackageNodes(packageName) {
-    return fetchJSON(`${BASE_URL}/installed/${packageName}`);
+    console.log("nom package : ", packageName)
+    return fetchJSON(`${BASE_URL}/installed/${packageName}`);   
 }
 
 // ===============================
