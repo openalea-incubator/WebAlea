@@ -36,10 +36,14 @@ const OPENALEA_NODES = [
 export default function PanelModuleNode({ onAddNode }) {
 
     // Fetching all packages
-    useEffect(() => {
-        const packages = getPackagesList();
-        console.log(packages);
-        // const nodesFromPackages = getNodesList(packages["openalea.alep"]); 
+    useEffect(async() => {
+        const packages = await getPackagesList();
+        const mapNodes = new Map();
+        for (const pkg of packages) {
+            const allNodes = await getNodesList(pkg);
+            mapNodes.set(pkg.name, allNodes);
+        };
+        console.log(mapNodes);
     }, []);
 
     const [menu, setMenu] = React.useState(null);
