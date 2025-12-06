@@ -7,7 +7,7 @@ import { fetchPackageList, fetchPackageNodes, installPackages, fetchInstalledOpe
 
 /**
  * Fetches the list of installed OpenAlea packages.
- * @returns {Promise<Array>} An array of installed OpenAlea packages.
+ * @returns {Promise<Array<Object>>} A Promise that resolves to an array of all the packages (Objects) of the OpenAlea ecosystem.
  */
 export async function getPackagesList() {
     const allPackagesObj = await fetchPackageList();
@@ -20,6 +20,11 @@ export async function getPackagesList() {
     return formattedPackages;
 }
 
+/**
+ * 
+ * @param {String} packageName 
+ * @returns {Promise<Boolean>} A Promise that resolves to a boolean indicating if the package is installed.
+ */
 export async function isInstalledPackage(packageName) {
     const installePackages = await fetchInstalledOpenAleaPackages();
     const arrayPackages = Array.from(Object.entries(installePackages));
@@ -27,21 +32,31 @@ export async function isInstalledPackage(packageName) {
     return formattedPackages.includes(packageName);
 }
 
+/**
+ * 
+ * @param {Object} pkg 
+ * @returns {Promise<Object>} A Promise that resolves to the installation result.
+ */
 export async function installPackage(pkg) {
     const installPkg = await installPackages([pkg]);
         console.log("installPkg :", installPkg);
     return installPkg;
 }
 
+/**
+ * 
+ * @param {Object} pkg 
+ * @returns {Promise<Array<Object>>} A Promise that resolves to an array of nodes of the package.
+ */
 export async function getNodesList(pkg) {
     try {
-        // Installer si nécessaire
+        // Install the package if not already installed
         if (!(await isInstalledPackage(pkg.name))) {
             console.log(`Package "${pkg.name}" is not installed. Installing...`);
             await installPackage(pkg);
         }
 
-        // Récupération des nodes
+        // Fetching nodes
         const allNodes = await fetchPackageNodes(pkg.name);
         console.log("allNodes :", allNodes);
 
@@ -51,7 +66,7 @@ export async function getNodesList(pkg) {
         }));
 
     } catch (error) {
-        console.error(`Error : impossible to fetch nodes for package "${pkg}":`, error);
+        console.error(`Error : impossible to fetch nodes for package "${pkg.name}":`, error);
         return [];
     }
 }

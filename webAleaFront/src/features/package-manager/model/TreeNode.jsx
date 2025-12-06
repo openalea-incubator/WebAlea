@@ -6,8 +6,8 @@ export default class TreeNode {
 
     serialize() {
         return {
-            id: this.node.id,
-            label: this.node.data.label,
+            id: this.node.name,
+            label: this.node.name,
             node: this.node
         };
     }
