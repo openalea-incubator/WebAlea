@@ -1,22 +1,46 @@
-import { WFNode } from "./WFNode.js";
+
+export class WFNode {
+    constructor({ id, type, inputs = [], outputs = [], next = [] }) {
+        this.id = id;
+        this.type = type;
+        this.inputs = inputs;
+        this.outputs = outputs;
+        this.next = next; // Direct children node IDs
+    }
+}
+
 
 export function buildGraphModel(nodesUI, edgesUI) {
-    const map = {};
+    const graph = [];
 
-    // convertir les nodes UI → nodes métier
-    nodesUI.forEach(node => {
-    map[node.id] = new WFNode({
-        id: node.id,
-        type: node.type,
-        data: node.data,
-        next: []
-    });
-    });
+    for (const nodeUI of nodesUI) {
+      if (nodeUI.type !== 'custom') continue;
+        // Filtre les enfants valides
+        const children = edgesUI
+            .filter(edge => edge.source === nodeUI.id && nodesUI.some(n => n.id === edge.target))
+            .map(edge => edge.target);
 
-    // connecter les children
-    edgesUI.forEach(edge => {
-    map[edge.source].next.push(edge.target);
-    });
+        graph.push(new WFNode({
+            id: nodeUI.id,
+            type: nodeUI.type,
+            inputs: nodeUI.data.inputs ?? [],
+            outputs: nodeUI.data.outputs ?? [],
+            next: children
+        }));
+    }
 
-  return map; // dictionnaire { nodeId: WFNode }
+    return graph;
+}
+
+
+export function getRootNodes(graph) {
+    const allChildIds = new Set();
+
+    Object.values(graph).forEach(node => {
+        node.next.forEach(childId => allChildIds.add(childId));
+    });
+    console.log("All child IDs:", allChildIds);
+    return Object.values(graph)
+        .filter(node => !allChildIds.has(node.id))
+        .map(node => node.id);
 }

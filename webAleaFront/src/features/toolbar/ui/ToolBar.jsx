@@ -3,11 +3,13 @@ import ButtonToolBar from "./ButtonToolBar";
 import ImportModal from "../model/ImportModal";
 import { FaUpload, FaDownload, FaInfoCircle, FaPlay, FaStop } from "react-icons/fa";
 import { useFlow } from "../../workspace/providers/FlowContextDefinition.jsx";
+import { WorkflowEngine } from "../../workspace/engine/WorkflowEngine.jsx";
 import { useLog } from "../../logger/providers/LogContextDefinition.jsx";
+import { buildGraphModel } from "../../workspace/model/WorkflowGraph.jsx";
 
 export default function ToolBar() {
     const [showImportModal, setShowImportModal] = useState(false);
-    const { setNodesAndEdges, nodes, edges } = useFlow();
+    const { setNodesAndEdges, nodes, edges, engine } = useFlow();
 
     const handleImportClick = () => setShowImportModal(true);
     const handleImportClose = () => setShowImportModal(false);
@@ -52,7 +54,14 @@ export default function ToolBar() {
     };
 
     const handleInfo = () => alert("Afficher les informations");
-    const handleRun = () => alert("Exécution du workflow");
+    
+    const handleRun = () => {
+        const graph = buildGraphModel(nodes, edges);
+        console.log("Running workflow with graph model:", graph);
+        engine.bindModel(graph);
+        engine.start();
+    };
+
     const handleStop = () => alert("Arrêt du workflow");
 
     return (

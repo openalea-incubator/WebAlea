@@ -11,6 +11,7 @@ import StringNode from '../ui/type/StringNode.jsx';
 import BoolNode from '../ui/type/BoolNode.jsx';
 import { useLog } from '../../logger/providers/LogContextDefinition.jsx';
 import { WorkflowEngine } from '../engine/WorkflowEngine.jsx';
+import { buildGraphModel } from '../model/WorkflowGraph.jsx';
 
 const FLOW_KEY_NODES = 'reactFlowCacheNodes';
 const FLOW_KEY_EDGES = 'reactFlowCacheEdges';
@@ -38,13 +39,10 @@ export const FlowProvider = ({ children }) => {
   const [currentNode, setCurrentNode] = useState(null);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-
-  //TODO: Création de l'engine
-  //const engine = WorkflowEngine.getInstance();
-  //engine.initialize(nodes, edges);
-  
+  // --- Gestion des événements du moteur ---
   const handleEngineEvent = (event, payload) => {
-    if (event === "node-output") {
+    console.log("WorkflowEngine event:", event, payload);
+    if (event === "node-result") {
       const { id, result } = payload;
       console.log("Updating node result in FlowContext:", id, result);
 
@@ -52,6 +50,13 @@ export const FlowProvider = ({ children }) => {
       console.log("Node updated with result:", id, result);
     }
   };
+
+  // Init Workflow Engine
+  const [engine] = useState(() => {
+    const workflowEngine = new WorkflowEngine();
+    workflowEngine.onUpdate(handleEngineEvent);
+    return workflowEngine;
+  });
 
   const nodesTypes = {
     custom: CustomNode,
@@ -168,6 +173,7 @@ export const FlowProvider = ({ children }) => {
     setCurrentNode,
     onNodeClick,
     onNodeExecute,
+    engine,
   };
 
   return (

@@ -1,53 +1,74 @@
+import { WFNode, getRootNodes } from "../model/WorkflowGraph.jsx";
+
+
 export class WorkflowEngine {
-    constructor(graphModel) {
-        this.model = graphModel;  // instance de WorkflowGraph
+    constructor(graphModel = {}) {
+        this.model = graphModel;  
         this.listeners = [];
+    }
+
+    bindModel(graphModel) {
+        this.model = graphModel;
     }
 
     onUpdate(cb) {
         this.listeners.push(cb);
     }
 
-    start(nodeId) {
-        this._emit("start", nodeId);
-        this._execute(nodeId);
+    start() {
+        if (!this.model || Object.keys(this.model).length === 0) {
+            console.warn("WorkflowEngine: No model bound.");
+            return;
+        }
+
+        this._emit("start");
+
+        const rootIds = getRootNodes(Object.values(this.model));
+            console.log("Root node IDs:", rootIds);
+        rootIds.forEach(id => this._executeChain(id));
     }
 
-    _execute(id) {
-        const node = this.model.nodes[id];
+    // Execute a node and its children recursively
+    _executeChain(nodeId) {
+        const node = this.model.find(n => n.id === nodeId);
+        console.log("Executing chain for node ID:", nodeId, node);
         if (!node) return;
+        console.log("skibidi");
 
-        this._emit("node-start", id);
+        this.executeNode(node);
 
-        setTimeout(() => {
-            this._emit("node-done", id);
-
-            node.next.forEach(nextId => {
-                this._execute(nextId);
-            });
-        }, 500);
+        node.next.forEach(nextId => {
+            this._executeChain(nextId);
+        });
     }
 
+    // Execute a single node
     executeNode(node) {
-        console.log("a", node.id);
         this._emit("node-start", node.id);
-        console.log("b", node.id);
 
-        // simulate processing + result
+        // Retrieve input values
+        const inputsValues = node.inputs.map(i => i.value);
+
         setTimeout(() => {
-            const result = this._executeLogic(node); 
-            this._emit("node-output", { id: node.id, result });
+            const result = this._executeLogic(node, inputsValues);
 
+            // Send the result
+            this._emit("node-result", { id: node.id, result });
+
+            // Node done
             this._emit("node-done", node.id);
 
         }, 500);
     }
 
-    _executeLogic(node) {
-        // exemple pour le moment
-        return Math.random() * 10; 
+    // Simple logic execution based on node type
+    _executeLogic(node, inputsValues) {
+        let result = 0;
+        inputsValues.forEach(input => {
+            result += input;
+        });
+        return result + 1000;
     }
-
 
     _emit(event, payload) {
         this.listeners.forEach(l => l(event, payload));
