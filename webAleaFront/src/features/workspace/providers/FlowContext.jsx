@@ -11,7 +11,7 @@ import StringNode from '../ui/type/StringNode.jsx';
 import BoolNode from '../ui/type/BoolNode.jsx';
 import { useLog } from '../../logger/providers/LogContextDefinition.jsx';
 import { WorkflowEngine } from '../engine/WorkflowEngine.jsx';
-import { buildGraphModel } from '../model/WorkflowGraph.jsx';
+import { buildGraphModel, WFNode } from '../model/WorkflowGraph.jsx';
 
 const FLOW_KEY_NODES = 'reactFlowCacheNodes';
 const FLOW_KEY_EDGES = 'reactFlowCacheEdges';
@@ -150,7 +150,18 @@ export const FlowProvider = ({ children }) => {
 
   const onNodeExecute = useCallback((nodeId) => {
     console.log("Executing node:", nodeId);
-    engine.executeNode(nodeId);
+    const curNode = nodes.find(n => n.id === nodeId);
+    if (!curNode) {
+      console.warn("Node not found for execution:", nodeId);
+      return;
+    }
+    const formNode = new WFNode({
+      id: curNode.id,
+      type: curNode.type,
+      inputs: curNode.data.inputs ?? [],
+      outputs: curNode.data.outputs ?? [],
+    });
+    engine.executeNode(formNode);
     addLog("Node execution started", { id: nodeId });
   }, [addLog]);
 

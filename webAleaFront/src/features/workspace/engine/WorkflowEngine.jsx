@@ -31,9 +31,7 @@ export class WorkflowEngine {
     // Execute a node and its children recursively
     _executeChain(nodeId) {
         const node = this.model.find(n => n.id === nodeId);
-        console.log("Executing chain for node ID:", nodeId, node);
         if (!node) return;
-        console.log("skibidi");
 
         this.executeNode(node);
 

@@ -4,7 +4,7 @@ import NodeOutput from "../NodeOutputs.jsx";
 import { useFlow } from "../../../workspace/providers/FlowContextDefinition.jsx";
 
 export default function NodeParameters() {
-    const { currentNode, nodes, onNodeExecute, addLog } = useFlow();
+    const { currentNode, nodes, onNodeExecute, engine } = useFlow();
     const node = nodes.find(n => n.id === currentNode);
 
     const [inputs, setInputs] = useState(node ? node.data.inputs : []);
