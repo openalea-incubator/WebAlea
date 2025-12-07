@@ -15,6 +15,7 @@ export default function PackageManager() {
   };*/
 
   const handleAddPrimitiveNode = (treeNode) => {
+    console.log("Adding primitive node:", treeNode);
     treeNode.node.id = `n${Math.floor(Math.random() * 10000)}-${treeNode.node.id}`;
     addNode(treeNode.node);
   };

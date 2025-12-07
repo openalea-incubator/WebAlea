@@ -7,7 +7,7 @@ import {
   useReactFlow,
 } from '@xyflow/react';
 
-export default function CustomHandle({ id, label, style, onChange }) {
+export default function CustomHandle({ id, label, style, onChange = null, dataType }) {
   const connections = useNodeConnections({
     handleType: 'target',
     handleId: id,
@@ -16,17 +16,17 @@ export default function CustomHandle({ id, label, style, onChange }) {
   const nodeData = useNodesData(connections?.[0]?.source);
   const nodeOutputs = nodeData?.data?.outputs || [];
 
-  console.log(nodeOutputs[0]?.value);
-
   useEffect(() => {
-    onChange(nodeOutputs[0]?.value);
+    if (onChange && nodeOutputs.length > 0) {
+      onChange(nodeOutputs[0]?.value);
+    }
   }, [nodeData]);
   
   return (
     <div>
       <Handle
-        type="target"
-        position={Position.Left}
+        type={dataType === 'input' ? 'target' : 'source'}
+        position={dataType === 'input' ? Position.Left : Position.Right}
         id={id}
         className="node-handle"
         style={style}

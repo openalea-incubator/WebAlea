@@ -5,9 +5,9 @@ import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
 import { Node } from '../../../workspace/model/Node.jsx';
 import TreeNode from '../../model/TreeNode.jsx';
 
-const FLOAT_NODE = new Node({ id: 'float', label: 'Float input', type: "float", outputs: [{ "name": "Value", "type": "float", "default": 0 }] })
-const STRING_NODE = new Node({ id: 'string', label: 'String input', type: "string", outputs: [{ "name": "Value", "type": "string", "default": "" }] })
-const BOOLEAN_NODE = new Node({ id: 'boolean', label: 'Boolean input', type: "boolean", outputs: [{ "name": "Value", "type": "boolean", "default": false }] })
+const FLOAT_NODE = new Node({ id: 'float', label: 'Float input', type: "float", outputs: [{ "id": "out-float-0", "name": "Value", "type": "float", "value": 0 }] })
+const STRING_NODE = new Node({ id: 'string', label: 'String input', type: "string", outputs: [{ "id": "out-string-0", "name": "Value", "type": "string", "value": "" }] })
+const BOOLEAN_NODE = new Node({ id: 'boolean', label: 'Boolean input', type: "boolean", outputs: [{ "id": "out-boolean-0", "name": "Value", "type": "boolean", "value": false }] })
 
 const PRIMITIVE_NODES = [
     new TreeNode(FLOAT_NODE),

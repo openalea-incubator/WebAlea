@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+    import React, { useCallback, useMemo } from "react";
 import { Handle, Position } from "@xyflow/react";
 import { useFlow } from '../providers/FlowContextDefinition.jsx';
 import "../../../assets/css/custom_node.css";
@@ -84,8 +84,8 @@ export default function CustomNode(nodeProps) {
                     const topPercent = ((index + 1) / (inputs.length + 1)) * 100;
                     return (
                         <CustomHandle
-                            key={input.name}
-                            id={input.name}
+                            key={input.id}
+                            id={input.id}
                             style={{
                                 background: getTypeColor(input.type),
                                 top: `${topPercent}%`,
@@ -94,6 +94,7 @@ export default function CustomNode(nodeProps) {
                                 input.value = value;
                                 console.log(`Input ${input.id} changed to`, value);
                             }}
+                            dataType="input"
                         />
                     );
                 })
@@ -104,15 +105,14 @@ export default function CustomNode(nodeProps) {
                 outputs.map((output, index) => {
                     const topPercent = ((index + 1) / (outputs.length + 1)) * 100;
                     return (
-                        <Handle
+                        <CustomHandle
                             key={output.id}
-                            type="source"
-                            position={Position.Right}
-                            className="node-handle"
+                            id={output.id}
                             style={{
                                 background: getTypeColor(output.type),
                                 top: `${topPercent}%`,
                             }}
+                            dataType="output"
                         />
                     );
                 })}

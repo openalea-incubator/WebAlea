@@ -3,6 +3,7 @@ import "../../../../assets/css/custom_node.css";
 import { useFlow } from "../../providers/FlowContextDefinition";
 import { useLog } from "../../../logger/providers/LogContextDefinition.jsx";
 import { useEffect, useState } from "react";
+import CustomHandle from "../../ui/CustomHandle.jsx";
 
 export default function FloatNode(nodeProps) {
     const { id, data = {} } = nodeProps;
@@ -16,7 +17,7 @@ export default function FloatNode(nodeProps) {
     const [outputId] = useState(initialOutputId); 
 
     useEffect(() => {
-        updateNode(id, { outputs: [{ value, id: outputId }] });
+        updateNode(id, { outputs: [{ value, id: outputId, type: "float" }] });
         addLog(`FloatNode ${id} updated. value = ${value}`);
     }, [id, value, outputId, updateNode, addLog]);
 
@@ -48,14 +49,10 @@ export default function FloatNode(nodeProps) {
                 onChange={handleChange}
                 onBlur={handleBlur}  
                 className="node-input"
-                style={{ width: "100%" }}
+                style={{ width: "50%" }}
             />
-
-            <Handle
-                type="source"
-                position={Position.Right}
-                id={`out-${id}-value`}
-                data-handle={data.outputs[0].id ? data.outputs[0].id : `out-${id}-0`}
+            <CustomHandle
+                id={outputId}
                 className="node-handle"
                 style={{
                     background: "#8e24aa",
@@ -65,6 +62,7 @@ export default function FloatNode(nodeProps) {
                     border: "2px solid rgba(255,255,255,0.6)",
                     cursor: "pointer",
                 }}
+                dataType="output"
             />
         </div>
     );

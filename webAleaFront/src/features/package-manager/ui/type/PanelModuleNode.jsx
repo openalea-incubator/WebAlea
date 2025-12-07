@@ -7,14 +7,14 @@ import TreeNode from '../../model/TreeNode.jsx';
 import { Node } from '../../../workspace/model/Node.jsx';
 
 const ALEA_NODES = [
-    new Node({ id: 'grid-community', label: '@mui/x-data-grid', inputs: [{"name": "Test"}], outputs: [{ "name": "Value", "type": "float", "default": 0 }] }),
-    new Node({ id: 'grid-pro', label: '@mui/x-data-grid-pro', inputs: [{ "name": "a", "type": "float", "value": 0 }, { "name": "b", "type": "float", "value": 0 }] }),
-    new Node({ id: 'grid-premium', label: '@mui/x-data-grid-premium', outputs: [{ "name": "Value1", "type": "boolean", "default": false }, { "name": "Value2", "type": "boolean", "default": false }] })
+    new Node({ id: 'grid-community', label: '@mui/x-data-grid', inputs: [{"id": "in-grid-community-0", "name": "Test", "type": "string", "value": "coubeh"}], outputs: [{ "id": "out-grid-community-0", "name": "Value", "type": "float", "value": 0 }] }),
+    new Node({ id: 'grid-pro', label: '@mui/x-data-grid-pro', inputs: [{ "id": "in-grid-pro-0", "name": "a", "type": "float", "value": 0 }, { "id": "in-grid-pro-1", "name": "b", "type": "float", "value": 0 }] }),
+    new Node({ id: 'grid-premium', label: '@mui/x-data-grid-premium', outputs: [{ "id": "out-grid-premium-0", "name": "Value1", "type": "boolean", "value": false }, { "id": "out-grid-premium-1", "name": "Value2", "type": "boolean", "value": false }] })
 ];
 
 const TREE_VIEW_NODES = [
-    new Node({ id: 'tree-view-community', label: '@mui/x-tree-view', inputs: [{"name": "Test"}], outputs: [{ "name": "Value", "type": "float", "default": 0 }] }),
-    new Node({ id: 'tree-view-pro', label: '@mui/x-tree-view-pro', inputs: [{ "name": "Value", "type": "string", "default": "" }] })
+    new Node({ id: 'tree-view-community', label: '@mui/x-tree-view', inputs: [{"id": "in-tree-view-community-0", "name": "Test", "type": "float", "value": 0}], outputs: [{"id": "out-tree-view-community-0", "name": "Value", "type": "float", "value": 0 }] }),
+    new Node({ id: 'tree-view-pro', label: '@mui/x-tree-view-pro', inputs: [{ "id": "in-tree-view-pro-0", "name": "Value", "type": "string", "value": "" }] })
 ];
 
 const OPENALEA_NODES = [

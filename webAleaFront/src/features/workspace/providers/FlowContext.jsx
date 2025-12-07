@@ -76,12 +76,35 @@ export const FlowProvider = ({ children }) => {
   // --- Fonctions de gestion ---
   // Fonction pour ajouter une nouvelle connexion (edge)
   const onConnect = useCallback((params) => {
+      
     if (params.source === params.target) {
       return;
     }
+    const { source, sourceHandle, target, targetHandle } = params;
+
+    const sourceNode = nodes.find(n => n.id === source);
+    const targetNode = nodes.find(n => n.id === target);
+
+    if (!sourceNode || !targetNode) return;
+
+    const output = sourceNode.data.outputs.find(o => o.id === sourceHandle);
+    const input = targetNode.data.inputs.find(i => i.id === targetHandle);
+    console.log("Connecting:", { output, input });
+
+    // --- Vérification des types ---
+    if (output?.type !== input?.type) {
+      addLog("❌ Type mismatch", {
+        from: `${ source}.${sourceHandle} (${output?.type})`,
+        to: `${target}.${targetHandle} (${input?.type})`
+      });
+      console.warn("Type mismatch:", output?.type, "→", input?.type);
+      return; // ❗ REFUSE LA CONNECTION
+    }
+
+    // --- OK : on ajoute l’edge ---
     setEdges((eds) => addEdge(params, eds));
-    addLog("Edge added", { param: params });
-  }, [setEdges, addLog]);
+    addLog("Edge added", { params });
+  }, [nodes, setEdges, addLog]);
 
   // Fonction pour ajouter un nouveau noeud
   const addNode = useCallback((newNode) => {
@@ -117,7 +140,7 @@ export const FlowProvider = ({ children }) => {
   const onNodeClick = useCallback((event, node) => {
     console.log("Clicked:", node.id);
     setCurrentNode(node.id);
-    addLog("Node selected", { id: node.id, label: node.data.label });
+    addLog("Node selected", { id: node.id, label: node.data.label, type: node.type, inputs: node.data.inputs, outputs: node.data.outputs });
   }, [addLog]);
 
   const onNodeExecute = useCallback((nodeId) => {

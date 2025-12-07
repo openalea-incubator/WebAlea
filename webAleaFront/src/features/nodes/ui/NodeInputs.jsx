@@ -4,6 +4,7 @@ import NodeInputString from "../model/NodeInputStr";
 import NodeInputBoolean from "../model/NodeInputBool";
 
 export default function NodeInput({ inputs, onValueChange }) {
+    console.log("Rendering NodeInput with inputs:", inputs);
     return (
     <div className="node-inputs">
         {inputs.map((input) => {
@@ -12,7 +13,7 @@ export default function NodeInput({ inputs, onValueChange }) {
             return (
                 <NodeInputFloat
                 inputName={input.name}
-                value={input.value}
+                value={input.value ?? 0}
                 onChangeValueChanged={(val) => onValueChange(input.name, val)}
                 />
             );
@@ -20,7 +21,7 @@ export default function NodeInput({ inputs, onValueChange }) {
             return (
                 <NodeInputString
                 inputName={input.name}
-                value={input.value}
+                value={input.value ?? ""}
                 onChangeValueChanged={(val) => onValueChange(input.name, val)}
                 />
             );
@@ -28,7 +29,7 @@ export default function NodeInput({ inputs, onValueChange }) {
             return (
                 <NodeInputBoolean
                 inputName={input.name}
-                value={input.value}
+                value={input.value ?? false}
                 onChangeValueChanged={(val) => onValueChange(input.name, val)}
                 />
             );

@@ -59,6 +59,14 @@ export class Node {
         };
     }
 
+    serializeData(entries = []) {
+        if (entries.length === 0) {
+            return entries;
+        };
+        // TODO
+    }
+
+
     /**
      * Sérialise l'instance du nœud en une chaîne JSON.
      * @param {number} spacing - Espacement pour l'indentation JSON.

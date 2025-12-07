@@ -3,6 +3,7 @@ import { Handle, Position } from "@xyflow/react";
 import "../../../../assets/css/custom_node.css";
 import { useLog } from "../../../logger/providers/LogContextDefinition.jsx";
 import { useFlow } from "../../providers/FlowContextDefinition";
+import CustomHandle from "../../ui/CustomHandle.jsx";
 
 export default function StringNode(nodeProps) {
     const { id, data = {} } = nodeProps;
@@ -17,7 +18,7 @@ export default function StringNode(nodeProps) {
 
     // Sync initial value
     useEffect(() => {
-        updateNode(id, { outputs: [{ value, id: outputId }] });
+        updateNode(id, { outputs: [{ value, id: outputId, type: "string" }] });
         addLog(`StringNode ${id} updated. value = ${value}`);
     }, [id, value, outputId, updateNode, addLog]);
 
@@ -61,12 +62,8 @@ export default function StringNode(nodeProps) {
                     border: "1px solid #ccc",
                 }}
             />
-
-            <Handle
-                type="source"
-                position={Position.Right}
-                id={`out-${id}-value`}
-                data-handle={outputId}
+            <CustomHandle
+                id={outputId}
                 className="node-handle"
                 style={{
                     background: "#1976d2",
@@ -76,6 +73,7 @@ export default function StringNode(nodeProps) {
                     border: "2px solid rgba(255,255,255,0.6)",
                     cursor: "pointer",
                 }}
+                dataType="output"
             />
         </div>
     );

@@ -3,6 +3,7 @@ import "../../../../assets/css/custom_node.css";
 import { useFlow } from "../../providers/FlowContextDefinition";
 import { useLog } from "../../../logger/providers/LogContextDefinition.jsx";
 import { useEffect, useState } from "react";
+import CustomHandle from "../../ui/CustomHandle.jsx";
 
 export default function BoolNode(nodeProps) {
     const { id, data = {}, selected } = nodeProps;
@@ -16,7 +17,7 @@ export default function BoolNode(nodeProps) {
     const [outputId] = useState(initialOutputId); 
 
     useEffect(() => {
-        updateNode(id, { outputs: [{ value, id: outputId }] });
+        updateNode(id, { outputs: [{ value, id: outputId, type: "boolean" }] });
         addLog(`BoolNode ${id} updated. value = ${value}`);
     }, [id, value, outputId, updateNode, addLog]);
 
@@ -49,11 +50,8 @@ export default function BoolNode(nodeProps) {
             </select>
 
             {/* OUTPUT */}
-            <Handle
-                type="source"
-                position={Position.Right}
-                id={`out-${id}-value`}
-                data-handle={outputId}
+            <CustomHandle
+                id={outputId}
                 className="node-handle"
                 style={{
                     background: "#2b8a3e",
@@ -63,6 +61,7 @@ export default function BoolNode(nodeProps) {
                     border: "2px solid rgba(255,255,255,0.6)",
                     cursor: "pointer",
                 }}
+                dataType="output"
             />
         </div>
     );
