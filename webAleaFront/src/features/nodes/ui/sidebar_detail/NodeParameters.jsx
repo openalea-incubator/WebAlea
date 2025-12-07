@@ -7,70 +7,104 @@ export default function NodeParameters() {
     const { currentNode, nodes, onNodeExecute, addLog } = useFlow();
     const node = nodes.find(n => n.id === currentNode);
 
-    const [inputs, setInputs] = useState(node ? node.data.inputs : [])
-    const [outputs, setOutputs] = useState(node ? node.data.outputs : [])
+    const [inputs, setInputs] = useState(node ? node.data.inputs : []);
+    const [outputs, setOutputs] = useState(node ? node.data.outputs : []);
+    const [isChanged, setIsChanged] = useState(false);
 
-    const [isChanged, setIsChanged] = useState(false); // Bouton "lancer" Réactif
-    const checkAllInputsFilled = () => {
-        return inputs.every(input => input.value !== null && input.value !== undefined && input.value !== '');
-    }
+    // Vérifie si tous les inputs sont remplis
+    const checkAllInputsFilled = (arr) =>
+        arr.every(input =>
+            input.value !== null &&
+            input.value !== undefined &&
+            input.value !== ""
+        );
 
+    // Reset quand le node sélectionné change
     useEffect(() => {
-        setInputs(node?.data.inputs ?? []);
-        setOutputs(node?.data.outputs ?? []);
-        setIsChanged(checkAllInputsFilled()); // reset du bouton
+        const newInputs = node?.data?.inputs ?? [];
+        const newOutputs = node?.data?.outputs ?? [];
+
+        setInputs(newInputs);
+        setOutputs(newOutputs);
+
+        // Vérifie dès le début si les inputs sont déjà remplis
+        setIsChanged(checkAllInputsFilled(newInputs));
     }, [node]);
 
-    // Fonction passer aux inputs enfants pour leurs permettre de mettre à jour leur valeur dans la liste au dessus
+    // Quand un input change
     const handleInputChange = (name, value) => {
-        setInputs((prev) =>
-            // On se place sur notre input ayant déclenché l'event, et on modifie la value tout en gardant les autres propriétés
-            prev.map((input) => (input.name === name ? { ...input, value } : input))
-        );
-        setIsChanged(checkAllInputsFilled()); // active le bouton Lancer
+        setInputs(prev => {
+            const updated = prev.map(input =>
+                input.name === name ? { ...input, value } : input
+            );
+
+            setIsChanged(checkAllInputsFilled(updated));
+            return updated;
+        });
+
         console.log("Input changed:", name, value);
     };
 
+    // Quand un output change
     const handleOutputChange = (name, value) => {
-        setOutputs((prev) =>
-            // On se place sur notre output ayant déclenché l'event, et on modifie la value tout en gardant les autres propriétés
-            prev.map((output) => (output.name === name ? { ...output, value } : output))
-        );
-        setIsChanged(false);
-    }
+        setOutputs(prev => {
+            const updated = prev.map(output =>
+                output.name === name ? { ...output, value } : output
+            );
 
+            setIsChanged(false); // changer output annule la validation
+            return updated;
+        });
+    };
+
+    // Lancer l’exécution du node
     const handleLaunch = () => {
         console.log("Inputs :", inputs);
         onNodeExecute(node.id);
-        setIsChanged(false); // désactive le bouton
+        setIsChanged(false);
     };
+
+    // Aucun node sélectionné
     if (!node) {
         return <div className="p-3 bg-white rounded shadow-sm">No node selected.</div>;
     }
-    else {
-        return (
-            <div className="d-flex flex-column justify-content-between" style={{ height: "100%" }}>
-                {/* Contenu en haut */}
-                <div>
-                    <NodeInput inputs={inputs} onValueChange={handleInputChange} />
-                    <NodeOutput outputs={outputs} onValueChange={handleOutputChange} />
-                    <div className="mt-3">
-                        <strong>Result : </strong>
-                        <span>{node.data.result !== undefined ? node.data.result.toString() : "N/A"}</span>
-                    </div>
-                </div>
 
-                {/* Bouton centré en bas */}
-                <div className="d-flex justify-content-center mt-3">
-                    <button
-                        className="btn btn-success"
-                        disabled={!isChanged}
-                        onClick={handleLaunch}
-                    >
-                        Lancer
-                    </button>
+    return (
+        <div className="d-flex flex-column justify-content-between" style={{ height: "100%" }}>
+            <h3 className="mb-3">Parameters for {node.data.label}</h3>
+
+            {/* --- PARAMÈTRES --- */}
+            <div>
+                {inputs.length > 0 && (
+                    <>
+                        <h6>Inputs:</h6>
+                        <NodeInput inputs={inputs} onValueChange={handleInputChange} />
+                    </>
+                )}
+
+                {outputs.length > 0 && (
+                    <>
+                        <h6>Outputs:</h6>
+                        <NodeOutput outputs={outputs} onValueChange={handleOutputChange} />
+                    </>
+                )}
+
+                <div className="mt-3">
+                    <strong>Result : </strong>
+                    <span>{node.data.result !== undefined ? node.data.result.toString() : "N/A"}</span>
                 </div>
             </div>
-        );
-    }
+
+            {/* --- BOUTON LANCER --- */}
+            <div className="d-flex justify-content-center mt-3">
+                <button
+                    className="btn btn-success"
+                    disabled={!isChanged}
+                    onClick={handleLaunch}
+                >
+                    Lancer
+                </button>
+            </div>
+        </div>
+    );
 }

@@ -112,6 +112,10 @@ export default function CustomNode(nodeProps) {
                                 background: getTypeColor(output.type),
                                 top: `${topPercent}%`,
                             }}
+                            onChange={(value) => {
+                                output.value = value;
+                                console.log(`Output ${output.id} changed to`, value);
+                            }}
                             dataType="output"
                         />
                     );

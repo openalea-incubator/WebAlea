@@ -62,6 +62,10 @@ export default function FloatNode(nodeProps) {
                     border: "2px solid rgba(255,255,255,0.6)",
                     cursor: "pointer",
                 }}
+                onChange={(value) => {
+                    setValue(value);
+                    console.log(`Output ${outputId} changed to`, value);
+                }}
                 dataType="output"
             />
         </div>
