@@ -1,7 +1,6 @@
 """This module in responsible for testing the OpenAleaRunner class"""
 import logging
 import unittest
-import unittest.mock
 
 from model.openalea.openalea_runner import OpenAleaRunner
 from openalea.core.dataflow import DataFlow

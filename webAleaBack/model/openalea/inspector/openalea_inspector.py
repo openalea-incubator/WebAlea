@@ -26,6 +26,7 @@ class OpenAleaInspector:
             text=True,
             check=True,
         )
+        print(result.stdout)
         # parse output: prefer JSON, fallback to Python literal
         try:
             packages = json.loads(result.stdout)
