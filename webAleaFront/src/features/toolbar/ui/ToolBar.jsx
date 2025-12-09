@@ -62,7 +62,9 @@ export default function ToolBar() {
         engine.start();
     };
 
-    const handleStop = () => alert("Arrêt du workflow");
+    const handleStop = () => {
+        engine.stop();
+    };
 
     return (
     <>

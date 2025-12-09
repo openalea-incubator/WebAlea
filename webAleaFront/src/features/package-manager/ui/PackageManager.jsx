@@ -9,14 +9,10 @@ export default function PackageManager() {
 
   const { addNode } = useFlow();
   const [currentPanel, setCurrentPanel] = React.useState("conda");
-
-  /*const handleAddNode = (item) => {
-    addNode(new Node({id : `n${Math.floor(Math.random() * 10000)}-${item.id}`, type: "custom", label : item.label, inputs: item.data.inputs ? item.data.inputs : [], outputs: item.data.outputs ? item.data.outputs : []}));
-  };*/
-
+  
   const handleAddPrimitiveNode = (treeNode) => {
-    console.log("Adding primitive node:", treeNode);
-    treeNode.node.id = `n${Math.floor(Math.random() * 10000)}-${treeNode.node.id}`;
+    console.log("Adding node:", treeNode);
+    treeNode.node.id = `n${Math.floor(Math.random() * 10000)}-${treeNode.id}`; //WARNING: Affecte un nouvel id au node : perte de référence si on réutilise l'ancien id
     addNode(treeNode.node);
   };
 

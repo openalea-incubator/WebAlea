@@ -42,12 +42,76 @@ export const FlowProvider = ({ children }) => {
   // --- Gestion des événements du moteur ---
   const handleEngineEvent = (event, payload) => {
     console.log("WorkflowEngine event:", event, payload);
+
+    if (event === "stop") {
+      console.log("WorkflowEngine stopped.");
+      nodes.forEach(n => {
+        updateNode(n.id, { status: "ready" });
+        //reset outputs
+        n.outputs?.forEach(output => {
+          output.value = 1548;
+        });
+
+        updateNode(n.id, { status: "ready", });
+      });
+      console.log("All nodes reset to 'ready' status.");
+    }
+
+    if (event === "node-start") {
+      const id = payload;
+      console.log("Updating node status to 'running' in FlowContext:", id);
+
+      updateNode(id, { status: "running" });
+      console.log("Node updated to 'running':", id);
+    }
+
     if (event === "node-result") {
       const { id, result } = payload;
+      console.log(result);
       console.log("Updating node result in FlowContext:", id, result);
 
-      updateNode(id, { result });
+      const curNode = nodes.find(n => n.id === id);
+
+      if (!curNode) {
+        console.warn(`Node with id ${id} not found in FlowContext.`);
+        return;
+      }
+
+      //verifie si result est itérable, sinon le transforme en tableau
+      if (!Array.isArray(result)) {
+        const output = curNode?.data.outputs?.[0];
+        if (output) {
+          output.value = result;
+          console.log(`Output ${output.id} updated with value:`, result);
+        } else {
+          console.warn(`Output with id ${result.id} not found in node ${id}`);
+        }
+      } else {
+
+        // Met à jour les outputs du noeud avec le résultat
+        //updateNode(id, { outputs: curNode.data.outputs.map(o => ({ ...o, value: null })) });
+
+        for (const res of result) {
+          if (curNode.data.outputs) {
+            const output = curNode.data.outputs.find(o => o.id === res.id);
+            if (output) {
+              output.value = res;
+            } else {
+              console.warn(`Output with id ${res.id} not found in node ${id}`);
+            }
+          } else {
+            console.warn(`No outputs defined for node ${id}`);
+          }
+        }
+      }
+
+
+
       console.log("Node updated with result:", id, result);
+    }
+    if (event === "node-done") {
+      const id = payload;
+      updateNode(payload, { status: "done" });
     }
   };
 
@@ -81,7 +145,7 @@ export const FlowProvider = ({ children }) => {
   // --- Fonctions de gestion ---
   // Fonction pour ajouter une nouvelle connexion (edge)
   const onConnect = useCallback((params) => {
-      
+
     if (params.source === params.target) {
       return;
     }
@@ -99,7 +163,7 @@ export const FlowProvider = ({ children }) => {
     // --- Vérification des types ---
     if (output?.type !== input?.type) {
       addLog("❌ Type mismatch", {
-        from: `${ source}.${sourceHandle} (${output?.type})`,
+        from: `${source}.${sourceHandle} (${output?.type})`,
         to: `${target}.${targetHandle} (${input?.type})`
       });
       console.warn("Type mismatch:", output?.type, "→", input?.type);

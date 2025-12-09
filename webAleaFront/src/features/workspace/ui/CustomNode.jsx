@@ -11,7 +11,8 @@ import CustomHandle from "./CustomHandle.jsx";
 
 const getBorderColor = (status) => {
     switch (status) {
-        case "running": return "#2b8a3e";
+        case "running": return "#8e24aa";
+        case "done": return "#2b8a3e";
         case "error": return "#c62828";
         case "ready": return "#1976d2";
         default: return "#999";

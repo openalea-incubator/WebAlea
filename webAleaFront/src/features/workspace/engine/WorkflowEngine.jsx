@@ -28,6 +28,10 @@ export class WorkflowEngine {
         rootIds.forEach(id => this._executeChain(id));
     }
 
+    stop() {
+        this._emit("stop");
+    }
+
     // Execute a node and its children recursively
     _executeChain(nodeId) {
         const node = this.model.find(n => n.id === nodeId);

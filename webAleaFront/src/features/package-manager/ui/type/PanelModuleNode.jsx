@@ -7,9 +7,9 @@ import TreeNode from '../../model/TreeNode.jsx';
 import { Node } from '../../../workspace/model/Node.jsx';
 
 const ALEA_NODES = [
-    new Node({ id: 'grid-community', label: '@mui/x-data-grid', inputs: [{"id": "in-grid-community-0", "name": "Test", "type": "string", "value": "coubeh"}], outputs: [{ "id": "out-grid-community-0", "name": "Value", "type": "float", "value": 0 }] }),
-    new Node({ id: 'grid-pro', label: '@mui/x-data-grid-pro', inputs: [{ "id": "in-grid-pro-0", "name": "a", "type": "float", "value": 0 }, { "id": "in-grid-pro-1", "name": "b", "type": "float", "value": 0 }] }),
-    new Node({ id: 'grid-premium', label: '@mui/x-data-grid-premium', outputs: [{ "id": "out-grid-premium-0", "name": "Value1", "type": "boolean", "value": false }, { "id": "out-grid-premium-1", "name": "Value2", "type": "boolean", "value": false }] })
+    new Node({ id: 'substraction', label: 'subtraction', inputs: [{ "id": "in-sub-0", "name": "first", "type": "float", "value": 0 }, { "id": "in-sub-1", "name": "second", "type": "float", "value": 0 }], outputs: [{ "id": "out-sub-0", "name": "difference", "type": "float", "value": 0 }] }),
+    new Node({ id: 'addition', label: 'addition', inputs: [{ "id": "in-add-0", "name": "first", "type": "float", "value": 0 }, { "id": "in-add-1", "name": "second", "type": "float", "value": 0 }], outputs: [{ "id": "out-add-0", "name": "sum", "type": "float", "value": 0 }] }),
+    new Node({ id: 'division', label: 'division', inputs: [{ "id": "in-div-0", "name": "numerator", "type": "float", "value": 0 }, { "id": "in-div-1", "name": "denominator", "type": "float", "value": 1 }], outputs: [{ "id": "out-div-0", "name": "quotient", "type": "float", "value": 0 }] })
 ];
 
 const TREE_VIEW_NODES = [
