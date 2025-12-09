@@ -3,7 +3,7 @@ from unittest import TestCase
 import unittest.mock
 import unittest
 from subprocess import CalledProcessError
-from conda_utils.conda_utils import Conda
+from model.utils.conda_utils import Conda
 
 class TestCondaMethods(TestCase):
     """Unit tests for Conda class methods."""
