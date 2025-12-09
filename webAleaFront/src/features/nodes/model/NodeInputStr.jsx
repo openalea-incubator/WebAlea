@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function NodeInputString({ inputName, value = "", onChangeValueChanged }) {
+export default function NodeInputString({ inputName, value = "" }) {
     return (
     <div className="mb-3">
         <label className="form-label fw-semibold">{inputName}</label>
@@ -8,8 +8,8 @@ export default function NodeInputString({ inputName, value = "", onChangeValueCh
         type="text"
         className="form-control"
         value={value}
-        onChange={(e) => onChangeValueChanged?.(e.target.value)}
         placeholder="Texte"
+        readOnly
         />
     </div>
     );

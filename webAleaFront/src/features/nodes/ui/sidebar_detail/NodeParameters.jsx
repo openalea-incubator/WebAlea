@@ -33,6 +33,7 @@ export default function NodeParameters() {
 
     // Quand un input change
     const handleInputChange = (name, value) => {
+
         setInputs(prev => {
             const updated = prev.map(input =>
                 input.name === name ? { ...input, value } : input
@@ -78,21 +79,16 @@ export default function NodeParameters() {
                 {inputs.length > 0 && (
                     <>
                         <h6>Inputs:</h6>
-                        <NodeInput inputs={inputs} onValueChange={handleInputChange} />
+                        <NodeInput inputs={inputs} />
                     </>
                 )}
 
                 {outputs.length > 0 && (
                     <>
                         <h6>Outputs:</h6>
-                        <NodeOutput outputs={outputs} onValueChange={handleOutputChange} />
+                        <NodeOutput outputs={outputs} />
                     </>
                 )}
-
-                <div className="mt-3">
-                    <strong>Result : </strong>
-                    <span>{node.data.result !== undefined ? node.data.result.toString() : "N/A"}</span>
-                </div>
             </div>
 
             {/* --- BOUTON LANCER --- */}
