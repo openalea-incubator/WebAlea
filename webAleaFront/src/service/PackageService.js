@@ -12,6 +12,7 @@ import { fetchPackageList, fetchPackageNodes, installPackages, fetchInstalledOpe
 export async function getPackagesList() {
     const allPackagesObj = await fetchPackageList();
     const allPackages = Array.from(Object.entries(allPackagesObj));
+    console.log("allPackages :", allPackages);
     const formattedPackages = allPackages.map((pkg) => ({
         name: pkg[0],
         version: pkg[1][0].version ?? "unknown",
