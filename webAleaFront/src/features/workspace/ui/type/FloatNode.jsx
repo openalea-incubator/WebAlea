@@ -10,7 +10,7 @@ export default function FloatNode(nodeProps) {
     const { updateNode } = useFlow();
     const { addLog } = useLog();
 
-    const initialValue = data.outputs?.[0]?.value ?? false;
+    const initialValue = data.outputs?.[0]?.value ?? 0;
     const initialOutputId = data.outputs?.[0]?.id ?? `out-${id}-0`;
 
     const [value, setValue] = useState(initialValue);
@@ -61,9 +61,6 @@ export default function FloatNode(nodeProps) {
                     borderRadius: 6,
                     border: "2px solid rgba(255,255,255,0.6)",
                     cursor: "pointer",
-                }}
-                onChange={(value) => {
-                    setValue(value);
                 }}
                 dataType="output"
             />
