@@ -1,10 +1,12 @@
 """"API endpoints for managing conda packages and environments."""
 from typing import List, Optional
+import logging
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from conda_utils.conda_utils import Conda
+from conda_utils.conda_inspector import OpenAleaInspector
 from core.config import settings
 
 router = APIRouter()
@@ -25,12 +27,14 @@ class InstallRequest(BaseModel):
 @router.get("/")
 def fetch_package_list():
     """Fetch the list of all conda packages."""
+    logging.info("Fetching package list")
     return Conda.list_packages()
 
 
 @router.get("/latest")
 def fetch_latest_package_versions():
     """Fetch the latest versions of all conda packages."""
+    logging.info("Fetching latest package versions")
     return Conda.list_latest_packages()
 
 
@@ -44,6 +48,7 @@ def install_packages_in_env(request: InstallRequest):
       "env_name": "webalea_env"  # optional
     }
     """
+    logging.info("Installing packages: %s into environment: %s", request.packages, request.env_name)
     env_name = request.env_name or settings.CONDA_ENV_NAME
 
     # build package list with versions
@@ -52,8 +57,24 @@ def install_packages_in_env(request: InstallRequest):
         ]
 
     results = Conda.install_package_list(env_name, package_list)
-
-    if results["failed"]:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=results)
-
+    logging.info("Installation results: %s", results)
     return results
+
+@router.get("/installed")
+def fetch_installed_openalea_packages():
+    """Fetch the list of installed OpenAlea packages in the current conda environment."""
+    logging.info("Fetching installed OpenAlea packages")
+    packages = OpenAleaInspector.list_installed_openalea_packages()
+    logging.info("Installed OpenAlea packages: %s", packages)
+    return {"installed_openalea_packages": packages}
+
+@router.get("/installed/{package_name}")
+def fetch_package_nodes(package_name: str):
+    """Fetch detailed information about a specific conda package."""
+    logging.info("Fetching information for package: %s", package_name)
+    try :
+        description = OpenAleaInspector.describe_openalea_package(package_name)
+        logging.info("description successfully retrieved for package: %s", package_name)
+        return description
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e

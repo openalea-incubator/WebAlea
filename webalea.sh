@@ -3,8 +3,12 @@
 # Script to manage Docker Compose services
 
 if [ "$1" == "start" ]; then
-    # Launch the backend and frontend using Docker Compose
-    docker-compose up --build -d
+    # Unpause the containers if they are paused
+    docker-compose unpause 2>/dev/null
+    # If unpause failed (exit code not 0), start the services
+    if [ $? -ne 0 ]; then
+        docker-compose up -d
+    fi
 
     # Give Docker a moment to settle
     sleep 1
@@ -44,11 +48,15 @@ if [ "$1" == "start" ]; then
         done
     fi
 elif [ "$1" == "stop" ]; then
-    # Stop and clean up Docker Compose services
-    docker-compose down --volumes --remove-orphans
+    # Pause the containers without removing or cleaning them
+    docker-compose pause
+elif [ "$1" == "rebuild" ]; then
+    # Rebuild and launch the backend and frontend using Docker Compose
+    docker-compose up --build -d
 else
     # Display help section
-    echo "Usage: $0 {start|stop}"
-    echo "start - Launch the backend and frontend using Docker Compose"
-    echo "stop  - Stop and clean up Docker Compose services"
+    echo "Usage: $0 {start|stop|rebuild}"
+    echo "start - Unpause or launch the backend and frontend using Docker Compose"
+    echo "stop  - Pauses the containers without removing or cleaning them"
+    echo "rebuild - Rebuild and launch the backend and frontend using Docker Compose"
 fi
