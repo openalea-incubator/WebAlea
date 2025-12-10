@@ -195,7 +195,6 @@ export const FlowProvider = ({ children }) => {
         n.id === id ? { ...n, data: { ...n.data, ...updatedProperties } } : n
       )
     );
-    setCurrentNode(id);
     addLog("Node updated", { id, updatedProperties, inputs: updatedProperties.inputs, outputs: updatedProperties.outputs });
   }, [setNodes, addLog]);
 

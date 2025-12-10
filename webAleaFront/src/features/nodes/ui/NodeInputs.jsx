@@ -11,6 +11,7 @@ export default function NodeInput({ inputs }) {
             case "float":   
             return (
                 <NodeInputFloat
+                key={input.name}
                 inputName={input.name}
                 value={input.value ?? 0}
                 />
@@ -18,6 +19,7 @@ export default function NodeInput({ inputs }) {
             case "string":
             return (
                 <NodeInputString
+                key={input.name}
                 inputName={input.name}
                 value={input.value ?? ""}
                 />
@@ -25,6 +27,7 @@ export default function NodeInput({ inputs }) {
             case "boolean":
             return (
                 <NodeInputBoolean
+                key={input.name}
                 inputName={input.name}
                 value={input.value ?? false}
                 />

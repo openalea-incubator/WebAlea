@@ -4,64 +4,16 @@ import NodeOutput from "../NodeOutputs.jsx";
 import { useFlow } from "../../../workspace/providers/FlowContextDefinition.jsx";
 
 export default function NodeParameters() {
-    const { currentNode, nodes, onNodeExecute, engine } = useFlow();
+
+    const { currentNode, nodes, engine } = useFlow();
     const node = nodes.find(n => n.id === currentNode);
-
-    const [inputs, setInputs] = useState(node ? node.data.inputs : []);
-    const [outputs, setOutputs] = useState(node ? node.data.outputs : []);
+    const inputs = node ? node.data.inputs : [];
+    const outputs = node ? node.data.outputs : [];
     const [isChanged, setIsChanged] = useState(false);
-
-    // Vérifie si tous les inputs sont remplis
-    const checkAllInputsFilled = (arr) =>
-        arr.every(input =>
-            input.value !== null &&
-            input.value !== undefined &&
-            input.value !== ""
-        );
-
-    // Reset quand le node sélectionné change
-    useEffect(() => {
-        const newInputs = node?.data?.inputs ?? [];
-        const newOutputs = node?.data?.outputs ?? [];
-
-        setInputs(newInputs);
-        setOutputs(newOutputs);
-
-        // Vérifie dès le début si les inputs sont déjà remplis
-        setIsChanged(checkAllInputsFilled(newInputs));
-    }, [node]);
-
-    // Quand un input change
-    const handleInputChange = (name, value) => {
-
-        setInputs(prev => {
-            const updated = prev.map(input =>
-                input.name === name ? { ...input, value } : input
-            );
-
-            setIsChanged(checkAllInputsFilled(updated));
-            return updated;
-        });
-
-        console.log("Input changed:", name, value);
-    };
-
-    // Quand un output change
-    const handleOutputChange = (name, value) => {
-        setOutputs(prev => {
-            const updated = prev.map(output =>
-                output.name === name ? { ...output, value } : output
-            );
-
-            setIsChanged(false); // changer output annule la validation
-            return updated;
-        });
-    };
 
     // Lancer l’exécution du node
     const handleLaunch = () => {
         console.log("Inputs :", inputs);
-        onNodeExecute(node.id);
         setIsChanged(false);
     };
 

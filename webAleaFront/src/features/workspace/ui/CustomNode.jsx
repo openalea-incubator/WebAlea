@@ -93,7 +93,6 @@ export default function CustomNode(nodeProps) {
                             }}
                             onChange={(value) => {
                                 input.value = value;
-                                console.log(`Input ${input.id} changed to`, value);
                             }}
                             dataType="input"
                         />
@@ -115,7 +114,6 @@ export default function CustomNode(nodeProps) {
                             }}
                             onChange={(value) => {
                                 output.value = value;
-                                console.log(`Output ${output.id} changed to`, value);
                             }}
                             dataType="output"
                         />

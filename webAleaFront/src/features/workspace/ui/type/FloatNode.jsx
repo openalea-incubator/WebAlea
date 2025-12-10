@@ -64,7 +64,6 @@ export default function FloatNode(nodeProps) {
                 }}
                 onChange={(value) => {
                     setValue(value);
-                    console.log(`Output ${outputId} changed to`, value);
                 }}
                 dataType="output"
             />

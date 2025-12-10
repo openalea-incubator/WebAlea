@@ -39,9 +39,12 @@ export class WorkflowEngine {
 
         this.executeNode(node);
 
+
+        setTimeout(() => {
         node.next.forEach(nextId => {
             this._executeChain(nextId);
         });
+        }, 700);
     }
 
     // Execute a single node
@@ -51,16 +54,14 @@ export class WorkflowEngine {
         // Retrieve input values
         const inputsValues = node.inputs.map(i => i.value);
 
-        setTimeout(() => {
-            const result = this._executeLogic(node, inputsValues);
+        const result = this._executeLogic(node, inputsValues);
 
-            // Send the result
-            this._emit("node-result", { id: node.id, result });
+        // Send the result
+        this._emit("node-result", { id: node.id, result });
 
-            // Node done
-            this._emit("node-done", node.id);
+        // Node done
+        this._emit("node-done", node.id);
 
-        }, 500);
     }
 
     // Simple logic execution based on node type
@@ -69,7 +70,7 @@ export class WorkflowEngine {
         inputsValues.forEach(input => {
             result += input;
         });
-        return result + 1000;
+        return result;
     }
 
     _emit(event, payload) {
