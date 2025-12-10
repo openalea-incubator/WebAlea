@@ -47,12 +47,6 @@ export const FlowProvider = ({ children }) => {
       console.log("WorkflowEngine stopped.");
       nodes.forEach(n => {
         updateNode(n.id, { status: "ready" });
-        //reset outputs
-        n.outputs?.forEach(output => {
-          output.value = 1548;
-        });
-
-        updateNode(n.id, { status: "ready", });
       });
       console.log("All nodes reset to 'ready' status.");
     }
@@ -67,7 +61,6 @@ export const FlowProvider = ({ children }) => {
 
     if (event === "node-result") {
       const { id, result } = payload;
-      console.log(result);
       console.log("Updating node result in FlowContext:", id, result);
 
       const curNode = nodes.find(n => n.id === id);

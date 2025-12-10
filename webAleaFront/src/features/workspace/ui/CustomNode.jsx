@@ -65,7 +65,6 @@ export default function CustomNode(nodeProps) {
                     className="custom-node-status"
                     style={{ background: borderColor }}
                     title={`status: ${status}`}
-                    onClick={handleStatusClick}
                 />
                 <strong style={{ fontSize: 13 }}>{label}</strong>
             </div>
@@ -85,7 +84,7 @@ export default function CustomNode(nodeProps) {
                     const topPercent = ((index + 1) / (inputs.length + 1)) * 100;
                     return (
                         <CustomHandle
-                            key={input.id}
+                            key={input.id + "_" + index}
                             id={input.id}
                             style={{
                                 background: getTypeColor(input.type),
@@ -106,14 +105,11 @@ export default function CustomNode(nodeProps) {
                     const topPercent = ((index + 1) / (outputs.length + 1)) * 100;
                     return (
                         <CustomHandle
-                            key={output.id}
+                            key={output.id + "_" + index}
                             id={output.id}
                             style={{
                                 background: getTypeColor(output.type),
                                 top: `${topPercent}%`,
-                            }}
-                            onChange={(value) => {
-                                output.value = value;
                             }}
                             dataType="output"
                         />

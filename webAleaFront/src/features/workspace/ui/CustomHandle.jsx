@@ -44,6 +44,8 @@ export default function CustomHandle({ id, label, style, onChange = null, dataTy
   // On récupère l’IO spécifique correspondant au handle connecté
   const linkedValue = connectedIO?.find((io) => io.id === connectedHandleId);
 
+  console.log("CustomHandle:", linkedValue);
+
   // Synchronisation
   useEffect(() => {
     if (onChange && linkedValue) {
