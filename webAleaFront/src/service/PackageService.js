@@ -30,6 +30,7 @@ export async function isInstalledPackage(packageName) {
     const installePackages = await fetchInstalledOpenAleaPackages();
     const arrayPackages = Array.from(Object.entries(installePackages));
     const formattedPackages = arrayPackages.map((pkg) => pkg.name);
+    console.log("formattedPackages :", formattedPackages);
     return formattedPackages.includes(packageName);
 }
 

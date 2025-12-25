@@ -73,80 +73,15 @@ def fetch_installed_openalea_packages():
 
 @router.get("/installed/{package_name}")
 def fetch_package_nodes(package_name: str):
-    """Fetch detailed information about a specific conda package."""
     logging.info("Fetching information for package: %s", package_name)
-    try :
+    try:
         description = OpenAleaInspector.describe_openalea_package(package_name)
         logging.info("description successfully retrieved for package: %s", package_name)
         return description
+
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+        raise HTTPException(status_code=404, detail=str(e))
 
-@router.get("/installed")
-def fetch_installed_openalea_packages():
-    """Fetch the list of installed OpenAlea packages in the current conda environment."""
-    logging.info("Fetching installed OpenAlea packages")
-    packages = OpenAleaInspector.list_installed_openalea_packages()
-    logging.info("Installed OpenAlea packages: %s", packages)
-    return {"installed_openalea_packages": packages}
-
-@router.get("/installed/{package_name}")
-def fetch_package_nodes(package_name: str):
-    """Fetch detailed information about a specific conda package."""
-    logging.info("Fetching information for package: %s", package_name)
-    try :
-        description = OpenAleaInspector.describe_openalea_package(package_name)
-        logging.info("description successfully retrieved for package: %s", package_name)
-        return description
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
-
-
-
-# POC test 26/11
-@router.get("/poc/get_node")
-def poc_get_node():
-    """GET POC fake type node"""
-    node_json = {
-        "concatenate" : {
-            "parameters": {
-                "parameter1": "string",
-                "parameter2": "string",
-            }
-        },
-        "addition": {
-            "parameters": {
-                "parameter1": "int",
-                "parameter2": "int",
-            }
-        },
-        "subtract": {
-            "parameters": {
-                "parameter1": "int",
-                "parameter2": "int",
-            }
-        }
-    }
-    return node_json
-
-class ExecuteNode(BaseModel):
-    """Request model for executing packages into a conda environment."""
-    name_node: str
-    parameters: dict
-
-@router.post("/poc/execute_nodes")
-def poc_execute_nodes(request: ExecuteNode):
-    """Execute POC fake type node"""
-    res = {}
-    parameters = request.parameters
-    match request.name_node:
-        case "concatenate":
-            res["result"] = concatenate(parameters["parameters1"], parameters["parameters2"])
-        case "addition":
-            res["result"] = addition(parameters["parameters1"], parameters["parameters2"])
-        case "subtract":
-            res["result"] = subtraction(parameters["parameters1"], parameters["parameters2"])
-        case _:
-            pass
-    res["success"] = len(res) > 0
-    return res
+    except Exception as e:
+        logging.exception("UNEXPECTED ERROR in fetch_package_nodes")
+        raise HTTPException(status_code=500, detail=str(e))

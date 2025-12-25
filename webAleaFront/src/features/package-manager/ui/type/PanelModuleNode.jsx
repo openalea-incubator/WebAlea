@@ -46,6 +46,7 @@ export default function PanelModuleNode({ onAddNode }) {
             if (node.children && node.children.length > 0) return;
             console.log("Loading children for node :", node);
             const childrenNodes = await getChildren(node);
+            console.log("childrenNodes :", childrenNodes);
             apiRef.current.updateItem(node.id, { children: childrenNodes });
         }}
         />
