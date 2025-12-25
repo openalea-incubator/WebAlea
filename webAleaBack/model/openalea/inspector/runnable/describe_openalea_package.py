@@ -5,6 +5,7 @@ Module used via subprocess to for dynamic python instance management.
 """
 import logging
 import json
+import sys
 from typing import Any, Dict
 
 from openalea.core.pkgmanager import PackageManager
@@ -94,7 +95,7 @@ def describe_openalea_package(package_name: str) -> Dict[str, Any]:
 
 if __name__ == "__main__":
     logging.info("describing an OpenAlea package by subprocess")
-    import sys
+    
     if len(sys.argv) != 2:
         logging.error("Package name argument is required.")
         sys.exit(1)
