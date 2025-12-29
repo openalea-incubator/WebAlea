@@ -1,89 +1,105 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import { Menu, MenuItem } from "@mui/material";
-import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
+import { useCallback } from 'react';
+import { FiHash, FiType, FiToggleLeft } from 'react-icons/fi';
 import { Node } from '../../../workspace/model/Node.jsx';
 import TreeNode from '../../model/TreeNode.jsx';
 
-const FLOAT_NODE = new Node({ id: 'float', label: 'Float input', type: "float", outputs: [{ "name": "Value", "type": "float", "default": 0 }] })
-const STRING_NODE = new Node({ id: 'string', label: 'String input', type: "string", outputs: [{ "name": "Value", "type": "string", "default": "" }] })
-const BOOLEAN_NODE = new Node({ id: 'boolean', label: 'Boolean input', type: "boolean", outputs: [{ "name": "Value", "type": "boolean", "default": false }] })
-
+/**
+ * Primitive node definitions for basic input types.
+ */
 const PRIMITIVE_NODES = [
-    new TreeNode(FLOAT_NODE),
-    new TreeNode(STRING_NODE),
-    new TreeNode(BOOLEAN_NODE)
+    {
+        id: 'float',
+        label: 'Float',
+        description: 'Numeric value input',
+        type: 'float',
+        icon: FiHash,
+        iconClass: 'float',
+        node: new Node({
+            id: 'float',
+            label: 'Float input',
+            type: 'float',
+            outputs: [{ name: 'Value', type: 'float', default: 0 }]
+        })
+    },
+    {
+        id: 'string',
+        label: 'String',
+        description: 'Text value input',
+        type: 'string',
+        icon: FiType,
+        iconClass: 'string',
+        node: new Node({
+            id: 'string',
+            label: 'String input',
+            type: 'string',
+            outputs: [{ name: 'Value', type: 'string', default: '' }]
+        })
+    },
+    {
+        id: 'boolean',
+        label: 'Boolean',
+        description: 'True/False toggle',
+        type: 'boolean',
+        icon: FiToggleLeft,
+        iconClass: 'boolean',
+        node: new Node({
+            id: 'boolean',
+            label: 'Boolean input',
+            type: 'boolean',
+            outputs: [{ name: 'Value', type: 'boolean', default: false }]
+        })
+    }
 ];
 
+/**
+ * Panel displaying primitive input nodes (Float, String, Boolean).
+ * Click on a node to add it to the workspace.
+ */
 export default function PanelPrimitiveNode({ onAddNode }) {
 
-    const [menu, setMenu] = React.useState(null);
-    const [selectedItem, setSelectedItem] = React.useState(null);
-
-    const handleRightClick = (event) => {
-        event.preventDefault();
-
-        setMenu(menu === null ? { mouseX: event.clientX + 2, mouseY: event.clientY - 6 } : null);
-        setSelectedItem(event.target);
-
-        const selection = document.getSelection();
-        if (selection && selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-
-            setTimeout(() => {
-                selection.addRange(range);
-            });
+    const handleNodeClick = useCallback((primitive) => {
+        if (onAddNode) {
+            // Wrap in TreeNode format for consistency with PackageManager.handleAddNode
+            const treeNode = new TreeNode(primitive.node);
+            onAddNode(treeNode.serialize());
         }
-    };
-
-    const handleClose = () => {
-        setMenu(null);
-    };
-
-    const apiRef = useTreeViewApiRef();
+    }, [onAddNode]);
 
     return (
-        <Box sx={{ minHeight: 352, minWidth: 250 }} onContextMenu={handleRightClick}>
-            <div>
-                <RichTreeView
-                    apiRef={apiRef}
-                    items={PRIMITIVE_NODES.map(node => node.serialize())}
-
-                    sx={{ userSelect: 'none' }}
-
-                    onItemClick={(_event, treeNode) => {
-                        if (apiRef.current) {
-                            treeNode = apiRef.current.getItem(treeNode);
-                            if (treeNode.children && treeNode.children.length > 0) {
-                                return;
-                            }
-                            onAddNode(treeNode);
-                        }
-                    }
-                    }
-                />
+        <div className="panel-container">
+            <div className="package-count">
+                {PRIMITIVE_NODES.length} primitive types available
             </div>
-            <Menu
-                open={menu !== null}
-                onClose={handleClose}
-                anchorReference="anchorPosition"
-                anchorPosition={
-                    menu !== null ? { top: menu.mouseY, left: menu.mouseX } : undefined
-                }
-            >
-                <MenuItem onClick={() => {
-                    console.log("Renommer", selectedItem);
-                    handleClose();
-                }}>
-                    Renommer
-                </MenuItem>
-                <MenuItem onClick={() => {
-                    console.log("Supprimer", selectedItem);
-                    handleClose();
-                }}>
-                    Supprimer
-                </MenuItem>
-            </Menu>
-        </Box>
+
+            <div className="panel-scrollable">
+                <div className="primitive-list">
+                    {PRIMITIVE_NODES.map((primitive) => {
+                        const Icon = primitive.icon;
+                        return (
+                            <div
+                                key={primitive.id}
+                                className="primitive-item"
+                                onClick={() => handleNodeClick(primitive)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        handleNodeClick(primitive);
+                                    }
+                                }}
+                            >
+                                <div className={`primitive-icon ${primitive.iconClass}`}>
+                                    <Icon />
+                                </div>
+                                <div className="primitive-content">
+                                    <div className="primitive-label">{primitive.label}</div>
+                                    <div className="primitive-type">{primitive.description}</div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
     );
 }

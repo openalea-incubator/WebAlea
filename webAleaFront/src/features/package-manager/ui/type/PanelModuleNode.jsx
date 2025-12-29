@@ -1,55 +1,214 @@
-import { useEffect, useState } from 'react';
-import Box from '@mui/material/Box';
-import { Menu, MenuItem } from "@mui/material";
-import { RichTreeView, useTreeViewApiRef } from '@mui/x-tree-view';
-import TreePackage from '../../model/TreePackage.jsx';
-import { getPackagesList, getNodesList } from '../../../../service/PackageService.js';
+import { useEffect, useState, useCallback } from 'react';
+import { RichTreeView } from '@mui/x-tree-view';
+import { FiPackage, FiLoader } from 'react-icons/fi';
+import { getVisualPackagesList, getNodesList } from '../../../../service/PackageService.js';
 
+/**
+ * Panel displaying visual OpenAlea packages and their nodes.
+ * Uses lazy loading - nodes are fetched when a package is expanded.
+ */
 export default function PanelModuleNode({ onAddNode }) {
+    const [treeItems, setTreeItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [loadingPackage, setLoadingPackage] = useState(null);
+    const [loadedPackages, setLoadedPackages] = useState(new Set());
 
-    const [treePackagesAlea, setTreePackagesAlea] = useState(
-        new TreePackage("OpenAlea Packages", "OpenAlea Packages"));
-
-    const apiRef = useTreeViewApiRef();
-
+    // Initial fetch of visual packages
     useEffect(() => {
-    async function fetchPackages() {
-        const allPackages = await getPackagesList();
-        const packagesTree = allPackages.map(pkg => new TreePackage(pkg.name, pkg.name, pkg.version));
-        setTreePackagesAlea(new TreePackage("OpenAlea Packages", "OpenAlea Packages", "undefined" , packagesTree));
-    }
-    fetchPackages();
+        async function fetchPackages() {
+            setLoading(true);
+            try {
+                const visualPackages = await getVisualPackagesList();
+
+                const items = [{
+                    id: 'root',
+                    label: 'OpenAlea Packages',
+                    children: visualPackages.map(pkg => ({
+                        id: pkg.name,
+                        label: pkg.name,
+                        module: pkg.module,
+                        children: [],
+                    }))
+                }];
+
+                setTreeItems(items);
+            } catch (error) {
+                console.error("Error fetching visual packages:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchPackages();
     }, []);
 
-    async function getChildren(pkg) {
-        const packageNodes = await getNodesList({ name: pkg.id, version: pkg.version });
-        console.log("packageNodes :", packageNodes);
-        return packageNodes.map(node => ({
-            id: node.name,
-            label: node.name,
-            version: node.data?.version ?? "unknown",
-            childrenCount: 0,
-        }));
-    };
+    const loadPackageNodes = useCallback(async (packageId) => {
+        if (loadedPackages.has(packageId) || loadingPackage === packageId) {
+            return;
+        }
 
+        setLoadingPackage(packageId);
+
+        try {
+            const packageNodes = await getNodesList({ name: packageId });
+            console.log(`Loaded ${packageNodes.length} nodes for ${packageId}:`, packageNodes);
+
+            const nodeItems = packageNodes.map(node => ({
+                id: `${packageId}::${node.name}`,
+                label: node.name,
+                description: node.description || "",
+                inputs: node.inputs || [],
+                outputs: node.outputs || [],
+                callable: node.callable,
+                packageName: packageId,
+                isNode: true,
+            }));
+
+            setTreeItems(prevItems => {
+                return prevItems.map(root => ({
+                    ...root,
+                    children: root.children.map(pkg =>
+                        pkg.id === packageId
+                            ? { ...pkg, children: nodeItems }
+                            : pkg
+                    )
+                }));
+            });
+
+            setLoadedPackages(prev => new Set([...prev, packageId]));
+
+        } catch (error) {
+            console.error(`Error loading nodes for ${packageId}:`, error);
+        } finally {
+            setLoadingPackage(null);
+        }
+    }, [loadedPackages, loadingPackage]);
+
+    const handleItemClick = useCallback(async (_event, itemId) => {
+        const findItem = (items, id) => {
+            for (const item of items) {
+                if (item.id === id) return item;
+                if (item.children) {
+                    const found = findItem(item.children, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        };
+
+        const clickedItem = findItem(treeItems, itemId);
+        if (!clickedItem) return;
+
+        if (clickedItem.isNode && onAddNode) {
+            console.log("Adding node to workspace:", clickedItem);
+            onAddNode(clickedItem);
+            return;
+        }
+
+        if (clickedItem.children !== undefined && !clickedItem.isNode && itemId !== 'root') {
+            if (!loadedPackages.has(itemId)) {
+                await loadPackageNodes(itemId);
+            }
+        }
+    }, [treeItems, onAddNode, loadedPackages, loadPackageNodes]);
+
+    const handleItemExpansionToggle = useCallback(async (_event, itemId, isExpanded) => {
+        if (isExpanded && itemId !== 'root' && !loadedPackages.has(itemId)) {
+            const findItem = (items, id) => {
+                for (const item of items) {
+                    if (item.id === id) return item;
+                    if (item.children) {
+                        const found = findItem(item.children, id);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+
+            const item = findItem(treeItems, itemId);
+            if (item && !item.isNode) {
+                await loadPackageNodes(itemId);
+            }
+        }
+    }, [treeItems, loadedPackages, loadPackageNodes]);
+
+    // Loading state
+    if (loading) {
+        return (
+            <div className="panel-container">
+                <div className="panel-loading">
+                    <FiLoader className="loading-pulse" style={{ fontSize: '1.5rem' }} />
+                    <span className="panel-loading-text">Loading packages...</span>
+                </div>
+            </div>
+        );
+    }
+
+    const hasPackages = treeItems.length > 0 &&
+        treeItems[0]?.children &&
+        treeItems[0].children.length > 0;
+
+    // Empty state
+    if (!hasPackages) {
+        return (
+            <div className="panel-container">
+                <div className="panel-empty">
+                    <FiPackage className="panel-empty-icon" />
+                    <div className="panel-empty-title">No visual packages installed</div>
+                    <div className="panel-empty-subtitle">
+                        Install OpenAlea packages with visual nodes from the Install tab
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
-    <Box sx={{ minHeight: 352, minWidth: 250 }}>
-        <RichTreeView
-        apiRef={apiRef}
-        items={[treePackagesAlea.serialize()]}
-        sx={{ userSelect: 'none' }}
-        onItemClick={async (_event, treeNode) => {
-            if (!apiRef.current) return;
+        <div className="panel-container">
+            {/* Loading indicator for specific package */}
+            {loadingPackage && (
+                <div className="loading-package-bar">
+                    <FiLoader className="loading-pulse" />
+                    <span>Loading {loadingPackage}...</span>
+                </div>
+            )}
 
-            const node = apiRef.current.getItem(treeNode);
-            if (node.children && node.children.length > 0) return;
-            console.log("Loading children for node :", node);
-            const childrenNodes = await getChildren(node);
-            console.log("childrenNodes :", childrenNodes);
-            apiRef.current.updateItem(node.id, { children: childrenNodes });
-        }}
-        />
-    </Box>
+            {/* Tree View */}
+            <div className="panel-scrollable">
+                <div className="tree-container">
+                    <RichTreeView
+                        items={treeItems}
+                        defaultExpandedItems={['root']}
+                        onItemClick={handleItemClick}
+                        onItemExpansionToggle={handleItemExpansionToggle}
+                        sx={{
+                            '& .MuiTreeItem-content': {
+                                borderRadius: '4px',
+                                padding: '4px 8px',
+                                margin: '2px 0',
+                                '&:hover': {
+                                    backgroundColor: '#f5f5f5',
+                                },
+                                '&.Mui-selected': {
+                                    backgroundColor: '#e8e8e8',
+                                    '&:hover': {
+                                        backgroundColor: '#e0e0e0',
+                                    },
+                                },
+                            },
+                            '& .MuiTreeItem-label': {
+                                fontSize: '0.85rem',
+                                fontWeight: 500,
+                                color: '#333',
+                            },
+                            '& .MuiTreeItem-group': {
+                                marginLeft: '16px',
+                                borderLeft: '1px solid #e0e0e0',
+                                paddingLeft: '8px',
+                            },
+                        }}
+                    />
+                </div>
+            </div>
+        </div>
     );
 }

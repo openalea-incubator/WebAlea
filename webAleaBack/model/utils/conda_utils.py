@@ -102,7 +102,8 @@ class Conda:
             try:
                 Conda.install_package(pkg, env_name=env_name)
                 results["installed"].append(pkg)
-            except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            except (subprocess.CalledProcessError, FileNotFoundError, RuntimeError) as e:
+                logger.error(f"Failed to install {pkg}: {e}")
                 results["failed"].append({"package": pkg, "error": str(e)})
         return results
 

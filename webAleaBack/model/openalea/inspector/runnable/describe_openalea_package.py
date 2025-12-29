@@ -64,6 +64,39 @@ def serialize_node(node_factory) -> dict:
 
 
 
+def normalize_package_name(package_name: str, available_keys: list) -> str:
+    """Try to find the correct package name in the PackageManager.
+
+    OpenAlea PackageManager may use different naming conventions:
+    - 'openalea.widgets' (conda name) -> 'widgets' (PM name)
+    - or vice versa
+
+    Args:
+        package_name: the package name to look for
+        available_keys: list of keys from PackageManager
+
+    Returns:
+        The matching key name, or original if no match found
+    """
+    # Try exact match first
+    if package_name in available_keys:
+        return package_name
+
+    # Try without 'openalea.' prefix
+    if package_name.startswith("openalea."):
+        short_name = package_name[len("openalea."):]
+        if short_name in available_keys:
+            return short_name
+
+    # Try with 'openalea.' prefix
+    prefixed_name = f"openalea.{package_name}"
+    if prefixed_name in available_keys:
+        return prefixed_name
+
+    # No match found
+    return None
+
+
 def describe_openalea_package(package_name: str) -> Dict[str, Any]:
     """lists all nodes contained in an OpenAlea package.
 
@@ -79,19 +112,26 @@ def describe_openalea_package(package_name: str) -> Dict[str, Any]:
     # initalize package manager
     pm = PackageManager()
     pm.init()
-    # check package existence
-    if package_name not in pm.keys():
-        logging.error("No OpenAlea package named '%s' found.", package_name)
-        raise ValueError(f"No OpenAlea package named '{package_name}' found.")
+
+    # Try to find the correct package name
+    available_keys = list(pm.keys())
+    resolved_name = normalize_package_name(package_name, available_keys)
+
+    if resolved_name is None:
+        logging.warning("Package '%s' has no visual nodes (wralea). Available packages with nodes: %s",
+                       package_name, available_keys)
+        # Return empty nodes instead of error - package exists but has no visual nodes
+        return {"package_name": package_name, "nodes": {}, "has_wralea": False}
+
     # retrieve package
-    pkg = pm.get(package_name)
+    pkg = pm.get(resolved_name)
     nodes: Dict[str, Any] = {}
     # describe each node in the package
     for node_factory in pkg.values():
         node_name = getattr(node_factory, "name", str(node_factory))
         nodes[node_name] = serialize_node(node_factory)
 
-    return {"nodes": nodes}
+    return {"package_name": resolved_name, "nodes": nodes, "has_wralea": True}
 
 if __name__ == "__main__":
     logging.info("describing an OpenAlea package by subprocess")

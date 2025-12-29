@@ -4,7 +4,9 @@ This module provides functionality to list all installed OpenAlea packages
 This module is dynamically ran by subprocess in order update the python instance used
 """
 
+import json
 import logging
+import sys
 from typing import List
 
 from openalea.core.pkgmanager import PackageManager
@@ -22,5 +24,10 @@ def list_installed_openalea_packages() -> List[str]:
 
 if __name__ == "__main__":
     logging.info("fetching the list of installed packages by subprocess")
-    packages = list_installed_openalea_packages()
-    print(packages)
+    try:
+        packages = list_installed_openalea_packages()
+        print(json.dumps(packages))
+    except Exception as e:
+        logging.error("Error listing packages: %s", e)
+        print(json.dumps([]), file=sys.stdout)
+        sys.exit(1)

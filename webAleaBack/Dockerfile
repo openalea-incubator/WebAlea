@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3:22.11.1
+FROM continuumio/miniconda3:24.11.1-0
 
 # set env variable here
 ENV PYTHONUNBUFFERED 1
