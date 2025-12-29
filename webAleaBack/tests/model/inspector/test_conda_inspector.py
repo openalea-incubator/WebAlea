@@ -3,21 +3,23 @@ from unittest import TestCase
 import unittest.mock
 import json
 
-from conda_utils.conda_inspector import OpenAleaInspector
+from model.openalea.inspector.openalea_inspector import OpenAleaInspector
 
-class TestCondaInspectorMethods(TestCase):
-    """Unit tests for OpenAleaInpector class"""
+class TestOpenAleaInspectorMethods(TestCase):
+    """Unit tests for OpenAleaInspector class"""
 
     # data for testing
     mock_openalea_desc_file = "tests/resources/conda/openalea_package_desc.json"
 
-    @unittest.mock.patch("conda_utils.conda_inspector.PackageManager")
-    def test_list_installed_openalea_packages(self, mock_package_manager):
+    @unittest.mock.patch("model.openalea.inspector.openalea_inspector.subprocess")
+    def test_list_installed_openalea_packages(self, mock_subprocess):
         """Test listing installed OpenAlea packages in the current conda environment."""
-        # Setup mock package manager
-        mock_pm_instance = mock_package_manager.return_value
-        mock_pm_instance.init.return_value = None
-        mock_pm_instance.keys.return_value = ["openalea.astk", "openalea.flow"]
+        # Setup mock subprocess.run
+        mock_subprocess.run.return_value.stdout = json.dumps([
+            "openalea.astk",
+            "openalea.flow",
+            "openalea.core"
+        ])
 
         # Call the method
         installed_packages = OpenAleaInspector.list_installed_openalea_packages()
@@ -30,8 +32,7 @@ class TestCondaInspectorMethods(TestCase):
     # @unittest.skip("Skipping test that requires actual OpenAlea package.")
     def test_describe_openalea_package(self):
         """Test describing an OpenAlea package."""
-        inspector = OpenAleaInspector()
-        pkg_description = inspector.describe_openalea_package("openalea.astk")
+        pkg_description = OpenAleaInspector.describe_openalea_package("openalea.astk")
 
         expected_description = open(
             self.mock_openalea_desc_file,

@@ -31,7 +31,7 @@ class TestManagerEndpoints(unittest.TestCase):
                 f"Route '{route_name}' not found in manager router."
             )
 
-    @unittest.mock.patch("conda_utils.conda_utils.Conda.list_packages")
+    @unittest.mock.patch("model.utils.conda_utils.Conda.list_packages")
     def test_fetch_package_list(self, conda_list_packages):
         """Test fetching the package list."""
         conda_list_packages.return_value = open(
@@ -42,7 +42,7 @@ class TestManagerEndpoints(unittest.TestCase):
         self.assertTrue(len(packages) > 0)
         self.assertIn("openalea.astk", packages)
 
-    @unittest.mock.patch("conda_utils.conda_utils.Conda.list_latest_packages")
+    @unittest.mock.patch("model.utils.conda_utils.Conda.list_latest_packages")
     def test_fetch_latest_package_versions(self, conda_list_latest_packages):
         """Test fetching the latest package versions."""
         conda_list_latest_packages.return_value = open(
@@ -52,7 +52,7 @@ class TestManagerEndpoints(unittest.TestCase):
         latest_packages = manager.fetch_latest_package_versions()
         self.assertTrue(len(latest_packages) > 0)
 
-    @unittest.mock.patch("conda_utils.conda_utils.Conda.install_package_list")
+    @unittest.mock.patch("model.utils.conda_utils.Conda.install_package_list")
     def test_install_packages_in_env(self, conda_install_package_list):
         """Test installing packages in a conda environment via the endpoint."""
         request = manager.InstallRequest(
@@ -69,7 +69,7 @@ class TestManagerEndpoints(unittest.TestCase):
         self.assertIn("installed", results)
         self.assertIn("agroservices", results["installed"])
 
-    @unittest.mock.patch("conda_utils.conda_utils.Conda.install_package_list")
+    @unittest.mock.patch("model.utils.conda_utils.Conda.install_package_list")
     def test_install_packages_in_env_with_failure(self, conda_install_package_list):
         """Test installing packages with one expected failure."""
         request = manager.InstallRequest(
@@ -88,7 +88,7 @@ class TestManagerEndpoints(unittest.TestCase):
             failure["package"] == "nonexistent_package_12345" for failure in results["failed"]
         ))
 
-    @unittest.mock.patch("conda_utils.conda_inspector.OpenAleaInspector.list_installed_openalea_packages")
+    @unittest.mock.patch("model.openalea.inspector.openalea_inspector.OpenAleaInspector.list_installed_openalea_packages")
     def test_fetch_installed_openalea_packages(self, mock_list_installed):
         """Test fetching installed OpenAlea packages."""
         mock_list_installed.return_value = {
@@ -99,7 +99,7 @@ class TestManagerEndpoints(unittest.TestCase):
         self.assertIn("openalea.astk", installed_packages["installed_openalea_packages"])
         self.assertIn("openalea.plantgl", installed_packages["installed_openalea_packages"])
 
-    @unittest.mock.patch("conda_utils.conda_inspector.OpenAleaInspector.describe_openalea_package")
+    @unittest.mock.patch("model.openalea.inspector.openalea_inspector.OpenAleaInspector.describe_openalea_package")
     def test_fetch_package_nodes(self, mock_describe_package):
         """Test fetching nodes of an OpenAlea package."""
         mock_describe_package.return_value = open(
