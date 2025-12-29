@@ -1,11 +1,14 @@
 
 export class WFNode {
-    constructor({ id, type, inputs = [], outputs = [], next = [] }) {
+    constructor({ id, type, inputs = [], outputs = [], next = [], packageName = null, nodeName = null, label = null }) {
         this.id = id;
         this.type = type;
         this.inputs = inputs;
         this.outputs = outputs;
         this.next = next; // Direct children node IDs
+        this.packageName = packageName; // OpenAlea package name
+        this.nodeName = nodeName; // OpenAlea node name
+        this.label = label; // Display label
     }
 }
 
@@ -14,7 +17,8 @@ export function buildGraphModel(nodesUI, edgesUI) {
     const graph = [];
 
     for (const nodeUI of nodesUI) {
-      if (nodeUI.type !== 'custom') continue;
+        if (nodeUI.type !== 'custom') continue;
+
         // Filtre les enfants valides
         const children = edgesUI
             .filter(edge => edge.source === nodeUI.id && nodesUI.some(n => n.id === edge.target))
@@ -25,7 +29,10 @@ export function buildGraphModel(nodesUI, edgesUI) {
             type: nodeUI.type,
             inputs: nodeUI.data.inputs ?? [],
             outputs: nodeUI.data.outputs ?? [],
-            next: children
+            next: children,
+            packageName: nodeUI.data.packageName ?? null,
+            nodeName: nodeUI.data.nodeName ?? null,
+            label: nodeUI.data.label ?? null
         }));
     }
 

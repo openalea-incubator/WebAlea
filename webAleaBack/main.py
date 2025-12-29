@@ -29,8 +29,8 @@ webAleaBack = FastAPI(
 
 webAleaBack.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Ou ["*"] pour dev
-    allow_credentials=True,
+    allow_origins=["*"],  # Autoriser toutes les origines pour le dev
+    allow_credentials=False,  # Doit être False quand allow_origins=["*"]
     allow_methods=["*"],
     allow_headers=["*"],
 )

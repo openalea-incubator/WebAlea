@@ -1,5 +1,5 @@
 """"API endpoints for managing conda packages and environments."""
-from typing import List, Optional
+from typing import List, Optional, Any
 import logging
 
 from fastapi import APIRouter, HTTPException, status
@@ -97,4 +97,71 @@ def fetch_package_nodes(package_name: str):
 
     except Exception as e:
         logging.exception("UNEXPECTED ERROR in fetch_package_nodes")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Node Execution Endpoints ---
+
+class NodeExecutionInput(BaseModel):
+    """Input parameter for node execution."""
+    id: str
+    name: str
+    type: str
+    value: Optional[Any] = None
+
+
+class NodeExecutionRequest(BaseModel):
+    """Request model for executing a single node."""
+    node_id: str
+    package_name: str
+    node_name: str
+    inputs: List[NodeExecutionInput]
+
+
+class WorkflowExecutionRequest(BaseModel):
+    """Request model for executing a workflow."""
+    workflow_type: str = "dataflow"
+    nodes: List[dict]
+    edges: List[dict]
+
+
+@router.post("/execute/node")
+def execute_single_node(request: NodeExecutionRequest):
+    """Execute a single OpenAlea node with given inputs.
+
+    Body format:
+    {
+        "node_id": "node_1",
+        "package_name": "openalea.core",
+        "node_name": "addition",
+        "inputs": [
+            {"id": "in_0", "name": "a", "type": "float", "value": 5},
+            {"id": "in_1", "name": "b", "type": "float", "value": 3}
+        ]
+    }
+    """
+    logging.info("Executing node: %s from package: %s", request.node_name, request.package_name)
+
+    try:
+        from model.openalea.openalea_runner import OpenAleaRunner
+
+        node_info = {
+            "package": request.package_name,
+            "name": request.node_name,
+            "inputs": {inp.name: inp.value for inp in request.inputs}
+        }
+
+        result = OpenAleaRunner.run("dataflow", [node_info])
+
+        return {
+            "success": True,
+            "node_id": request.node_id,
+            "result": result
+        }
+
+    except ValueError as e:
+        logging.error("Node execution error: %s", str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logging.exception("Unexpected error during node execution")
         raise HTTPException(status_code=500, detail=str(e))

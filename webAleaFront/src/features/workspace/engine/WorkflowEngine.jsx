@@ -1,10 +1,12 @@
 import { WFNode, getRootNodes } from "../model/WorkflowGraph.jsx";
+import { executeNode } from "../../../api/managerAPI.js";
 
 
 export class WorkflowEngine {
-    constructor(graphModel = {}) {
+    constructor(graphModel = []) {
         this.model = graphModel;
         this.listeners = [];
+        this.useBackend = true; // Toggle for backend vs local execution
     }
 
     bindModel(graphModel) {
@@ -16,14 +18,14 @@ export class WorkflowEngine {
     }
 
     start() {
-        if (!this.model || Object.keys(this.model).length === 0) {
+        if (!this.model || this.model.length === 0) {
             console.warn("WorkflowEngine: No model bound.");
             return;
         }
 
         this._emit("start");
 
-        const rootIds = getRootNodes(Object.values(this.model));
+        const rootIds = getRootNodes(this.model);
         console.log("Root node IDs:", rootIds);
         rootIds.forEach(id => this._executeChain(id));
     }
@@ -37,37 +39,73 @@ export class WorkflowEngine {
         const node = this.model.find(n => n.id === nodeId);
         if (!node) return;
 
-        //Avant d'appeler les noeuds suivants, on attend que le noeud courant soit terminé
+        // Attendre que le noeud courant soit terminé avant d'appeler les suivants
         await this.executeNode(node);
 
-        node.next.forEach(nextId => {
-            this._executeChain(nextId);
-        });
+        // Exécuter les noeuds suivants séquentiellement
+        for (const nextId of node.next) {
+            await this._executeChain(nextId);
+        }
     }
 
     // Execute a single node
     async executeNode(node) {
         this._emit("node-start", node.id);
 
-        // Retrieve input values
-        const inputsValues = node.inputs.map(i => i.value);
+        try {
+            let result;
 
-        const result = this._executeLogic(node, inputsValues);
+            if (this.useBackend && node.packageName && node.nodeName) {
+                // Execution via backend API
+                result = await this._executeViaBackend(node);
+            } else {
+                // Fallback: execution locale
+                result = this._executeLocalLogic(node);
+            }
 
-        // Send the result
-        this._emit("node-result", { id: node.id, result });
-        await new Promise(resolve => setTimeout(resolve, 300));
-        this._emit("node-done", node.id);
+            // Envoyer le résultat
+            this._emit("node-result", { id: node.id, result });
+            this._emit("node-done", node.id);
+
+        } catch (error) {
+            console.error(`Error executing node ${node.id}:`, error);
+            this._emit("node-error", { id: node.id, error: error.message });
+            this._emit("node-done", node.id);
+        }
     }
 
-    // Simple logic execution based on node type
-    _executeLogic(node, inputsValues) {
+    // Execute node via backend API
+    async _executeViaBackend(node) {
+        console.log("Executing node via backend:", node.id, node.packageName, node.nodeName);
 
+        const response = await executeNode({
+            nodeId: node.id,
+            packageName: node.packageName,
+            nodeName: node.nodeName,
+            inputs: node.inputs || []
+        });
+
+        if (response.success) {
+            console.log("Backend execution result:", response.result);
+            return response.result;
+        } else {
+            throw new Error(response.error || "Backend execution failed");
+        }
+    }
+
+    // Local logic execution (fallback)
+    _executeLocalLogic(node) {
+        const inputsValues = (node.inputs || []).map(i => i.value);
+        console.log("Local execution for node:", node.id, "inputs:", inputsValues);
+
+        // Simple sum as default local logic
         let result = 0;
         inputsValues.forEach(input => {
-            result += input;
+            const numValue = parseFloat(input) || 0;
+            result += numValue;
         });
-        console.log(inputsValues, result);
+
+        console.log("Local result:", result);
         return result;
     }
 

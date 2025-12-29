@@ -126,10 +126,18 @@ export const FlowProvider = ({ children }) => {
         updateNodeStatus(payload, "done");
         break;
 
+      case "node-error": {
+        const { id, error } = payload;
+        console.error("Node error:", id, error);
+        updateNodeStatus(id, "error");
+        addLog("Node execution error", { id, error });
+        break;
+      }
+
       default:
         console.log("Unknown event:", event);
     }
-  }, [resetAllNodesStatus, updateNodeStatus, updateNodeOutputs]);
+  }, [resetAllNodesStatus, updateNodeStatus, updateNodeOutputs, addLog]);
 
   // Init Workflow Engine avec useRef pour éviter les re-créations
   const engineRef = useRef(null);
@@ -237,7 +245,9 @@ export const FlowProvider = ({ children }) => {
 
   const onNodeExecute = useCallback((nodeId) => {
     console.log("Executing node:", nodeId);
-    const curNode = nodes.find(n => n.id === nodeId);
+    // Utiliser nodesRef pour avoir les dernières valeurs
+    const currentNodes = nodesRef.current;
+    const curNode = currentNodes.find(n => n.id === nodeId);
     if (!curNode) {
       console.warn("Node not found for execution:", nodeId);
       return;
@@ -247,10 +257,13 @@ export const FlowProvider = ({ children }) => {
       type: curNode.type,
       inputs: curNode.data.inputs ?? [],
       outputs: curNode.data.outputs ?? [],
+      packageName: curNode.data.packageName ?? null,
+      nodeName: curNode.data.nodeName ?? null,
+      label: curNode.data.label ?? null
     });
     engine.executeNode(formNode);
-    addLog("Node execution started", { id: nodeId });
-  }, [addLog]);
+    addLog("Node execution started", { id: nodeId, packageName: formNode.packageName, nodeName: formNode.nodeName });
+  }, [engine, addLog]);
 
 
   // --- Valeur fournie par le Context ---

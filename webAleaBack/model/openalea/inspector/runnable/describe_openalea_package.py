@@ -12,6 +12,62 @@ from openalea.core.pkgmanager import PackageManager
 
 
 
+def get_interface_type(interface) -> str:
+    """Extract the interface type name from an OpenAlea interface object.
+
+    Args:
+        interface: The interface object (can be None, a class, or an instance)
+
+    Returns:
+        str: The interface type name (e.g., "IFloat", "IInt", "IStr", "None")
+    """
+    if interface is None:
+        return "None"
+
+    # Try to get the class name
+    try:
+        # If it's an instance, get the class name
+        if hasattr(interface, '__class__'):
+            class_name = interface.__class__.__name__
+            # Avoid generic names
+            if class_name not in ('type', 'NoneType'):
+                return class_name
+
+        # If it's a class itself
+        if hasattr(interface, '__name__'):
+            return interface.__name__
+
+        # Fallback to string representation
+        iface_str = str(interface)
+
+        # Try to extract type from string like "IFloat" or "<class 'openalea.core.interface.IFloat'>"
+        if 'IFloat' in iface_str:
+            return 'IFloat'
+        elif 'IInt' in iface_str:
+            return 'IInt'
+        elif 'IStr' in iface_str:
+            return 'IStr'
+        elif 'IBool' in iface_str:
+            return 'IBool'
+        elif 'ISequence' in iface_str:
+            return 'ISequence'
+        elif 'IDict' in iface_str:
+            return 'IDict'
+        elif 'IFileStr' in iface_str:
+            return 'IFileStr'
+        elif 'IDirStr' in iface_str:
+            return 'IDirStr'
+        elif 'IEnumStr' in iface_str:
+            return 'IEnumStr'
+        elif 'IRGBColor' in iface_str:
+            return 'IRGBColor'
+
+        return iface_str if iface_str != 'None' else 'None'
+
+    except Exception:
+        return "None"
+
+
 def serialize_node_puts(puts) -> dict:
     """serialize inputs and outputs of a list inputs/outputs
 
@@ -27,9 +83,10 @@ def serialize_node_puts(puts) -> dict:
     for put in puts: # for each input/output
         try:
             # serialize into a json dict
+            interface_type = get_interface_type(put.interface)
             put_dict = {
                 "name": put.name,
-                "interface": str(put.interface),
+                "interface": interface_type,
                 "optional": put.optional,
                 "desc": put.desc,
             }

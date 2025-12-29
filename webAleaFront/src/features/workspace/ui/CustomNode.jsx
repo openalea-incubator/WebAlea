@@ -27,15 +27,6 @@ const getNextStatus = (currentStatus) => {
     }
 };
 
-const typeColors = {
-    string: "#1976d2",
-    float: "#8e24aa",
-    boolean: "#2b8a3e",
-    default: "#555",
-};
-
-const getTypeColor = (t) => typeColors[t] || typeColors.default;
-
 export default function CustomNode(nodeProps) {
     const { updateNode } = useFlow();
 
@@ -82,16 +73,14 @@ export default function CustomNode(nodeProps) {
             {Array.isArray(inputs) &&
                 inputs.map((input, index) => {
                     const topPercent = ((index + 1) / (inputs.length + 1)) * 100;
+                    const handleId = input.id || `input_${index}`;
                     return (
                         <CustomHandle
-                            key={input.id + "_" + index}
-                            id={input.id}
+                            key={handleId + "_" + index}
+                            id={handleId}
+                            interfaceType={input.type || input.interface}
                             style={{
-                                background: getTypeColor(input.type),
                                 top: `${topPercent}%`,
-                            }}
-                            onChange={(value) => {
-                                input.value = value;
                             }}
                             dataType="input"
                         />
@@ -103,12 +92,13 @@ export default function CustomNode(nodeProps) {
             {Array.isArray(outputs) &&
                 outputs.map((output, index) => {
                     const topPercent = ((index + 1) / (outputs.length + 1)) * 100;
+                    const handleId = output.id || `output_${index}`;
                     return (
                         <CustomHandle
-                            key={output.id + "_" + index}
-                            id={output.id}
+                            key={handleId + "_" + index}
+                            id={handleId}
+                            interfaceType={output.type || output.interface}
                             style={{
-                                background: getTypeColor(output.type),
                                 top: `${topPercent}%`,
                             }}
                             dataType="output"
