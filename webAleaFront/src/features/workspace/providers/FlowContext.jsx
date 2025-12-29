@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import {
   useNodesState,
   useEdgesState,
@@ -39,81 +39,112 @@ export const FlowProvider = ({ children }) => {
   const [currentNode, setCurrentNode] = useState(null);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
+  // Ref pour accéder aux dernières valeurs des nodes dans les callbacks
+  const nodesRef = useRef(nodes);
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
+
+  // Fonction immutable pour mettre à jour le status d'un node
+  const updateNodeStatus = useCallback((nodeId, status) => {
+    setNodes((prevNodes) =>
+      prevNodes.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, status } }
+          : node
+      )
+    );
+  }, [setNodes]);
+
+  // Fonction immutable pour mettre à jour les outputs d'un node
+  const updateNodeOutputs = useCallback((nodeId, result) => {
+    setNodes((prevNodes) =>
+      prevNodes.map((node) => {
+        if (node.id !== nodeId) return node;
+
+        const currentOutputs = node.data.outputs || [];
+        let newOutputs;
+
+        if (!Array.isArray(result)) {
+          // Si result n'est pas un tableau, mettre à jour le premier output
+          newOutputs = currentOutputs.map((output, index) =>
+            index === 0 ? { ...output, value: result } : output
+          );
+        } else {
+          // Si result est un tableau, mettre à jour chaque output correspondant
+          newOutputs = currentOutputs.map((output) => {
+            const matchingResult = result.find((r) => r.id === output.id);
+            return matchingResult
+              ? { ...output, value: matchingResult.value ?? matchingResult }
+              : output;
+          });
+        }
+
+        return {
+          ...node,
+          data: { ...node.data, outputs: newOutputs }
+        };
+      })
+    );
+  }, [setNodes]);
+
+  // Fonction immutable pour réinitialiser tous les nodes
+  const resetAllNodesStatus = useCallback((status) => {
+    setNodes((prevNodes) =>
+      prevNodes.map((node) => ({
+        ...node,
+        data: { ...node.data, status }
+      }))
+    );
+  }, [setNodes]);
+
   // --- Gestion des événements du moteur ---
-  const handleEngineEvent = (event, payload) => {
+  const handleEngineEvent = useCallback((event, payload) => {
     console.log("WorkflowEngine event:", event, payload);
 
-    if (event === "stop") {
-      console.log("WorkflowEngine stopped.");
-      nodes.forEach(n => {
-        updateNode(n.id, { status: "ready" });
-      });
-      console.log("All nodes reset to 'ready' status.");
-    }
+    switch (event) {
+      case "stop":
+        console.log("WorkflowEngine stopped.");
+        resetAllNodesStatus("ready");
+        console.log("All nodes reset to 'ready' status.");
+        break;
 
-    if (event === "node-start") {
-      const id = payload;
-      console.log("Updating node status to 'running' in FlowContext:", id);
+      case "node-start":
+        console.log("Updating node status to 'running':", payload);
+        updateNodeStatus(payload, "running");
+        break;
 
-      updateNode(id, { status: "running" });
-      console.log("Node updated to 'running':", id);
-    }
-
-    if (event === "node-result") {
-      const { id, result } = payload;
-      console.log("Updating node result in FlowContext:", id, result);
-
-      const curNode = nodes.find(n => n.id === id);
-
-      if (!curNode) {
-        console.warn(`Node with id ${id} not found in FlowContext.`);
-        return;
+      case "node-result": {
+        const { id, result } = payload;
+        console.log("Updating node result:", id, result);
+        updateNodeOutputs(id, result);
+        break;
       }
 
-      //verifie si result est itérable, sinon le transforme en tableau
-      if (!Array.isArray(result)) {
-        const output = curNode?.data.outputs?.[0];
-        if (output) {
-          output.value = result;
-          console.log(`Output ${output.id} updated with value:`, result);
-        } else {
-          console.warn(`Output with id ${result.id} not found in node ${id}`);
-        }
-      } else {
+      case "node-done":
+        console.log("Node done:", payload);
+        updateNodeStatus(payload, "done");
+        break;
 
-        // Met à jour les outputs du noeud avec le résultat
-        //updateNode(id, { outputs: curNode.data.outputs.map(o => ({ ...o, value: null })) });
-
-        for (const res of result) {
-          if (curNode.data.outputs) {
-            const output = curNode.data.outputs.find(o => o.id === res.id);
-            if (output) {
-              output.value = res;
-            } else {
-              console.warn(`Output with id ${res.id} not found in node ${id}`);
-            }
-          } else {
-            console.warn(`No outputs defined for node ${id}`);
-          }
-        }
-      }
-
-
-
-      console.log("Node updated with result:", id, result);
+      default:
+        console.log("Unknown event:", event);
     }
-    if (event === "node-done") {
-      const id = payload;
-      updateNode(payload, { status: "done" });
-    }
-  };
+  }, [resetAllNodesStatus, updateNodeStatus, updateNodeOutputs]);
 
-  // Init Workflow Engine
-  const [engine] = useState(() => {
-    const workflowEngine = new WorkflowEngine();
-    workflowEngine.onUpdate(handleEngineEvent);
-    return workflowEngine;
-  });
+  // Init Workflow Engine avec useRef pour éviter les re-créations
+  const engineRef = useRef(null);
+  if (!engineRef.current) {
+    engineRef.current = new WorkflowEngine();
+  }
+
+  // Mettre à jour le listener quand handleEngineEvent change
+  useEffect(() => {
+    const engine = engineRef.current;
+    engine.listeners = []; // Reset listeners
+    engine.onUpdate(handleEngineEvent);
+  }, [handleEngineEvent]);
+
+  const engine = engineRef.current;
 
   const nodesTypes = {
     custom: CustomNode,

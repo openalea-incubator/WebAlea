@@ -1,20 +1,35 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import NodeInput from "../NodeInputs.jsx";
 import NodeOutput from "../NodeOutputs.jsx";
 import { useFlow } from "../../../workspace/providers/FlowContextDefinition.jsx";
 
 export default function NodeParameters() {
 
-    const { currentNode, nodes, engine } = useFlow();
+    const { currentNode, nodes, updateNode, onNodeExecute } = useFlow();
     const node = nodes.find(n => n.id === currentNode);
     const inputs = node ? node.data.inputs : [];
     const outputs = node ? node.data.outputs : [];
     const [isChanged, setIsChanged] = useState(false);
 
-    // Lancer l’exécution du node
+    // Handle input value changes
+    const handleInputChange = useCallback((inputId, newValue) => {
+        if (!node) return;
+
+        const updatedInputs = inputs.map(input =>
+            input.id === inputId ? { ...input, value: newValue } : input
+        );
+
+        updateNode(node.id, { inputs: updatedInputs });
+        setIsChanged(true);
+    }, [node, inputs, updateNode]);
+
+    // Lancer l'exécution du node
     const handleLaunch = () => {
-        console.log("Inputs :", inputs);
-        setIsChanged(false);
+        if (node) {
+            console.log("Executing node with inputs:", inputs);
+            onNodeExecute(node.id);
+            setIsChanged(false);
+        }
     };
 
     // Aucun node sélectionné
@@ -23,7 +38,7 @@ export default function NodeParameters() {
     }
 
     return (
-        <div className="d-flex flex-column justify-content-between" style={{ height: "100%" }}>
+        <div key={currentNode} className="d-flex flex-column justify-content-between" style={{ height: "100%" }}>
             <h3 className="mb-3">Parameters for {node.data.label}</h3>
 
             {/* --- PARAMÈTRES --- */}
@@ -31,7 +46,10 @@ export default function NodeParameters() {
                 {inputs.length > 0 && (
                     <>
                         <h6>Inputs:</h6>
-                        <NodeInput inputs={inputs} />
+                        <NodeInput
+                            inputs={inputs}
+                            onInputChange={handleInputChange}
+                        />
                     </>
                 )}
 
@@ -47,7 +65,6 @@ export default function NodeParameters() {
             <div className="d-flex justify-content-center mt-3">
                 <button
                     className="btn btn-success"
-                    disabled={!isChanged}
                     onClick={handleLaunch}
                 >
                     Lancer
