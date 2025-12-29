@@ -1,6 +1,9 @@
 """Module to manage conda environments and packages."""
 import json
 import subprocess
+import logging
+
+logger = logging.getLogger(__name__)
 
 from packaging.version import Version
 from core.config import settings
@@ -21,6 +24,7 @@ class Conda:
         Returns:
             dict: A dictionary of packages and their versions.
         """
+        
         result = subprocess.run(
             ["conda", "search", "--override-channels", "-c", channel, "openalea*", "--json"],
             stdout=subprocess.PIPE,
@@ -51,21 +55,36 @@ class Conda:
 
     @staticmethod
     def install_package(package_name: str, version: str = None, env_name: str = None):
-        """Install a package in a conda environment.
-
-        Args:
-            package_name (str): The name of the package to install.
-            version (str, optional): The version of the package to install.
-            Defaults to None.
-            env_name (str, optional): The name of the conda environment.
-            Defaults to settings.CONDA_ENV_NAME.
-        """
         pkg = f"{package_name}={version}" if version else package_name
-        env_name = env_name or settings.CONDA_ENV_NAME # Use default env name if none provided
-        subprocess.run(
-            ["conda", "install", "-n", env_name, pkg, "-y"],
-            check=True,
+        env_name = env_name or settings.CONDA_ENV_NAME
+
+        cmd = [
+            "conda", "install",
+            "-n", env_name,
+            "-c", "openalea3",
+            "-c", "conda-forge",
+            pkg,
+            "-y",
+        ]
+
+        logger.info(f"Running command: {' '.join(cmd)}")
+
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
         )
+
+        logger.info("Conda stdout:\n%s", result.stdout)
+
+        if result.returncode != 0:
+            logger.error("Conda stderr:\n%s", result.stderr)
+            raise RuntimeError(
+                f"Conda install failed for {pkg} (exit code {result.returncode})"
+            )
+
+        logger.info(f"Package {pkg} installed successfully")
 
     @staticmethod
     def install_package_list(env_name : str, package_list: list) -> dict:

@@ -27,12 +27,11 @@ export async function getPackagesList() {
  * @returns {Promise<Boolean>} A Promise that resolves to a boolean indicating if the package is installed.
  */
 export async function isInstalledPackage(packageName) {
-    const installePackages = await fetchInstalledOpenAleaPackages();
-    const arrayPackages = Array.from(Object.entries(installePackages));
-    const formattedPackages = arrayPackages.map((pkg) => pkg.name);
-    console.log("formattedPackages :", formattedPackages);
+    const installedPackages = await fetchInstalledOpenAleaPackages();
+    const formattedPackages = Object.keys(installedPackages);
     return formattedPackages.includes(packageName);
 }
+
 
 /**
  * 
