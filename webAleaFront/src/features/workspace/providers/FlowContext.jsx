@@ -57,7 +57,8 @@ export const FlowProvider = ({ children }) => {
   }, [setNodes]);
 
   // Fonction immutable pour mettre à jour les outputs d'un node
-  const updateNodeOutputs = useCallback((nodeId, result) => {
+  // Format attendu: [{index, name, value, type}, ...]
+  const updateNodeOutputs = useCallback((nodeId, outputs) => {
     setNodes((prevNodes) =>
       prevNodes.map((node) => {
         if (node.id !== nodeId) return node;
@@ -65,20 +66,30 @@ export const FlowProvider = ({ children }) => {
         const currentOutputs = node.data.outputs || [];
         let newOutputs;
 
-        if (!Array.isArray(result)) {
-          // Si result n'est pas un tableau, mettre à jour le premier output
+        if (!Array.isArray(outputs)) {
+          // Si outputs n'est pas un tableau, mettre à jour le premier output
           newOutputs = currentOutputs.map((output, index) =>
-            index === 0 ? { ...output, value: result } : output
+            index === 0 ? { ...output, value: outputs } : output
           );
         } else {
-          // Si result est un tableau, mettre à jour chaque output correspondant
-          newOutputs = currentOutputs.map((output) => {
-            const matchingResult = result.find((r) => r.id === output.id);
-            return matchingResult
-              ? { ...output, value: matchingResult.value ?? matchingResult }
-              : output;
+          // outputs est un tableau: [{index, name, value, type}, ...]
+          newOutputs = currentOutputs.map((output, idx) => {
+            // Chercher par index d'abord, puis par id, puis par name
+            const matchingResult = outputs.find((r) =>
+              r.index === idx || r.id === output.id || r.name === output.name
+            );
+            if (matchingResult) {
+              return {
+                ...output,
+                value: matchingResult.value,
+                type: matchingResult.type || output.type
+              };
+            }
+            return output;
           });
         }
+
+        console.log("Updated outputs for node", nodeId, ":", newOutputs);
 
         return {
           ...node,
@@ -103,20 +114,38 @@ export const FlowProvider = ({ children }) => {
     console.log("WorkflowEngine event:", event, payload);
 
     switch (event) {
-      case "stop":
-        console.log("WorkflowEngine stopped.");
-        resetAllNodesStatus("ready");
-        console.log("All nodes reset to 'ready' status.");
+      // --- Workflow events ---
+      case "workflow-start":
+        console.log("Workflow started with", payload.totalNodes, "nodes");
+        resetAllNodesStatus("queued");
+        addLog("Workflow execution started", { totalNodes: payload.totalNodes });
         break;
 
+      case "workflow-done":
+        console.log("Workflow completed successfully");
+        addLog("Workflow completed", { success: payload.success });
+        break;
+
+      case "workflow-error":
+        console.error("Workflow failed:", payload.error);
+        addLog("Workflow failed", { error: payload.error });
+        break;
+
+      case "stop":
+        console.log("Workflow stopped by user");
+        resetAllNodesStatus("ready");
+        addLog("Workflow stopped");
+        break;
+
+      // --- Node events ---
       case "node-start":
-        console.log("Updating node status to 'running':", payload);
+        console.log("Node started:", payload);
         updateNodeStatus(payload, "running");
         break;
 
       case "node-result": {
         const { id, result } = payload;
-        console.log("Updating node result:", id, result);
+        console.log("Node result:", id, result);
         updateNodeOutputs(id, result);
         break;
       }
@@ -130,7 +159,10 @@ export const FlowProvider = ({ children }) => {
         const { id, error } = payload;
         console.error("Node error:", id, error);
         updateNodeStatus(id, "error");
-        addLog("Node execution error", { id, error });
+        // Find node label for better error message
+        const failedNode = nodesRef.current.find(n => n.id === id);
+        const nodeLabel = failedNode?.data?.label || id;
+        addLog(`Node "${nodeLabel}" failed: ${error}`, { nodeId: id, error });
         break;
       }
 

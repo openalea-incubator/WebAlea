@@ -12,7 +12,8 @@
       "Bash(tree:*)",
       "Bash(python3:*)",
       "Bash(python:*)",
-      "Bash(where:*)"
+      "Bash(where:*)",
+      "WebFetch(domain:openalea.gforge.inria.fr)"
     ]
   }
 }

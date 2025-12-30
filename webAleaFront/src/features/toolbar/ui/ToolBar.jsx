@@ -56,9 +56,10 @@ export default function ToolBar() {
     const handleInfo = () => alert("Afficher les informations");
     
     const handleRun = () => {
-        const graph = buildGraphModel(nodes, edges);
-        console.log("Running workflow with graph model:", graph);
-        engine.bindModel(graph);
+        const { graph, edges: customEdges } = buildGraphModel(nodes, edges);
+        console.log("Running workflow with graph model:", graph, "edges:", customEdges);
+        addLog("Workflow started", { nodes: graph.length, edges: customEdges.length });
+        engine.bindModel(graph, customEdges);
         engine.start();
     };
 

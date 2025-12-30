@@ -139,29 +139,59 @@ def execute_single_node(request: NodeExecutionRequest):
             {"id": "in_1", "name": "b", "type": "float", "value": 3}
         ]
     }
+
+    Response format:
+    {
+        "success": true,
+        "node_id": "node_1",
+        "outputs": [
+            {"index": 0, "name": "result", "value": 8, "type": "float"}
+        ]
+    }
     """
     logging.info("Executing node: %s from package: %s", request.node_name, request.package_name)
+    logging.info("Inputs received: %s", request.inputs)
 
     try:
         from model.openalea.openalea_runner import OpenAleaRunner
 
-        node_info = {
-            "package": request.package_name,
-            "name": request.node_name,
-            "inputs": {inp.name: inp.value for inp in request.inputs}
-        }
+        # Convert inputs list to dict {name: value}
+        inputs_dict = {}
+        for inp in request.inputs:
+            # Use name as key if available, otherwise use id
+            key = inp.name if inp.name else inp.id
+            inputs_dict[key] = inp.value
 
-        result = OpenAleaRunner.run("dataflow", [node_info])
+        logging.info("Inputs dict for execution: %s", inputs_dict)
 
+        # Execute node via subprocess
+        result = OpenAleaRunner.execute_node(
+            package_name=request.package_name,
+            node_name=request.node_name,
+            inputs=inputs_dict
+        )
+
+        # Return response with node_id included
         return {
-            "success": True,
+            "success": result.get("success", False),
             "node_id": request.node_id,
-            "result": result
+            "outputs": result.get("outputs", []),
+            "error": result.get("error")
         }
 
     except ValueError as e:
         logging.error("Node execution error: %s", str(e))
-        raise HTTPException(status_code=400, detail=str(e))
+        return {
+            "success": False,
+            "node_id": request.node_id,
+            "outputs": [],
+            "error": str(e)
+        }
     except Exception as e:
         logging.exception("Unexpected error during node execution")
-        raise HTTPException(status_code=500, detail=str(e))
+        return {
+            "success": False,
+            "node_id": request.node_id,
+            "outputs": [],
+            "error": str(e)
+        }

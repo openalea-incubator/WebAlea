@@ -11,11 +11,12 @@ import CustomHandle from "./CustomHandle.jsx";
 
 const getBorderColor = (status) => {
     switch (status) {
-        case "running": return "#8e24aa";
-        case "done": return "#2b8a3e";
-        case "error": return "#c62828";
-        case "ready": return "#1976d2";
-        default: return "#999";
+        case "queued": return "#ff9800";   // Orange - waiting in queue
+        case "running": return "#8e24aa";  // Purple - currently executing
+        case "done": return "#2b8a3e";     // Green - completed successfully
+        case "error": return "#c62828";    // Red - failed
+        case "ready": return "#1976d2";    // Blue - ready/idle
+        default: return "#999";            // Gray - unknown
     }
 };
 

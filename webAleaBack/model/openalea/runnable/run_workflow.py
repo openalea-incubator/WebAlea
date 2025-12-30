@@ -1,117 +1,134 @@
-"""Module to run a workflow in OpenAlea."""
-import logging
-import sys
+"""Execute a single OpenAlea node with inputs."""
 import json
+import sys
+import logging
 
-from openalea.core.pkgmanager import PackageManager
-from openalea.core.dataflow import DataFlow
+logging.basicConfig(level=logging.INFO)
 
 
-
-def init_workflow(workflow_type: str):
-    """initializes an openalea workflow
-
-    Args:
-        workflow_type (str): the type of workflow to initialize
+def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
     """
-    logging.info("Initializing workflow of type: %s", workflow_type)
-    workflow = None
-    match workflow_type:
-        case "dataflow":
-            workflow = DataFlow()
-        case _: # try dataflow as default
-            workflow = DataFlow()
-    return workflow
-
-
-def add_node_to_workflow(pkg_manager, workflow, node_info: dict) -> None:
-    """adds a node to an openalea workflow
+    Execute a single OpenAlea node.
 
     Args:
-        workflow : the openalea workflow
-        node_info (dict): the node information
-    """
-    # retrieve package and node
-    package_name = node_info.get("package")
-    node_name = node_info.get("name")
-    # get package
-    pkg = pkg_manager.get(package_name)
-    if not pkg:
-        logging.error("Package '%s' not found.", package_name)
-        raise ValueError(f"Package '{package_name}' not found.")
-    # get node factory from package
-    node_factory = pkg.get(node_name)
-    # add node to workflow
-    logging.info("Adding node '%s' from package '%s' to workflow", node_name, package_name)
-    if node_factory is None: # node not found
-        logging.error(
-            "Node '%s' not found in package '%s'.", node_name, package_name
-        )
-        raise ValueError(f"Node '{node_name}' not found in package '{package_name}'.")
-    workflow.add_node(node_factory)
-
-
-def serialize_workflow_response(workflow) -> dict:
-    """serializes the workflow execution result into a dict
-
-    Args:
-        workflow : the openalea workflow
+        package_name: OpenAlea package (e.g., "openalea.math")
+        node_name: Node name in package (e.g., "addition")
+        inputs: Dict of {input_name: value} or {input_index: value}
 
     Returns:
-        dict: the serialized workflow result
+        Dict with outputs: [{index, name, value, type}, ...]
     """
-    logging.info("Serializing workflow execution result")
-    result = {}
-    for node in workflow.nodes:
-        node_id = node.id
-        node_outputs = {}
-        for output_name, output_value in node.outputs.items():
-            node_outputs[output_name] = str(output_value)
-        result[node_id] = {
-            "outputs": node_outputs
-        }
-    return result
+    from openalea.core.pkgmanager import PackageManager
 
-def run(workflow_type: str, node_info: dict) -> dict:
-    """runs an openalea workflow
+    logging.info("Executing node '%s' from package '%s'", node_name, package_name)
+    logging.info("Inputs: %s", inputs)
 
-    Args:
-        workflow_type (str): the workflow type
-        node_info (dict): the node information
-    """
-    logging.info("Running OpenAlea workflow of type: %s", workflow_type)
-    # init package manager
-    pkg_manager = PackageManager()
-    pkg_manager.init()
-    # initialize workflow
-    workflow = init_workflow(workflow_type)
-    # add node to workflow
-    add_node_to_workflow(pkg_manager, workflow, node_info)
-    # execute workflow
-    logging.info("Executing workflow...")
-    workflow.execute()
-    logging.info("Workflow execution completed.")
-    # serialize results into a api response
-    result = serialize_workflow_response(workflow)
-    return result
+    # 1. Init PackageManager
+    pm = PackageManager()
+    pm.init()
+
+    # 2. Get package
+    pkg = pm.get(package_name)
+    if not pkg:
+        raise ValueError(f"Package '{package_name}' not found")
+
+    # 3. Get node factory
+    factory = pkg.get(node_name)
+    if not factory:
+        raise ValueError(f"Node '{node_name}' not found in '{package_name}'")
+
+    # 4. Instantiate node
+    node = factory.instantiate()
+    logging.info("Node instantiated: %s", node)
+
+    # 5. Inject inputs
+    for key, value in inputs.items():
+        try:
+            # Try as index first if key is numeric
+            if isinstance(key, int):
+                node.set_input(key, value)
+                logging.info("Set input[%d] = %s", key, value)
+            elif str(key).isdigit():
+                node.set_input(int(key), value)
+                logging.info("Set input[%s] = %s", key, value)
+            else:
+                # Try by name
+                node.set_input(key, value)
+                logging.info("Set input['%s'] = %s", key, value)
+        except Exception as e:
+            logging.warning("Failed to set input '%s': %s", key, e)
+
+    # 6. Execute node
+    logging.info("Evaluating node...")
+    node.eval()
+    logging.info("Node evaluation completed")
+
+    # 7. Serialize outputs
+    outputs = []
+    node_outputs = node.outputs if hasattr(node, 'outputs') else []
+
+    # Get output descriptions from factory if available
+    factory_outputs = []
+    if hasattr(factory, 'outputs') and factory.outputs:
+        factory_outputs = factory.outputs
+
+    for i, output_value in enumerate(node_outputs):
+        # Get output name from factory description
+        output_name = f"output_{i}"
+        if i < len(factory_outputs):
+            fo = factory_outputs[i]
+            if isinstance(fo, dict):
+                output_name = fo.get("name", output_name)
+            elif hasattr(fo, 'name'):
+                output_name = fo.name or output_name
+
+        outputs.append({
+            "index": i,
+            "name": output_name,
+            "value": serialize_value(output_value),
+            "type": type(output_value).__name__ if output_value is not None else "None"
+        })
+
+    logging.info("Outputs: %s", outputs)
+    return {"success": True, "outputs": outputs}
+
+
+def serialize_value(value):
+    """Serialize a Python value to JSON-compatible format."""
+    if value is None:
+        return None
+    if isinstance(value, (int, float, str, bool)):
+        return value
+    if isinstance(value, (list, tuple)):
+        return [serialize_value(v) for v in value]
+    if isinstance(value, dict):
+        return {str(k): serialize_value(v) for k, v in value.items()}
+    # For numpy arrays or similar
+    if hasattr(value, 'tolist'):
+        return value.tolist()
+    # Fallback: convert to string representation
+    return str(value)
+
 
 if __name__ == "__main__":
-    logging.info("Running OpenAlea workflow script by subprocess")
+    if len(sys.argv) < 2:
+        print(json.dumps({"success": False, "error": "Missing node_info argument"}))
+        sys.exit(1)
 
-    if len(sys.argv) < 3:
-        logging.error("Workflow type and node information arguments are required.")
-        sys.exit(1)
-    workflow_type = sys.argv[1]
     try:
-        # load node information from JSON string
-        node_info = json.loads(sys.argv[2])
-    except json.JSONDecodeError:
-        logging.error("Failed to parse node information argument.")
-        sys.exit(1)
-    try:
-        # run the workflow
-        result = run(workflow_type, node_info)
-        print(json.dumps(result, indent=2)) # dump result as JSON
-    except ValueError as e:
-        logging.error("Error running workflow: %s", str(e))
+        node_info = json.loads(sys.argv[1])
+
+        package_name = node_info.get("package_name")
+        node_name = node_info.get("node_name")
+        inputs = node_info.get("inputs", {})
+
+        if not package_name or not node_name:
+            raise ValueError("package_name and node_name are required")
+
+        result = execute_node(package_name, node_name, inputs)
+        print(json.dumps(result))
+
+    except Exception as e:
+        logging.exception("Error executing node")
+        print(json.dumps({"success": False, "error": str(e)}))
         sys.exit(1)
