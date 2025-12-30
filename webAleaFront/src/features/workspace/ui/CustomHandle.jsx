@@ -4,7 +4,9 @@ import {
   Position,
   useNodeConnections,
   useNodesData,
+  useNodeId,
 } from '@xyflow/react';
+import { useFlow } from '../providers/FlowContextDefinition.jsx';
 
 // Couleurs par type d'interface
 const typeColors = {
@@ -57,6 +59,10 @@ export default function CustomHandle({ id, label, style, interfaceType, onChange
   const isInput = dataType === 'input';
   const handleType = isInput ? 'target' : 'source';
 
+  // ID du node parent (celui qui contient ce handle)
+  const parentNodeId = useNodeId();
+  const { setNodes } = useFlow();
+
   // Récupère les connexions de CE handle
   const connections = useNodeConnections({
     handleType,
@@ -89,12 +95,63 @@ export default function CustomHandle({ id, label, style, interfaceType, onChange
   // On récupère l'IO spécifique correspondant au handle connecté
   const linkedValue = connectedIO?.find((io) => io.id === connectedHandleId);
 
-  // Synchronisation
+  // Synchronisation: propager la valeur connectée vers l'input du node parent
   useEffect(() => {
-    if (onChange && linkedValue) {
-      onChange(linkedValue.value);
+    if (!isInput || !parentNodeId) return;
+
+    // Cas 1: Il y a une connexion avec une valeur
+    if (connection && linkedValue !== undefined) {
+      const newValue = linkedValue?.value;
+
+      setNodes((prevNodes) =>
+        prevNodes.map((node) => {
+          if (node.id !== parentNodeId) return node;
+
+          const updatedInputs = (node.data.inputs || []).map((input) => {
+            if (input.id === id) {
+              // Ne mettre à jour que si la valeur ou le flag a changé
+              if (input.value !== newValue || !input.fromConnection) {
+                return { ...input, value: newValue, fromConnection: true };
+              }
+            }
+            return input;
+          });
+
+          return {
+            ...node,
+            data: { ...node.data, inputs: updatedInputs }
+          };
+        })
+      );
+
+      // Callback optionnel
+      if (onChange) {
+        onChange(newValue);
+      }
     }
-  }, [linkedValue, onChange]);
+    // Cas 2: La connexion a été supprimée - retirer le flag fromConnection
+    else if (!connection) {
+      setNodes((prevNodes) =>
+        prevNodes.map((node) => {
+          if (node.id !== parentNodeId) return node;
+
+          const updatedInputs = (node.data.inputs || []).map((input) => {
+            if (input.id === id && input.fromConnection) {
+              // Retirer le flag mais garder la dernière valeur
+              const { fromConnection, ...rest } = input;
+              return rest;
+            }
+            return input;
+          });
+
+          return {
+            ...node,
+            data: { ...node.data, inputs: updatedInputs }
+          };
+        })
+      );
+    }
+  }, [linkedValue, connection, onChange, isInput, parentNodeId, id, setNodes]);
 
   // Calcul de la couleur basée sur le type/interface
   // Si interfaceType est défini, on utilise getColorFromType
