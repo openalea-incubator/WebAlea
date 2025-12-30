@@ -15,6 +15,11 @@ const typeColors = {
   enum: "#ff6f00",
   file: "#5d4037",
   path: "#5d4037",
+  array: "#00838f",
+  object: "#4527a0",
+  color: "#c62828",
+  function: "#558b2f",
+  any: "#757575",
   none: "#757575",
   default: "#555",
 };
@@ -23,21 +28,25 @@ const typeColors = {
  * Détermine la couleur selon le type ou interface
  */
 function getColorFromType(typeOrInterface) {
-  if (!typeOrInterface) return typeColors.none;
+  if (!typeOrInterface) return typeColors.any;
 
   const t = typeOrInterface.toLowerCase();
 
-  // Match direct
+  // Match direct (for frontend types: float, string, boolean, array, etc.)
   if (typeColors[t]) return typeColors[t];
 
-  // Map interfaces OpenAlea
+  // Map OpenAlea interface names (IFloat, IInt, IStr, etc.)
   if (t.includes("float") || t.includes("ifloat")) return typeColors.float;
   if (t.includes("int") || t.includes("iint")) return typeColors.int;
   if (t.includes("str") || t.includes("istr")) return typeColors.string;
   if (t.includes("bool") || t.includes("ibool")) return typeColors.boolean;
   if (t.includes("enum")) return typeColors.enum;
   if (t.includes("file") || t.includes("path") || t.includes("dir")) return typeColors.file;
-  if (t === "none") return typeColors.none;
+  if (t.includes("sequence") || t.includes("tuple")) return typeColors.array;
+  if (t.includes("dict")) return typeColors.object;
+  if (t.includes("rgb") || t.includes("color")) return typeColors.color;
+  if (t.includes("function")) return typeColors.function;
+  if (t === "none" || t === "any") return typeColors.any;
 
   return typeColors.default;
 }

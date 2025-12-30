@@ -38,34 +38,73 @@ export default function NodeParameters() {
     }
 
     return (
-        <div key={currentNode} className="d-flex flex-column justify-content-between" style={{ height: "100%" }}>
-            <h3 className="mb-3">Parameters for {node.data.label}</h3>
+        <div
+            key={currentNode}
+            style={{
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+                overflow: "hidden",
+            }}
+        >
+            {/* Header - hauteur fixe */}
+            <div
+                style={{
+                    flexShrink: 0,
+                    padding: "12px",
+                    borderBottom: "1px solid #eee",
+                }}
+            >
+                <h6 style={{ margin: 0, fontSize: "0.95rem" }}>
+                    {node.data.label}
+                </h6>
+            </div>
 
-            {/* --- PARAMÈTRES --- */}
-            <div>
+            {/* --- PARAMÈTRES avec scrollbox --- */}
+            <div
+                style={{
+                    flex: 1,
+                    minHeight: 0,
+                    overflowY: "auto",
+                    padding: "12px",
+                }}
+            >
                 {inputs.length > 0 && (
-                    <>
-                        <h6>Inputs:</h6>
+                    <div style={{ marginBottom: "16px" }}>
+                        <h6 style={{ fontSize: "0.85rem", color: "#666", marginBottom: "8px" }}>
+                            Inputs ({inputs.length})
+                        </h6>
                         <NodeInput
                             inputs={inputs}
                             onInputChange={handleInputChange}
                         />
-                    </>
+                    </div>
                 )}
 
                 {outputs.length > 0 && (
-                    <>
-                        <h6>Outputs:</h6>
+                    <div style={{ marginBottom: "16px" }}>
+                        <h6 style={{ fontSize: "0.85rem", color: "#666", marginBottom: "8px" }}>
+                            Outputs ({outputs.length})
+                        </h6>
                         <NodeOutput outputs={outputs} />
-                    </>
+                    </div>
                 )}
             </div>
 
-            {/* --- BOUTON LANCER --- */}
-            <div className="d-flex justify-content-center mt-3">
+            {/* --- BOUTON LANCER - hauteur fixe --- */}
+            <div
+                style={{
+                    flexShrink: 0,
+                    padding: "12px",
+                    borderTop: "1px solid #eee",
+                    display: "flex",
+                    justifyContent: "center",
+                }}
+            >
                 <button
-                    className="btn btn-success"
+                    className="btn btn-success btn-sm"
                     onClick={handleLaunch}
+                    style={{ width: "100%" }}
                 >
                     Lancer
                 </button>

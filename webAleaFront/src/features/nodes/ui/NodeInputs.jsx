@@ -5,17 +5,19 @@ import NodeInputBoolean from "../model/NodeInputBool";
 import NodeInputEnum from "../model/NodeInputEnum";
 
 /**
- * Parse malformed input data from OpenAlea
- * Some inputs have name like: "{'name': 'order', 'interface': IEnumStr(enum=['C', 'F']), 'value': 'C'}"
+ * Parse input data from backend or legacy malformed OpenAlea format.
+ * Now the backend pre-parses dict-like strings, so we primarily use backend data.
+ * Fallback parsing kept for backwards compatibility with cached data.
  */
 function parseInput(input, index) {
     let parsedName = input.name;
     let parsedInterface = input.interface || "None";
-    let parsedValue = input.value;
-    let enumOptions = null;
+    let parsedType = input.type || null;
+    let parsedValue = input.value ?? input.default;
+    let enumOptions = input.enumOptions || null;
 
-    // Check if name contains a dict-like string
-    if (input.name && input.name.startsWith("{")) {
+    // Fallback: Check if name contains a dict-like string (legacy/cached data)
+    if (input.name && typeof input.name === 'string' && input.name.startsWith("{")) {
         try {
             // Extract name
             const nameMatch = input.name.match(/'name':\s*'([^']+)'/);
@@ -29,6 +31,7 @@ function parseInput(input, index) {
             const enumMatch = input.name.match(/IEnumStr\(enum=\[([^\]]+)\]\)/);
             if (enumMatch) {
                 parsedInterface = "IEnumStr";
+                parsedType = "enum";
                 enumOptions = enumMatch[1]
                     .split(',')
                     .map(s => s.trim().replace(/'/g, ''));
@@ -37,7 +40,13 @@ function parseInput(input, index) {
             // Extract default value
             const valueMatch = input.name.match(/'value':\s*'?([^',}]+)'?/);
             if (valueMatch && parsedValue === undefined) {
-                parsedValue = valueMatch[1].trim().replace(/'/g, '');
+                let val = valueMatch[1].trim().replace(/'/g, '');
+                // Convert string representations to proper types
+                if (val === 'None') val = null;
+                else if (val === 'True') val = true;
+                else if (val === 'False') val = false;
+                else if (!isNaN(parseFloat(val))) val = parseFloat(val);
+                parsedValue = val;
             }
         } catch (e) {
             console.warn("Failed to parse input:", input.name, e);
@@ -51,6 +60,7 @@ function parseInput(input, index) {
         id,
         name: parsedName,
         interface: parsedInterface,
+        type: parsedType,
         value: parsedValue,
         enumOptions,
         optional: input.optional || false,
@@ -59,9 +69,16 @@ function parseInput(input, index) {
 }
 
 /**
- * Map OpenAlea interface types to our internal types
+ * Map OpenAlea interface types to our internal types.
+ * Uses 'type' field from backend if available, otherwise falls back to interface parsing.
  */
 function getInputType(parsedInput) {
+    // Use type from backend if available (preferred)
+    if (parsedInput.type && parsedInput.type !== 'any') {
+        return parsedInput.type;
+    }
+
+    // Fallback: parse from interface name
     const iface = (parsedInput.interface || "").toLowerCase();
 
     // Enum type

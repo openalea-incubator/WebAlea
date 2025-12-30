@@ -8,7 +8,11 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:api.github.com)",
       "WebFetch(domain:openalea-core.readthedocs.io)",
-      "WebFetch(domain:openalea.readthedocs.io)"
+      "WebFetch(domain:openalea.readthedocs.io)",
+      "Bash(tree:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(where:*)"
     ]
   }
 }

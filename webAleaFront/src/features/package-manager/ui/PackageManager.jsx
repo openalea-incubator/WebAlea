@@ -31,16 +31,18 @@ export default function PackageManager() {
             item.node.id = `${uniqueId}-${item.node.id}`;
             addNode(item.node);
         } else {
-            // Flat structure format (visual package nodes)
+            // Flat structure format (visual package nodes from OpenAlea)
+            const nodeName = item.name || item.label;
             const newNode = new Node({
-                id: `${uniqueId}-${item.id || item.label}`,
+                id: `${uniqueId}-${item.id || nodeName}`,
                 type: "custom",
-                label: item.label || item.name,
+                label: nodeName,
                 inputs: item.inputs || [],
                 outputs: item.outputs || [],
                 data: {
                     description: item.description,
                     packageName: item.packageName,
+                    nodeName: nodeName,
                     callable: item.callable,
                 }
             });

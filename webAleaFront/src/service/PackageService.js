@@ -41,10 +41,13 @@ import {
 
 /**
  * @typedef {Object} NodePort
+ * @property {string} id - Unique port identifier
  * @property {string} name - Port name
- * @property {string} interface - Interface type (e.g., "IInt", "IStr", "None")
+ * @property {string} interface - OpenAlea interface type (e.g., "IFloat", "IInt", "None")
+ * @property {string} type - Frontend-compatible type (e.g., "float", "string", "boolean")
  * @property {boolean} optional - Whether the port is optional
  * @property {string} desc - Description
+ * @property {*} [default] - Default value (optional)
  */
 
 /**
@@ -82,16 +85,39 @@ function safeArray(value) {
 }
 
 /**
+ * Maps OpenAlea interface name to frontend-compatible type.
+ * Used as fallback if backend doesn't provide type.
+ * @param {string} interfaceName - The interface name (e.g., "IFloat")
+ * @returns {string} The frontend type (e.g., "float")
+ */
+function mapInterfaceToType(interfaceName) {
+    const iface = (interfaceName || "").toLowerCase();
+    if (iface.includes("float")) return "float";
+    if (iface.includes("int")) return "float"; // Treated as numeric
+    if (iface.includes("bool")) return "boolean";
+    if (iface.includes("enum")) return "enum";
+    if (iface.includes("sequence") || iface.includes("tuple")) return "array";
+    if (iface.includes("dict")) return "object";
+    if (iface.includes("str") || iface.includes("file") || iface.includes("dir")) return "string";
+    if (iface === "none") return "any";
+    return "any";
+}
+
+/**
  * Parses a node port from backend format.
  * Backend can return either object or string representation.
+ * Now includes id and type fields from backend.
  * @param {Object|string} port - Port data from backend
+ * @param {number} index - Index for fallback ID generation
  * @returns {NodePort}
  */
-function parseNodePort(port) {
+function parseNodePort(port, index = 0) {
     // Default structure
     const defaultPort = {
+        id: `port_${index}`,
         name: "unknown",
         interface: "None",
+        type: "any",
         optional: false,
         desc: ""
     };
@@ -100,12 +126,21 @@ function parseNodePort(port) {
 
     // If it's already an object with expected fields
     if (typeof port === "object" && port.name !== undefined) {
-        return {
+        const interfaceValue = safeString(port.interface, "None");
+        const result = {
+            id: safeString(port.id, `port_${index}_${port.name}`),
             name: safeString(port.name, "unknown"),
-            interface: safeString(port.interface, "None"),
+            interface: interfaceValue,
+            type: safeString(port.type, mapInterfaceToType(interfaceValue)),
             optional: Boolean(port.optional),
-            desc: safeString(port.desc || port.description, "")
+            desc: safeString(port.desc || port.description, ""),
+            default: port.default ?? null
         };
+        // Include enum options if available
+        if (port.enum_options && Array.isArray(port.enum_options)) {
+            result.enumOptions = port.enum_options;
+        }
+        return result;
     }
 
     // If it's a string representation (e.g., "{'name': 'x', ...}")
@@ -114,11 +149,15 @@ function parseNodePort(port) {
             // Try to parse as JSON-like string (replace single quotes)
             const cleanedStr = port.replace(/'/g, '"').replace(/None/g, 'null');
             const parsed = JSON.parse(cleanedStr);
+            const interfaceValue = safeString(parsed.interface, "None");
             return {
+                id: safeString(parsed.id, `port_${index}_${parsed.name}`),
                 name: safeString(parsed.name, "unknown"),
-                interface: safeString(parsed.interface, "None"),
+                interface: interfaceValue,
+                type: safeString(parsed.type, mapInterfaceToType(interfaceValue)),
                 optional: Boolean(parsed.optional),
-                desc: safeString(parsed.desc || parsed.description, "")
+                desc: safeString(parsed.desc || parsed.description, ""),
+                default: parsed.default ?? null
             };
         } catch {
             // Failed to parse, return default with the string as name
@@ -343,9 +382,9 @@ export async function getNodesList(pkg) {
         // Transform nodes object to array
         const nodesObj = response.nodes || {};
         const nodes = Object.entries(nodesObj).map(([nodeName, nodeData]) => {
-            // Parse inputs and outputs
-            const inputs = safeArray(nodeData?.inputs).map(parseNodePort);
-            const outputs = safeArray(nodeData?.outputs).map(parseNodePort);
+            // Parse inputs and outputs with index for ID generation
+            const inputs = safeArray(nodeData?.inputs).map((port, idx) => parseNodePort(port, idx));
+            const outputs = safeArray(nodeData?.outputs).map((port, idx) => parseNodePort(port, idx));
 
             return {
                 name: safeString(nodeName),

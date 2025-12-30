@@ -1,20 +1,25 @@
 /**
  * Classe utilitaire pour créer et sérialiser les objets Node de React Flow.
- * 
+ *
  * Chaque noeud peut avoir un ID, une position, un titre, une couleur, un statut et des métadonnées.
- * 
+ * Supporte les nodes OpenAlea avec packageName, nodeName, callable et description.
+ *
  * Exemple d'utilisation :
  *  const node = new Node({
  *   id: 'n1',
  *   position: { x: 100, y: 200 },
+ *   label: 'Mon Node',
+ *   inputs: [{ id: 'in_0', name: 'x', type: 'float', interface: 'IFloat' }],
+ *   outputs: [{ id: 'out_0', name: 'result', type: 'float', interface: 'IFloat' }],
+ *   data: { packageName: 'openalea.math', nodeName: 'addition' }
  * });
- * 
+ *
  * const serializedNode = node.serialize();
  * const jsonString = node.serializeToJSON();
- * 
+ *
  */
 export class Node {
-    
+
     /**
      * Crée un objet nœud React Flow.
      * @param {object} props - Les propriétés du nœud.
@@ -23,15 +28,19 @@ export class Node {
         this.id = id;
         this.type = type;
         this.position = position;
-        this.type = type;
         this.data = {
-            label: label || null,
+            label: label || data?.label || null,
             color: data?.color || null,
             status: data?.status || 'ready',
             metadata: data?.metadata || {},
             inputs: inputs || [],
             outputs: outputs || [],
             endpoint: data?.endpoint || null,
+            // OpenAlea node properties
+            packageName: data?.packageName || null,
+            nodeName: data?.nodeName || label || null,
+            callable: data?.callable || null,
+            description: data?.description || '',
         };
     }
 
@@ -41,7 +50,7 @@ export class Node {
      */
     serialize() {
         if (!this.id) return null;
-        
+
         const { id, position, type, data } = this;
         return {
             id,
@@ -55,6 +64,11 @@ export class Node {
                 inputs: data.inputs ?? [],
                 outputs: data.outputs ?? [],
                 endpoint: data.endpoint ?? null,
+                // OpenAlea node properties
+                packageName: data.packageName ?? null,
+                nodeName: data.nodeName ?? null,
+                callable: data.callable ?? null,
+                description: data.description ?? '',
             },
         };
     }

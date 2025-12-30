@@ -193,12 +193,19 @@ export const FlowProvider = ({ children }) => {
     console.log("Connecting:", { output, input });
 
     // --- Vérification des types ---
-    if (output?.type !== input?.type) {
+    // "any" type is compatible with all types
+    const outputType = output?.type || 'any';
+    const inputType = input?.type || 'any';
+    const isCompatible = outputType === inputType ||
+                         outputType === 'any' ||
+                         inputType === 'any';
+
+    if (!isCompatible) {
       addLog("❌ Type mismatch", {
-        from: `${source}.${sourceHandle} (${output?.type})`,
-        to: `${target}.${targetHandle} (${input?.type})`
+        from: `${source}.${sourceHandle} (${outputType})`,
+        to: `${target}.${targetHandle} (${inputType})`
       });
-      console.warn("Type mismatch:", output?.type, "→", input?.type);
+      console.warn("Type mismatch:", outputType, "→", inputType);
       return; // ❗ REFUSE LA CONNECTION
     }
 
