@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { WorkflowEngineV2, WorkflowValidator, NodeState } from '../engine/WorkflowEngineV2.jsx';
+import { WorkflowEngine, WorkflowValidator, NodeState } from '../engine/WorkflowEngine.jsx';
 import { buildGraphModel } from '../model/WorkflowGraph.jsx';
 
 /**
@@ -57,7 +57,7 @@ export function useWorkflowExecution(options = {}) {
     // Initialiser le moteur
     useEffect(() => {
         if (!engineRef.current) {
-            engineRef.current = new WorkflowEngineV2();
+            engineRef.current = new WorkflowEngine();
         }
         return () => {
             if (engineRef.current?.running) {

@@ -340,12 +340,12 @@ Garder l'ancien FlowContext et importer le nouveau moteur:
 
 ```jsx
 // Dans FlowContext.jsx existant
-import { WorkflowEngineV2 } from '../engine/WorkflowEngineV2.jsx';
+import { WorkflowEngine } from '../engine/WorkflowEngine.jsx';
 
 // Remplacer:
 // const engine = new WorkflowEngine();
 // Par:
-const engine = new WorkflowEngineV2();
+const engine = new WorkflowEngine();
 
 // Le reste fonctionne de manière similaire
 ```
@@ -357,7 +357,7 @@ const engine = new WorkflowEngineV2();
 ### WorkflowEngineV2
 
 ```typescript
-class WorkflowEngineV2 {
+class WorkflowEngine {
     // Lie le modèle au moteur
     bindModel(graph: WFNode[], edges: Edge[]): void;
 
