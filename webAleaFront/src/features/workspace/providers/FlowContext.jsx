@@ -232,7 +232,7 @@ export const FlowProvider = ({ children }) => {
                 break;
 
             case "workflow-stopped":
-                console.log("Workflow V2 stopped by user");
+                console.log("Workflow stopped by user");
                 setExecutionStatus('stopped');
                 resetAllNodesStatus("ready");
                 addLog("Workflow stopped by user");

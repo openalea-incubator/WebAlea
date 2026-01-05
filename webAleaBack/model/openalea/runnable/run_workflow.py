@@ -5,6 +5,10 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
+def parseIfBoolean(type: str):
+    if type == "bool":
+        return "boolean"
+    return type
 
 def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
     """
@@ -66,6 +70,7 @@ def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
     # 7. Serialize outputs
     outputs = []
     node_outputs = node.outputs if hasattr(node, 'outputs') else []
+    logging.info("Node raw outputs: %s", node_outputs)
 
     # Get output descriptions from factory if available
     factory_outputs = []
@@ -86,7 +91,7 @@ def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
             "index": i,
             "name": output_name,
             "value": serialize_value(output_value),
-            "type": type(output_value).__name__ if output_value is not None else "None"
+            "type": parseIfBoolean(type(output_value).__name__) if output_value is not None else "None"
         })
 
     logging.info("Outputs: %s", outputs)

@@ -6,6 +6,7 @@ import PanelPrimitiveNode from './type/PanelPrimitiveNode.jsx';
 import PanelInstallPackage from './type/PanelInstallPackage.jsx';
 import { FiPackage, FiBox, FiDownload } from 'react-icons/fi';
 import '../../../assets/css/package_manager.css';
+import { getInstalledPackagesList } from '../../../service/PackageService.js';
 
 /**
  * Package Manager - Main component for managing OpenAlea packages and nodes.
@@ -14,6 +15,7 @@ import '../../../assets/css/package_manager.css';
 export default function PackageManager() {
     const { addNode } = useFlow();
     const [currentPanel, setCurrentPanel] = React.useState("visual");
+    const [refreshKey, setRefreshKey] = React.useState(0);
 
     /**
      * Handle Visual Node Panel
@@ -34,6 +36,19 @@ export default function PackageManager() {
     const [installedPackages, setInstalledPackages] = React.useState(new Set());
     const [searchTermInstall, setSearchTermInstall] = React.useState('');
     const [snackbarInstall, setSnackbarInstall] = React.useState({ open: false, message: '', severity: 'success' });
+
+    React.useEffect(() => {
+        // Get Installed packages
+        const fetchInstalledPackages = async () => {
+            try {
+                const pkgInstalled = await getInstalledPackagesList();
+                setInstalledPackages(new Set(pkgInstalled.map(pkg => pkg.name)));
+            } catch (error) {
+                console.error("Error fetching installed packages:", error);
+            }
+        };
+        fetchInstalledPackages();
+    }, []);
     /**
      * Handles adding a node to the workspace.
      * Supports two formats:
@@ -72,6 +87,12 @@ export default function PackageManager() {
         console.log("Package installed:", pkg.name);
         // Refresh the visual packages list by incrementing the key
         setRefreshKey(prev => prev + 1);
+        console.log("Refresh key updated to:", refreshKey);
+        // reset explicite du state
+        setTreeItemsVisual([]);
+        setLoadedPackagesVisual(new Set());
+        setLoadingVisual(true);
+        setLoadingPackageVisual(null);
     };
 
     const tabs = [
@@ -83,7 +104,7 @@ export default function PackageManager() {
     const renderTabContent = () => {
         switch (currentPanel) {
             case "visual":
-                return <PanelModuleNode onAddNode={handleAddNode} treeItems={treeItemsVisual} setTreeItems={setTreeItemsVisual} loading={loadingVisual} setLoading={setLoadingVisual} loadingPackage={loadingPackageVisual} setLoadingPackage={setLoadingPackageVisual} loadedPackages={loadedPackagesVisual} setLoadedPackages={setLoadedPackagesVisual} expandedItems={expandedItemsVisual} setExpandedItems={setExpandedItemsVisual} />;
+                return <PanelModuleNode onAddNode={handleAddNode} version={refreshKey} treeItems={treeItemsVisual} setTreeItems={setTreeItemsVisual} loading={loadingVisual} setLoading={setLoadingVisual} loadingPackage={loadingPackageVisual} setLoadingPackage={setLoadingPackageVisual} loadedPackages={loadedPackagesVisual} setLoadedPackages={setLoadedPackagesVisual} expandedItems={expandedItemsVisual} setExpandedItems={setExpandedItemsVisual} />;
             case "primitive":
                 return <PanelPrimitiveNode onAddNode={handleAddNode} />;
             case "install":

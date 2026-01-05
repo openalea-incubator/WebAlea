@@ -7,7 +7,7 @@ import { getVisualPackagesList, getNodesList } from '../../../../service/Package
  * Panel displaying visual OpenAlea packages and their nodes.
  * Uses lazy loading - nodes are fetched when a package is expanded.
  */
-export default function PanelModuleNode({ onAddNode, treeItems, setTreeItems, loading, setLoading, loadingPackage, setLoadingPackage, loadedPackages, setLoadedPackages, expandedItems, setExpandedItems }) {
+export default function PanelModuleNode({ onAddNode, version, treeItems, setTreeItems, loading, setLoading, loadingPackage, setLoadingPackage, loadedPackages, setLoadedPackages, expandedItems, setExpandedItems }) {
     // Initial fetch of visual packages
     useEffect(() => {
 
@@ -39,7 +39,7 @@ export default function PanelModuleNode({ onAddNode, treeItems, setTreeItems, lo
             }
         }
         fetchPackages();
-    }, []);
+    }, [version]);
 
     const loadPackageNodes = useCallback(async (packageId) => {
         if (loadedPackages.has(packageId) || loadingPackage === packageId) {
