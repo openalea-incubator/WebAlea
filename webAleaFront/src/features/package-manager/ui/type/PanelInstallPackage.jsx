@@ -7,17 +7,15 @@ import { getPackagesList, installPackage } from '../../../../service/PackageServ
  * Panel for installing OpenAlea packages from conda.
  * Features search, install status, and notifications.
  */
-export default function PanelInstallPackage({ onPackageInstalled }) {
-
-    const [packages, setPackages] = useState([]);
-    const [filteredPackages, setFilteredPackages] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [installing, setInstalling] = useState(null);
-    const [installedPackages, setInstalledPackages] = useState(new Set());
-    const [searchTerm, setSearchTerm] = useState('');
-    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+export default function PanelInstallPackage({ onPackageInstalled, packages, setPackages, filteredPackages, setFilteredPackages, loading, setLoading, installing, setInstalling, installedPackages, setInstalledPackages, searchTerm, setSearchTerm, snackbar, setSnackbar }) {
 
     useEffect(() => {
+
+        if (packages.length > 0) {
+            setLoading(false);
+            return;
+        }
+
         async function fetchPackages() {
             setLoading(true);
             try {

@@ -14,8 +14,26 @@ import '../../../assets/css/package_manager.css';
 export default function PackageManager() {
     const { addNode } = useFlow();
     const [currentPanel, setCurrentPanel] = React.useState("visual");
-    const [refreshKey, setRefreshKey] = React.useState(0);
 
+    /**
+     * Handle Visual Node Panel
+     */
+    const [treeItemsVisual, setTreeItemsVisual] = React.useState([]);
+    const [loadingVisual, setLoadingVisual] = React.useState(true);
+    const [loadingPackageVisual, setLoadingPackageVisual] = React.useState(null);
+    const [loadedPackagesVisual, setLoadedPackagesVisual] = React.useState(new Set());
+    const [expandedItemsVisual, setExpandedItemsVisual] = React.useState(['root']);
+
+    /**
+     *  Handle Install Package Panel
+     */
+    const [packagesInstall, setPackagesInstall] = React.useState([]);
+    const [filteredPackagesInstall, setFilteredPackagesInstall] = React.useState([]);
+    const [loadingInstall, setLoadingInstall] = React.useState(true);
+    const [installing, setInstalling] = React.useState(null);
+    const [installedPackages, setInstalledPackages] = React.useState(new Set());
+    const [searchTermInstall, setSearchTermInstall] = React.useState('');
+    const [snackbarInstall, setSnackbarInstall] = React.useState({ open: false, message: '', severity: 'success' });
     /**
      * Handles adding a node to the workspace.
      * Supports two formats:
@@ -65,11 +83,11 @@ export default function PackageManager() {
     const renderTabContent = () => {
         switch (currentPanel) {
             case "visual":
-                return <PanelModuleNode key={refreshKey} onAddNode={handleAddNode} />;
+                return <PanelModuleNode onAddNode={handleAddNode} treeItems={treeItemsVisual} setTreeItems={setTreeItemsVisual} loading={loadingVisual} setLoading={setLoadingVisual} loadingPackage={loadingPackageVisual} setLoadingPackage={setLoadingPackageVisual} loadedPackages={loadedPackagesVisual} setLoadedPackages={setLoadedPackagesVisual} expandedItems={expandedItemsVisual} setExpandedItems={setExpandedItemsVisual} />;
             case "primitive":
                 return <PanelPrimitiveNode onAddNode={handleAddNode} />;
             case "install":
-                return <PanelInstallPackage onPackageInstalled={handlePackageInstalled} />;
+                return <PanelInstallPackage onPackageInstalled={handlePackageInstalled} packages={packagesInstall} setPackages={setPackagesInstall} filteredPackages={filteredPackagesInstall} setFilteredPackages={setFilteredPackagesInstall} loading={loadingInstall} setLoading={setLoadingInstall} installing={installing} setInstalling={setInstalling} installedPackages={installedPackages} setInstalledPackages={setInstalledPackages} searchTerm={searchTermInstall} setSearchTerm={setSearchTermInstall} snackbar={snackbarInstall} setSnackbar={setSnackbarInstall} />;
             default:
                 return null;
         }
