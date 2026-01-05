@@ -1,10 +1,10 @@
 name: webalea_env
 channels:
+  - openalea3        # Priorité aux packages OpenAlea
   - conda-forge
-  - openalea3
   - defaults
 dependencies:
-  - python=3.13
+  - python>=3.10,<3.13   # Plage flexible, conda choisira la meilleure version
   - fastapi
   - uvicorn
   - pydantic
@@ -12,4 +12,4 @@ dependencies:
   - aiofiles
   - packaging
   - setuptools
-  - openalea.core
+  - openalea.core        # Package de base requis

@@ -1,58 +1,282 @@
 /* ========== STRUCTURE GLOBALE ========== */
-html, body {
+html, body, #root {
   height: 100%;
   width: 100%;
   margin: 0;
+  overflow: hidden;
 }
 
-
-header h1 {
-  letter-spacing: 1px;
+/* ========== APP LAYOUT ========== */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f0f2f5;
 }
 
-/* ========== ZONES PRINCIPALES ========== */
-.workspace-container,
-.node-detail-container {
-  min-height: 50vh; /* mêmes hauteurs */
+/* ========== HEADER ========== */
+.app-header {
+  flex-shrink: 0;
+  height: 50px;
+  background-color: #1a1a2e;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Rendre les conteneurs fluides et harmonieux */
+.app-header h1 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.app-header nav ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 8px;
+}
+
+.app-header nav a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.app-header nav a:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ========== MAIN CONTENT ========== */
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ========== TOOLBAR ========== */
+.toolbar-row {
+  flex-shrink: 0;
+}
+
+/* ========== CONTENT LAYOUT ========== */
+.content-row {
+  flex: 1;
+  display: flex;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ========== SIDEBAR (Package Manager) ========== */
+.sidebar-column {
+  width: 240px;
+  min-width: 200px;
+  max-width: 280px;
+  flex-shrink: 0;
+  display: flex;
+}
+
+.package-manager-container {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* ========== MAIN COLUMN ========== */
+.main-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ========== WORKSPACE ROW ========== */
+.workspace-row {
+  flex: 1;
+  display: flex;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
 .workspace-container {
-  display: flex;
-  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
 }
 
 .node-detail-container {
-  display: flex;
-  flex-direction: column;
-}
-
-.console-log-container {
-  max-height: 25vh;
-}
-
-.toggle-btn-nds {
-  cursor: pointer;
-  transition: right 0.3s ease;
-  transform: translateY(-50%);
-  z-index: 10;
-}
-
-.console-log-container {
-  max-height: 25vh;
-}
-
-.transition-width {
+  width: 280px;
+  min-width: 250px;
+  flex-shrink: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   transition: width 0.3s ease;
 }
 
+.node-detail-container.hidden {
+  display: none;
+}
 
+/* ========== CONSOLE ROW ========== */
+.console-row {
+  flex-shrink: 0;
+  height: 150px;
+  min-height: 100px;
+  max-height: 200px;
+}
 
+.console-log-container {
+  height: 100%;
+  overflow: hidden;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* ========== TOGGLE BUTTON ========== */
+.toggle-btn-nds {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 24px;
+  height: 48px;
+  border: none;
+  background: #e0e0e0;
+  color: #333;
+  border-radius: 4px 0 0 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.toggle-btn-nds:hover {
+  background: #d0d0d0;
+}
+
+.toggle-btn-nds.open {
+  right: 280px;
+}
+
+/* ========== FOOTER ========== */
+.app-footer {
+  flex-shrink: 0;
+  height: 36px;
+  background-color: #1a1a2e;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
 
 /* ========== RESPONSIVE ========== */
-@media (max-width: 992px) {
-  .workspace-container,
+@media (max-width: 1200px) {
+  .sidebar-column {
+    width: 200px;
+    min-width: 180px;
+  }
+
   .node-detail-container {
-    min-height: auto;
+    width: 250px;
+    min-width: 220px;
+  }
+}
+
+@media (max-width: 992px) {
+  .content-row {
+    flex-direction: column;
+  }
+
+  .sidebar-column {
+    width: 100%;
+    max-width: none;
+    height: 200px;
+    min-width: 0;
+  }
+
+  .workspace-row {
+    flex-direction: column;
+  }
+
+  .node-detail-container {
+    width: 100%;
+    height: 300px;
+    min-height: 250px;
+    max-height: 50vh;
+    min-width: 0;
+  }
+
+  .toggle-btn-nds {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    height: 45px;
+    padding: 0 12px;
+  }
+
+  .app-header h1 {
+    font-size: 1.1rem;
+  }
+
+  .app-header nav {
+    display: none;
+  }
+
+  .app-main {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .content-row,
+  .workspace-row {
+    gap: 8px;
+  }
+
+  .console-row {
+    height: 120px;
+  }
+
+  .app-footer {
+    height: 32px;
+    font-size: 0.7rem;
   }
 }
