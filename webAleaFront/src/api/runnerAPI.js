@@ -21,7 +21,7 @@ const BASE_URL = "http://localhost:8000/api/v1/runner";
 export async function executeNode(nodeData) {
     const { nodeId, packageName, nodeName, inputs } = nodeData;
 
-    return fetchJSON(`${BASE_URL}/execute/node`, "POST", {
+    return fetchJSON(`${BASE_URL}/execute`, "POST", {
         node_id: nodeId,
         package_name: packageName,
         node_name: nodeName,
