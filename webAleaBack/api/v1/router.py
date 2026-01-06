@@ -1,6 +1,6 @@
 """API v1 router configuration."""
 from fastapi import APIRouter
-from api.v1.endpoints import manager
+from api.v1.endpoints import manager, runner
 from core.config import settings
 
 router = APIRouter()
@@ -9,6 +9,7 @@ router = APIRouter()
 # router list
 routers = [
     (manager.router, f"{settings.API_V1_STR}/manager", ["manager"]),
+    (runner.router, f"{settings.API_V1_STR}/runner", ["runner"]),
 ]
 
 for router_item, prefix, tags in routers:
