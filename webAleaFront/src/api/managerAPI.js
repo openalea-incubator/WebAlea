@@ -68,26 +68,6 @@ export async function fetchPackageNodes(packageName) {
 }
 
 // ===============================
-// POC - GET NODE LIST
-// ===============================
-export async function getNodes() {
-    return fetchJSON(`${BASE_URL}/poc/get_node`);
-}
-
-// ===============================
-// POC - EXECUTE NODE (deprecated)
-// ===============================
-export async function executeNodes(name, parameters1, parameters2) {
-    return fetchJSON(`${BASE_URL}/poc/execute_nodes`, "POST", {
-        name_node: name,
-        parameters: {
-            parameters1: parameters1,
-            parameters2: parameters2
-        }
-    });
-}
-
-// ===============================
 // NODE EXECUTION - OpenAlea
 // ===============================
 /**
