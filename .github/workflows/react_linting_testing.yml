@@ -19,17 +19,13 @@ jobs:
 
       # linting
       - name: Run ESLint
-        id: lint
         working-directory: webAleaFront
         run: npx eslint . --ext .js,.jsx,.ts,.tsx
-        continue-on-error: true
 
       # testing
       - name: Run tests with coverage
-        id: test
         working-directory: webAleaFront
         run: npm run test:all
-        continue-on-error: true
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -37,11 +33,3 @@ jobs:
           files: webAleaFront/coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
-          fail_ci_if_error: true
-
-      - name: Fail job if lint or tests failed
-        run: |
-          if [[ "${{ steps.lint.outcome }}" == "failure" ]] || [[ "${{ steps.test.outcome }}" == "failure" ]]; then
-            echo "ESLint or tests failed!"
-            exit 1
-          fi
