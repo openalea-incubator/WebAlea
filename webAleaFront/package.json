@@ -15,7 +15,7 @@
     "test:integration": "jest --roots tests/integration",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:all": "./run-all-tests.sh"
+    "test:all": "bash ./run-all-tests.sh"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
