@@ -10,8 +10,6 @@ from model.openalea.inspector.openalea_inspector import OpenAleaInspector
 from core.config import settings
 from pydantic.json_schema import model_json_schema
 
-from api.v1.utils.POC import *
-
 router = APIRouter()
 
 
