@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     )
 
     # Core settings
-    PROJECT_NAME: str = "FastAPI Best Practices Starter"
+    PROJECT_NAME: str = "Openalea Web Service, Backend"
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = "YOUR_SUPER_SECRET_KEY_REPLACE_ME"
     # manager settings
