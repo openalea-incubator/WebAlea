@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import LogLine from "../../../../src/components/ConsoleLog/LogLine.jsx";
+import LogLine from "../../../../src/features/logger/ui/LogLine.jsx";
 import { expect, test, describe } from '@jest/globals';
 
 describe("LogLine", () => {
