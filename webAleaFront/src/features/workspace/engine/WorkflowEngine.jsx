@@ -11,7 +11,7 @@
  * - Feedback temps réel via événements
  */
 
-import { executeNode } from "../../../api/managerAPI.js";
+import { executeNode } from "../../../api/runnerAPI.js";
 
 // =============================================================================
 // TYPES & CONSTANTS
