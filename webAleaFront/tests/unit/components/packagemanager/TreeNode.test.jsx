@@ -1,4 +1,4 @@
-import TreeNode from '../../../../src/components/packagemanager/TreeNode.jsx';
+import TreeNode from '../../../../src/features/package-manager/model/TreeNode.jsx';
 import { expect, test, describe } from '@jest/globals';
 
 
