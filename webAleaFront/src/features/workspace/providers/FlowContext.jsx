@@ -1,13 +1,13 @@
 /**
  * FlowContext.jsx
  *
- * Version améliorée du FlowContext avec intégration du WorkflowEngine.
+ * Context provider for managing the workflow graph state and execution.
  *
- * Changements par rapport à FlowContext.jsx:
- * - Utilise WorkflowEngine avec gestion des dépendances
- * - Ajoute le hook useWorkflowExecution
- * - Gestion des états visuels des nodes pendant l'exécution
- * - Support de la validation avant exécution
+ * Features:
+ * - Manages nodes and edges state with persistence in localStorage.
+ * - Integrates with WorkflowEngine for executing the workflow.
+ * - Provides functions to update node status, outputs, and handle execution events.
+ * - Exposes context values for use in the React Flow UI components.
  */
 
 import { useCallback, useEffect, useState, useRef } from 'react';
@@ -28,7 +28,7 @@ import { buildGraphModel, WFNode } from '../model/WorkflowGraph.jsx';
 const FLOW_KEY_NODES = 'reactFlowCacheNodes';
 const FLOW_KEY_EDGES = 'reactFlowCacheEdges';
 
-// Mapping des états NodeState vers les status visuels
+// State to status mapping
 const stateToStatus = {
     [NodeState.PENDING]: 'queued',
     [NodeState.READY]: 'queued',
@@ -44,11 +44,17 @@ const getInitialState = (key) => {
         const savedState = localStorage.getItem(key);
         return savedState ? JSON.parse(savedState) : [];
     } catch (error) {
-        console.error(`Erreur de chargement du localStorage pour ${key}:`, error);
+        console.error(`Error parsing saved state for ${key}:`, error);
         return [];
     }
 };
 
+/**
+ * FlowProvider component - provides the FlowContext to its children.
+ * Manages the state of nodes and edges, and handles workflow execution.
+ * @param children - The child components
+ * @returns {React.ReactNode} - The FlowProvider component
+ */
 export const FlowProvider = ({ children }) => {
     const initialNodes = getInitialState(FLOW_KEY_NODES);
     const initialEdges = getInitialState(FLOW_KEY_EDGES);
@@ -59,7 +65,7 @@ export const FlowProvider = ({ children }) => {
     const [currentNode, setCurrentNode] = useState(null);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-    // État d'exécution
+    // Execution state
     const [executionStatus, setExecutionStatus] = useState('idle');
     const [executionProgress, setExecutionProgress] = useState({
         total: 0,
@@ -68,14 +74,14 @@ export const FlowProvider = ({ children }) => {
         percent: 0
     });
 
-    // Ref pour accéder aux dernières valeurs
+    // Get the latest nodes in a ref for engine event handlers
     const nodesRef = useRef(nodes);
     useEffect(() => {
         nodesRef.current = nodes;
     }, [nodes]);
 
     // =========================================================================
-    // FONCTIONS DE MISE À JOUR DES NODES
+    // NODE HELPERS
     // =========================================================================
 
     const updateNodeStatus = useCallback((nodeId, status) => {
@@ -144,7 +150,7 @@ export const FlowProvider = ({ children }) => {
     const engine = engineRef.current;
 
     /**
-     * Handler pour les événements du moteur 
+     * Handler for workflow engine events
      */
     const handleEngineEvent = useCallback((event, payload) => {
         console.log("WorkflowEngine event:", event, payload);
@@ -257,18 +263,18 @@ export const FlowProvider = ({ children }) => {
         }
     }, [resetAllNodesStatus, updateNodeStatus, updateNodeOutputs, addLog]);
 
-    // Configurer le listener du moteur
+    // Register the event handler and initialize listeners
     useEffect(() => {
         engine.listeners = [];
         engine.onUpdate(handleEngineEvent);
     }, [handleEngineEvent, engine]);
 
     // =========================================================================
-    // FONCTIONS D'EXÉCUTION
+    // EXECUTION FUNCTIONS
     // =========================================================================
 
     /**
-     * Exécute le workflow complet avec le moteur 
+     * Execute the entire workflow
      */
     const executeWorkflow = useCallback(async () => {
         const { graph, edges: customEdges } = buildGraphModel(nodes, edges);
@@ -290,14 +296,14 @@ export const FlowProvider = ({ children }) => {
     }, [nodes, edges, engine, addLog]);
 
     /**
-     * Arrête l'exécution du workflow
+     * Stop the workflow execution
      */
     const stopWorkflow = useCallback(() => {
         engine.stop();
     }, [engine]);
 
     /**
-     * Exécute un node unique (mode manuel)
+     * Execute a single node manually
      */
     const onNodeExecute = useCallback((nodeId) => {
         const currentNodes = nodesRef.current;
@@ -325,10 +331,6 @@ export const FlowProvider = ({ children }) => {
         });
     }, [engine, addLog]);
 
-    // =========================================================================
-    // AUTRES FONCTIONS (inchangées)
-    // =========================================================================
-
     const nodesTypes = {
         custom: CustomNode,
         float: FloatNode,
@@ -336,6 +338,9 @@ export const FlowProvider = ({ children }) => {
         boolean: BoolNode,
     };
 
+    /**
+     * Persist nodes and edges to localStorage on changes
+     */
     useEffect(() => {
         if (edges) {
             localStorage.setItem(FLOW_KEY_EDGES, JSON.stringify(edges));
@@ -347,6 +352,10 @@ export const FlowProvider = ({ children }) => {
         }
     }, [nodes, edges]);
 
+    /**
+     * Manages new connections between nodes, enforcing type compatibility.
+     * @type {(function(*): void)|*}
+     */
     const onConnect = useCallback((params) => {
         if (params.source === params.target) {
             return;
@@ -379,6 +388,11 @@ export const FlowProvider = ({ children }) => {
         addLog("Edge added", { params });
     }, [nodes, setEdges, addLog]);
 
+    /**
+     * Adds a new node to the workflow.
+     * @type {(function(*): void)|*}
+     * @param {Node} newNode - The new node to add
+     */
     const addNode = useCallback((newNode) => {
         setNodes((nds) => [...nds, newNode.serialize()]);
         addLog("Node added", {
@@ -389,12 +403,23 @@ export const FlowProvider = ({ children }) => {
         });
     }, [setNodes, addLog]);
 
+    /**
+     * Defines both nodes and edges in a single operation.
+     * Sets the workflow graph state.
+     * @type {(function(*, *): void)|*}
+     */
     const setNodesAndEdges = useCallback((newNodes, newEdges) => {
         setNodes(newNodes);
         setEdges(newEdges);
         addLog("Workflow updated", { nodes: newNodes.length, edges: newEdges.length });
     }, [setNodes, setEdges, addLog]);
 
+    /**
+     * Updates properties of an existing node.
+     * @type {(function(*, *): void)|*}
+     * @param {string} id - The ID of the node to update
+     * @param {Object} updatedProperties - The properties to update
+     */
     const updateNode = useCallback((id, updatedProperties) => {
         setNodes((nds) =>
             nds.map((n) =>
@@ -404,12 +429,23 @@ export const FlowProvider = ({ children }) => {
         addLog("Node updated", { id, updatedProperties });
     }, [setNodes, addLog]);
 
+    /**
+     * Deletes a node and its associated edges from the workflow.
+     * @type {(function(*): void)|*}
+     * @param {string} nodeId - The ID of the node to delete
+     */
     const deleteNode = useCallback((nodeId) => {
         setNodes((nds) => nds.filter(node => node.id !== nodeId));
         setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
         addLog("Node deleted", { id: nodeId });
     }, [setNodes, setEdges, addLog]);
 
+    /**
+     * Handles node click events to set the current node.
+     * @type {(function(*, *): void)|*}
+     * @param {Object} event - The click event
+     * @param {Object} node - The clicked node
+     */
     const onNodeClick = useCallback((event, node) => {
         setCurrentNode(node.id);
         addLog("Node selected", {
@@ -424,7 +460,7 @@ export const FlowProvider = ({ children }) => {
     // =========================================================================
 
     const contextValue = {
-        // État des nodes/edges
+        // Graph state
         nodes,
         edges,
         onNodesChange,
@@ -441,7 +477,7 @@ export const FlowProvider = ({ children }) => {
         setCurrentNode,
         onNodeClick,
 
-        // Exécution
+        // Execution
         onNodeExecute,
         executeWorkflow,
         stopWorkflow,

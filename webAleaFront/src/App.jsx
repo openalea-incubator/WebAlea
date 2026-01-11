@@ -8,6 +8,11 @@ import ConsoleLog from './features/logger/ui/ConsoleLog.jsx';
 import { useState, useEffect } from 'react';
 import { useFlow } from './features/workspace/providers/FlowContextDefinition.jsx';
 
+/**
+ * App - The main application component that structures the WebAlea interface.
+ * It includes the header, main workspace area, sidebar, node detail section, and footer.
+ * The component manages the state of the node detail section visibility based on the selected node.
+ */
 export default function App() {
     const [isNodeDetailOpen, setIsNodeDetailOpen] = useState(false);
     const toggleNodeDetail = () => setIsNodeDetailOpen(prev => !prev);
@@ -87,7 +92,7 @@ export default function App() {
 
             {/* FOOTER */}
             <footer className="app-footer">
-                © 2025 WebAlea — Tous droits réservés
+                © 2026 WebAlea — All rights reserved.
             </footer>
         </div>
     );

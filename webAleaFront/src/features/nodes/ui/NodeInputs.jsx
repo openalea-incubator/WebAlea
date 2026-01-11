@@ -8,6 +8,10 @@ import NodeInputEnum from "../model/NodeInputEnum";
  * Parse input data from backend or legacy malformed OpenAlea format.
  * Now the backend pre-parses dict-like strings, so we primarily use backend data.
  * Fallback parsing kept for backwards compatibility with cached data.
+ * 
+ * @param {object} input - The input data.
+ * @param {number} index - The index of the input.
+ * @returns {object} - The parsed input.
  */
 function parseInput(input, index) {
     let parsedName = input.name;
@@ -71,6 +75,8 @@ function parseInput(input, index) {
 /**
  * Map OpenAlea interface types to our internal types.
  * Uses 'type' field from backend if available, otherwise falls back to interface parsing.
+ * @param {object} parsedInput - The parsed input data.
+ * @returns {string} - The input type.
  */
 function getInputType(parsedInput) {
     // Use type from backend if available (preferred)
@@ -78,7 +84,10 @@ function getInputType(parsedInput) {
         return parsedInput.type;
     }
 
-    // Fallback: parse from interface name
+    /**
+     * Fallback: parse from interface name.
+     * @returns {string} - The input type.
+     */
     const iface = (parsedInput.interface || "").toLowerCase();
 
     // Enum type
@@ -101,8 +110,19 @@ function getInputType(parsedInput) {
     return "string";
 }
 
+/**
+ * NodeInput component.
+ * This component is used to display the inputs of a node in the sidebar.
+ * @param {object} inputs - The inputs data.
+ * @param {function} onInputChange - The function to call when the input changes.
+ * @returns {React.ReactNode} - The NodeInput component.
+ */
 export default function NodeInput({ inputs, onInputChange }) {
-
+    /**
+     * Function to handle input value changes.
+     * @param {string} inputId - The id of the input.
+     * @param {any} newValue - The new value of the input.
+     */
     const handleChange = (inputId, newValue) => {
         if (onInputChange) {
             onInputChange(inputId, newValue);

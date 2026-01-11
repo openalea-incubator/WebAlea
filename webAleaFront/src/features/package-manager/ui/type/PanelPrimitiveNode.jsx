@@ -54,9 +54,16 @@ const PRIMITIVE_NODES = [
 /**
  * Panel displaying primitive input nodes (Float, String, Boolean).
  * Click on a node to add it to the workspace.
+ * 
+ * @param {function} onAddNode - The function to call when a node is added.
+ * @returns {React.ReactNode} - The PanelPrimitiveNode component.
  */
 export default function PanelPrimitiveNode({ onAddNode }) {
 
+    /**
+     * Function to handle node click.
+     * @param {object} primitive - The primitive node.
+     */
     const handleNodeClick = useCallback((primitive) => {
         if (onAddNode) {
             // Wrap in TreeNode format for consistency with PackageManager.handleAddNode
@@ -65,6 +72,10 @@ export default function PanelPrimitiveNode({ onAddNode }) {
         }
     }, [onAddNode]);
 
+    /**
+     * Return the primitive nodes.
+     * @returns {React.ReactNode} - The primitive nodes.
+     */
     return (
         <div className="panel-container">
             <div className="package-count">

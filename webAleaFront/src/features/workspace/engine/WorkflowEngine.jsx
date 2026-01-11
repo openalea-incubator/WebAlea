@@ -1,14 +1,14 @@
 /**
  * WorkflowEngine.jsx
  *
- * Moteur d'exécution asynchrone avec gestion complète des dépendances.
+ * Asynchronous execution engine with full dependency management.
  *
- * Caractéristiques:
- * - Exécution parallèle des branches indépendantes
- * - Attente automatique de tous les inputs avant exécution
- * - Détection de cycles
- * - Arrêt propre avec AbortController
- * - Feedback temps réel via événements
+ * Features:
+ *  - Parallel execution of independent branches: nodes without mutual dependencies run concurrently to improve throughput.
+ *  - Automatic input resolution and gating: a node will wait until all connected inputs or preset default values are available before starting.
+ *  - Cycle detection and reporting: the validator detects circular dependencies and returns the involved nodes to prevent infinite execution.
+ *  - Graceful cancellation via AbortController: in-flight backend calls are abortable and remaining tasks are canceled cleanly.
+ *  - Real-time feedback through events: emits lifecycle events (workflow-start, node-start, node-result, node-error, node-skipped, node-done, node-state-change, workflow-done, etc.) for UI updates and logging.
  */
 
 import { executeNode } from "../../../api/managerAPI.js";
@@ -18,16 +18,16 @@ import { executeNode } from "../../../api/managerAPI.js";
 // =============================================================================
 
 /**
- * États possibles d'un node pendant l'exécution
+ * Enum for node execution states
  */
 export const NodeState = {
-    PENDING: 'pending',     // En attente de dépendances
-    READY: 'ready',         // Prêt à s'exécuter (tous inputs reçus)
-    RUNNING: 'running',     // En cours d'exécution
-    COMPLETED: 'completed', // Terminé avec succès
-    ERROR: 'error',         // Terminé avec erreur
-    SKIPPED: 'skipped',     // Sauté (dépendance en erreur)
-    CANCELLED: 'cancelled'  // Annulé par l'utilisateur
+    PENDING: 'pending',     // Waiting for dependencies
+    READY: 'ready',         // Ready to run
+    RUNNING: 'running',     // In execution
+    COMPLETED: 'completed', // Successfully completed
+    ERROR: 'error',         // Failed during execution
+    SKIPPED: 'skipped',     // Skipped due to dependency failure
+    CANCELLED: 'cancelled'  // Cancelled by user
 };
 
 // =============================================================================
@@ -35,36 +35,36 @@ export const NodeState = {
 // =============================================================================
 
 /**
- * Valide un workflow avant exécution
+ * Validates the workflow structure before execution
  */
 export class WorkflowValidator {
     /**
-     * Valide le workflow complet
-     * @param {Array} graph - Liste des WFNodes
-     * @param {Array} edges - Liste des edges entre custom nodes
+     * Validates the workflow
+     * @param {Array} graph - Workflow graph nodes
+     * @param {Array} edges - Workflow graph edges
      * @returns {{ valid: boolean, errors: Array, warnings: Array }}
      */
     static validate(graph, edges) {
         const errors = [];
         const warnings = [];
 
-        // 1. Vérifier qu'il y a des nodes
+        // 1. Check for empty workflow
         if (!graph || graph.length === 0) {
-            errors.push({ type: 'EMPTY_WORKFLOW', message: 'Le workflow est vide' });
+            errors.push({ type: 'EMPTY_WORKFLOW', message: 'The workflow is empty' });
             return { valid: false, errors, warnings };
         }
 
-        // 2. Détecter les cycles
+        // 2. Detect cycles
         const cycleResult = this.detectCycle(graph, edges);
         if (cycleResult.hasCycle) {
             errors.push({
                 type: 'CYCLE_DETECTED',
-                message: 'Le workflow contient un cycle',
+                message: 'Cycle detected in the workflow',
                 nodes: cycleResult.cycleNodes
             });
         }
 
-        // 3. Vérifier les inputs obligatoires non connectés/non remplis
+        // 3. Check for unconnected mandatory inputs
         graph.forEach(node => {
             (node.inputs || []).forEach(input => {
                 const isConnected = edges.some(e =>
@@ -78,19 +78,19 @@ export class WorkflowValidator {
                         type: 'UNCONNECTED_INPUT',
                         nodeId: node.id,
                         inputId: input.id,
-                        message: `Input "${input.name}" du node "${node.label}" non connecté et sans valeur`
+                        message: `Node "${node.label}" has unconnected mandatory input "${input.name}"`
                     });
                 }
             });
         });
 
-        // 4. Vérifier les nodes sans package (sauf primitives)
+        // 4. Warn about custom nodes without package
         graph.forEach(node => {
             if (!node.packageName && node.type === 'custom') {
                 warnings.push({
                     type: 'MISSING_PACKAGE',
                     nodeId: node.id,
-                    message: `Node "${node.label}" n'a pas de package défini`
+                    message: `Custom node "${node.label}" is missing package information`
                 });
             }
         });
@@ -103,14 +103,14 @@ export class WorkflowValidator {
     }
 
     /**
-     * Détecte les cycles dans le graphe (DFS)
+     * Detects cycles in the workflow graph using DFS
      */
     static detectCycle(graph, edges) {
         const visited = new Set();
         const recursionStack = new Set();
         const cycleNodes = [];
 
-        // Construire la map d'adjacence
+        // Build adjacency list from edges : nodeId -> [neighborNodeIds]
         const adjacency = new Map();
         graph.forEach(node => adjacency.set(node.id, []));
         edges.forEach(edge => {
@@ -130,7 +130,7 @@ export class WorkflowValidator {
                     const result = dfs(neighbor, [...path]);
                     if (result) return result;
                 } else if (recursionStack.has(neighbor)) {
-                    // Cycle trouvé
+                    // Cycle detected
                     const cycleStart = path.indexOf(neighbor);
                     return path.slice(cycleStart);
                 }
@@ -158,14 +158,14 @@ export class WorkflowValidator {
 // =============================================================================
 
 /**
- * Suit l'état des dépendances de chaque node
+ * Tracks dependencies and input states for nodes
  */
 class DependencyTracker {
     constructor(graph, edges) {
         this.graph = graph;
         this.edges = edges;
 
-        // Map: nodeId -> Set de nodeIds dont on attend les résultats
+        // Map: nodeId -> Set of pending dependency nodeIds
         this.pendingDependencies = new Map();
 
         // Map: nodeId -> Map(inputId -> { received: boolean, value: any })
@@ -175,12 +175,12 @@ class DependencyTracker {
     }
 
     _initialize() {
-        // Pour chaque node, identifier les dépendances (custom nodes sources)
+        // Initialize dependency and input state maps
         for (const node of this.graph) {
             const dependencies = new Set();
             const inputStateMap = new Map();
 
-            // Initialiser chaque input
+            // Initialize input states with default values
             for (const input of (node.inputs || [])) {
                 inputStateMap.set(input.id, {
                     received: false,
@@ -190,17 +190,17 @@ class DependencyTracker {
                 });
             }
 
-            // Trouver les edges entrantes pour ce node
+            // Find incoming edges to determine dependencies
             const incomingEdges = this.edges.filter(e => e.target === node.id);
             for (const edge of incomingEdges) {
                 dependencies.add(edge.source);
 
-                // Marquer cet input comme dépendant d'une connexion
+                // Link input state to source node/output
                 const inputState = inputStateMap.get(edge.targetHandle);
                 if (inputState) {
                     inputState.sourceNodeId = edge.source;
                     inputState.sourceOutputId = edge.sourceHandle;
-                    // Ne pas marquer comme reçu - on attend le résultat
+                    // Mark as not received yet (since it's from another node)
                 }
             }
 
@@ -210,7 +210,7 @@ class DependencyTracker {
     }
 
     /**
-     * Vérifie si un node est prêt à s'exécuter
+     * Checks if a node is ready to execute (all dependencies resolved)
      */
     isReady(nodeId) {
         const pending = this.pendingDependencies.get(nodeId);
@@ -218,7 +218,7 @@ class DependencyTracker {
     }
 
     /**
-     * Retourne tous les nodes prêts à s'exécuter
+     * Gets all nodes that are currently ready to execute
      */
     getReadyNodes() {
         const ready = [];
@@ -231,30 +231,34 @@ class DependencyTracker {
     }
 
     /**
-     * Marque un node comme complété et propage ses outputs
-     * @returns {Array} Liste des nodeIds qui deviennent prêts
+     * Marks a node as completed and propagates outputs to dependent nodes
+     *
+     * @param {string} nodeId - ID of the completed node
+     * @param {Array} outputs - Outputs produced by the completed node
+     * @returns {Array} - List of newly ready node IDs
      */
     markCompleted(nodeId, outputs) {
         const newlyReady = [];
 
-        // Trouver les edges sortantes de ce node
+        // Find all outgoing edges from this node
         const outgoingEdges = this.edges.filter(e => e.source === nodeId);
 
         for (const edge of outgoingEdges) {
             const targetNodeId = edge.target;
 
-            // Retirer cette dépendance du node cible
+            // Remove this node from the pending dependencies of the target node
+            // - If no more pending dependencies, the target node becomes ready
             const pending = this.pendingDependencies.get(targetNodeId);
             if (pending) {
                 pending.delete(nodeId);
             }
 
-            // Injecter la valeur de l'output dans l'input cible
+            // Update the input state of the target node
             const inputStates = this.inputStates.get(targetNodeId);
             if (inputStates) {
                 const inputState = inputStates.get(edge.targetHandle);
                 if (inputState) {
-                    // Parser l'index de l'output (ex: "output_0" → 0)
+                    // Parse output index from sourceHandle (e.g., "output_0" -> 0)
                     const outputIndex = parseInt(edge.sourceHandle.match(/output_(\d+)/)?.[1] || 0, 10);
                     const outputValue = outputs[outputIndex]?.value;
 
@@ -263,7 +267,6 @@ class DependencyTracker {
                 }
             }
 
-            // Vérifier si le node cible devient prêt
             if (this.isReady(targetNodeId)) {
                 newlyReady.push(targetNodeId);
             }
@@ -273,7 +276,10 @@ class DependencyTracker {
     }
 
     /**
-     * Récupère les inputs résolus pour un node
+     * Gets the resolved inputs for a node, combining received values and defaults.
+     * An input is considered resolved if it has either received a value from a dependency
+     * @param {string} nodeId - ID of the node
+     * @returns {Array} - List of inputs with resolved values
      */
     getResolvedInputs(nodeId) {
         const node = this.graph.find(n => n.id === nodeId);
@@ -282,7 +288,6 @@ class DependencyTracker {
         const inputStates = this.inputStates.get(nodeId);
         if (!inputStates) return node.inputs || [];
 
-        // Construire la liste des inputs avec valeurs résolues
         return (node.inputs || []).map(input => {
             const state = inputStates.get(input.id);
             return {
@@ -293,7 +298,10 @@ class DependencyTracker {
     }
 
     /**
-     * Marque tous les successeurs d'un node en erreur comme "skipped"
+     * Recursively gets all successor nodes of a given node
+     * @param {string} nodeId - ID of the node
+     * @param {Set} visited - Set of already visited nodes to avoid cycles
+     * @returns {Array} - List of successor node IDs
      */
     getSuccessors(nodeId, visited = new Set()) {
         if (visited.has(nodeId)) return [];
@@ -315,13 +323,18 @@ class DependencyTracker {
 // WORKFLOW ENGINE 
 // =============================================================================
 
+/**
+ * Main workflow execution engine
+ * Handles asynchronous execution with dependency management
+ * emits events for real-time feedback
+ */
 export class WorkflowEngine {
     constructor() {
         this.graph = [];
         this.edges = [];
         this.dependencyTracker = null;
 
-        // État d'exécution
+        // Execution state
         this.running = false;
         this.abortController = null;
         this.nodeStates = new Map();  // nodeId -> NodeState
@@ -330,7 +343,7 @@ export class WorkflowEngine {
         // Listeners
         this.listeners = [];
 
-        // Promesses pour la synchronisation
+        // Promises for node executions
         this.executionPromises = new Map();  // nodeId -> Promise
         this.nodeResolvers = new Map();      // nodeId -> { resolve, reject }
     }
@@ -340,7 +353,7 @@ export class WorkflowEngine {
     // =========================================================================
 
     /**
-     * Lie le modèle de graphe au moteur
+     * Bind the workflow model (graph + edges) to the engine
      */
     bindModel(graph, edges) {
         this.graph = graph;
@@ -349,14 +362,14 @@ export class WorkflowEngine {
     }
 
     /**
-     * Enregistre un listener pour les événements
+     * Register a listener for workflow events
      */
     onUpdate(callback) {
         this.listeners.push(callback);
     }
 
     /**
-     * Réinitialise l'état du moteur
+     * Reset the engine state for a fresh execution
      */
     reset() {
         this.results = {};
@@ -364,14 +377,14 @@ export class WorkflowEngine {
         this.executionPromises.clear();
         this.nodeResolvers.clear();
 
-        // Initialiser tous les nodes à PENDING
+        // Initialize all nodes to PENDING state
         for (const node of this.graph) {
             this.nodeStates.set(node.id, NodeState.PENDING);
         }
     }
 
     /**
-     * Démarre l'exécution du workflow
+     * Start the workflow execution
      */
     async start() {
         if (this.running) {
@@ -395,7 +408,7 @@ export class WorkflowEngine {
             this._emit("validation-warnings", { warnings: validation.warnings });
         }
 
-        // Initialisation
+        // Initialize execution state
         this.running = true;
         this.abortController = new AbortController();
         this.reset();
@@ -409,7 +422,7 @@ export class WorkflowEngine {
         console.log("WorkflowEngine: Starting with", this.graph.length, "nodes");
 
         try {
-            // Trouver les nodes initialement prêts (roots)
+            // Find initial ready nodes (nodes without dependencies)
             const initialReady = this.dependencyTracker.getReadyNodes();
             console.log("WorkflowEngin2: Initial ready nodes:", initialReady);
 
@@ -417,18 +430,18 @@ export class WorkflowEngine {
                 throw new Error("Aucun node racine trouvé - vérifiez les connexions");
             }
 
-            // Marquer tous les nodes comme "queued"
+            // Set all nodes to PENDING initially
             for (const node of this.graph) {
                 this._setNodeState(node.id, NodeState.PENDING);
             }
 
-            // Exécuter les nodes prêts en parallèle et attendre la complétion
+            // Execute initial ready nodes in parallel
             await this._executeReadyNodes(initialReady);
 
-            // Attendre que tous les nodes soient terminés
+            // Wait for all nodes to complete
             await this._waitForAllNodes();
 
-            // Vérifier s'il reste des nodes non exécutés (cycle ou erreur)
+            // Check for unfinished nodes (cycles or skipped)
             const unfinished = [...this.nodeStates.entries()]
                 .filter(([_, state]) => state === NodeState.PENDING || state === NodeState.READY)
                 .map(([id]) => id);
@@ -459,7 +472,7 @@ export class WorkflowEngine {
     }
 
     /**
-     * Arrête l'exécution du workflow
+     * Stop the workflow execution gracefully
      */
     stop() {
         if (!this.running) return;
@@ -471,12 +484,12 @@ export class WorkflowEngine {
             this.abortController.abort();
         }
 
-        // Annuler tous les nodes en attente
+        // Update states of running/pending nodes to CANCELLED
         for (const [nodeId, state] of this.nodeStates) {
             if (state === NodeState.PENDING || state === NodeState.READY || state === NodeState.RUNNING) {
                 this._setNodeState(nodeId, NodeState.CANCELLED);
 
-                // Rejeter la promesse si elle existe
+                // Reject any pending promises
                 const resolver = this.nodeResolvers.get(nodeId);
                 if (resolver) {
                     resolver.reject(new Error("Workflow stopped"));
@@ -488,7 +501,7 @@ export class WorkflowEngine {
     }
 
     /**
-     * Exécute un node unique (pour tests ou exécution manuelle)
+     * Execute one node manually
      */
     async executeNodeManual(node) {
         this._emit("node-start", { id: node.id, label: node.label });
@@ -509,7 +522,8 @@ export class WorkflowEngine {
     // =========================================================================
 
     /**
-     * Exécute une liste de nodes prêts en parallèle
+     * Execute all ready nodes in parallel
+     * @param {Array} readyNodeIds - List of node IDs ready to execute
      */
     async _executeReadyNodes(readyNodeIds) {
         const executions = readyNodeIds.map(nodeId => this._executeNode(nodeId));
@@ -517,7 +531,7 @@ export class WorkflowEngine {
     }
 
     /**
-     * Attend que tous les nodes soient terminés
+     * Waits for all node execution promises to settle
      */
     async _waitForAllNodes() {
         const allPromises = [...this.executionPromises.values()];
@@ -525,17 +539,17 @@ export class WorkflowEngine {
     }
 
     /**
-     * Exécute un node et déclenche ses successeurs
+     * Executes a single node
+     * @param {string} nodeId - ID of the node to execute
      */
     async _executeNode(nodeId) {
-        // Créer une promesse pour ce node
+        // Create a promise for this node's execution : will be resolved/rejected later
         const nodePromise = new Promise((resolve, reject) => {
             this.nodeResolvers.set(nodeId, { resolve, reject });
         });
         this.executionPromises.set(nodeId, nodePromise);
 
         try {
-            // Vérifier si le workflow a été stoppé
             if (!this.running) {
                 throw new Error("Workflow stopped");
             }
@@ -545,22 +559,22 @@ export class WorkflowEngine {
                 throw new Error(`Node ${nodeId} not found`);
             }
 
-            // Marquer comme running
+            // Mark as running
             this._setNodeState(nodeId, NodeState.RUNNING);
             this._emit("node-start", { id: nodeId, label: node.label });
 
-            // Récupérer les inputs résolus (avec les valeurs propagées)
+            // Get resolved inputs : from dependencies or default values
             const resolvedInputs = this.dependencyTracker.getResolvedInputs(nodeId);
 
             console.log(`WorkflowEngine: Executing ${nodeId} (${node.label}) with inputs:`,
                 resolvedInputs.map(i => ({ name: i.name, value: i.value })));
 
-            // Exécuter le node
+            // Execute the node (via backend or primitive)
             let outputs;
             if (node.packageName && node.nodeName) {
                 outputs = await this._executeViaBackend(node, resolvedInputs);
             } else {
-                // Node primitif ou sans backend - retourner les valeurs directement
+                // Primitive node: simulate execution locally
                 outputs = (node.outputs || []).map((output, index) => ({
                     index,
                     name: output.name || `output_${index}`,
@@ -569,24 +583,23 @@ export class WorkflowEngine {
                 }));
             }
 
-            // Stocker les résultats
             this.results[nodeId] = outputs;
 
-            // Marquer comme complété
+            // Mark as completed
             this._setNodeState(nodeId, NodeState.COMPLETED);
             this._emit("node-result", { id: nodeId, result: outputs });
             this._emit("node-done", { id: nodeId, label: node.label });
 
-            // Résoudre la promesse
+            // Resolve the promise
             const resolver = this.nodeResolvers.get(nodeId);
             if (resolver) resolver.resolve(outputs);
 
-            // Propager les résultats et exécuter les nodes qui deviennent prêts
+            // Propagate outputs to dependent nodes and get newly ready nodes
             const newlyReady = this.dependencyTracker.markCompleted(nodeId, outputs);
 
             if (newlyReady.length > 0 && this.running) {
                 console.log(`WorkflowEngine: Nodes now ready after ${nodeId}:`, newlyReady);
-                // Exécuter les nouveaux nodes prêts en parallèle
+                // Execute newly ready nodes in parallel.
                 await this._executeReadyNodes(newlyReady);
             }
 
@@ -595,15 +608,14 @@ export class WorkflowEngine {
         } catch (error) {
             console.error(`WorkflowEngine: Node ${nodeId} failed:`, error);
 
-            // Marquer comme erreur
+            // Mark as error
             this._setNodeState(nodeId, NodeState.ERROR);
             this._emit("node-error", { id: nodeId, error: error.message });
 
-            // Rejeter la promesse
             const resolver = this.nodeResolvers.get(nodeId);
             if (resolver) resolver.reject(error);
 
-            // Marquer tous les successeurs comme skipped
+            // Skip all successor nodes
             const successors = this.dependencyTracker.getSuccessors(nodeId);
             for (const successorId of successors) {
                 if (this.nodeStates.get(successorId) === NodeState.PENDING) {
@@ -613,7 +625,6 @@ export class WorkflowEngine {
                         reason: `Dependency ${nodeId} failed`
                     });
 
-                    // Résoudre la promesse du successor comme skipped
                     const successorResolver = this.nodeResolvers.get(successorId);
                     if (successorResolver) {
                         successorResolver.resolve(null);
@@ -626,7 +637,7 @@ export class WorkflowEngine {
     }
 
     /**
-     * Exécute un node via le backend
+     * Execute a node via backend API
      */
     async _executeViaBackend(node, inputs) {
         console.log(`WorkflowEngine: Backend call for ${node.id}`, {
@@ -650,7 +661,7 @@ export class WorkflowEngine {
     }
 
     /**
-     * Met à jour l'état d'un node
+     * Sets the state of a node and emits an event
      */
     _setNodeState(nodeId, state) {
         this.nodeStates.set(nodeId, state);
@@ -658,7 +669,7 @@ export class WorkflowEngine {
     }
 
     /**
-     * Émet un événement à tous les listeners
+     * Emits an event to all registered listeners
      */
     _emit(event, payload) {
         for (const listener of this.listeners) {
@@ -676,20 +687,21 @@ export class WorkflowEngine {
 // =============================================================================
 
 /**
- * Calcule l'ordre topologique d'exécution (Kahn's algorithm)
- * Utile pour afficher l'ordre prévu ou pour debugging
+ * Computes a topological order of nodes in the graph using Kahn's algorithm
+ * @param {Array} graph - List of nodes in the workflow
+ * @param {Array} edges - List of edges in the workflow
+ * @returns {Array} - List of node IDs in topological order
  */
 export function computeTopologicalOrder(graph, edges) {
     const inDegree = new Map();
     const adjacency = new Map();
 
-    // Initialiser
     graph.forEach(node => {
         inDegree.set(node.id, 0);
         adjacency.set(node.id, []);
     });
 
-    // Calculer les degrés entrants
+    // Compute in-degrees and adjacency list
     edges.forEach(edge => {
         const current = inDegree.get(edge.target) || 0;
         inDegree.set(edge.target, current + 1);
@@ -699,13 +711,11 @@ export function computeTopologicalOrder(graph, edges) {
         }
     });
 
-    // File des nodes sans dépendances
     const queue = [];
     inDegree.forEach((degree, nodeId) => {
         if (degree === 0) queue.push(nodeId);
     });
 
-    // Tri topologique
     const order = [];
     while (queue.length > 0) {
         const nodeId = queue.shift();
@@ -721,7 +731,6 @@ export function computeTopologicalOrder(graph, edges) {
         }
     }
 
-    // Vérifier les cycles
     if (order.length !== graph.length) {
         throw new Error("Cycle detected in workflow");
     }

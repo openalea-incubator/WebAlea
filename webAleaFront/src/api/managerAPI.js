@@ -2,10 +2,10 @@
 const BASE_URL = "http://localhost:8000/api/v1/manager";
 
 // ==============================
-// LISTE DES PACKAGES
+// PACKAGE LIST
 // ==============================
 /**
- * 
+ * Fetch the list of all conda packages.
  * @returns {Promise<Object>}
  */
 export async function fetchPackageList() {
@@ -13,7 +13,7 @@ export async function fetchPackageList() {
 }
 
 /**
- * 
+ * Fetch the latest versions of all conda packages.
  * @returns {Promise<Object>}
  */
 export async function fetchLatestPackageVersions() {
@@ -25,7 +25,7 @@ export async function fetchLatestPackageVersions() {
 // ===============================
 
 /**
- * 
+ * Install packages in the conda environment.
  * @param {Array} packages 
  * @param {string|null} envName 
  * @returns {Promise<Object>}
@@ -39,10 +39,10 @@ export async function installPackages(packages, envName = null) {
 }
 
 // ===============================
-// OPENALEA PACKAGES INSTALLÉS
+// INSTALLED OPENALEA PACKAGES
 // ===============================
 /**
- *
+ * Fetch the list of all installed OpenAlea packages.
  * @returns {Promise<Object>}
  */
 export async function fetchInstalledOpenAleaPackages() {
@@ -50,7 +50,7 @@ export async function fetchInstalledOpenAleaPackages() {
 }
 
 /**
- * Fetch packages that have visual nodes (wralea entry points).
+ * Fetch the list of packages that have visual nodes (wralea entry points).
  * Only installed packages can be checked for wralea.
  * @returns {Promise<Object>}
  */
@@ -59,36 +59,16 @@ export async function fetchWraleaPackages() {
 }
 
 /**
- * 
- * @param {String} packageName 
- * @returns {Promise<Object>}
+ * Fetch the list of nodes for a given package.
+ * @param {string} packageName - The name of the package to fetch nodes for.
+ * @returns {Promise<Object>} - The list of nodes for the given package.
  */
 export async function fetchPackageNodes(packageName) {
     return fetchJSON(`${BASE_URL}/installed/${packageName}`);   
 }
 
 // ===============================
-// POC - GET NODE LIST
-// ===============================
-export async function getNodes() {
-    return fetchJSON(`${BASE_URL}/poc/get_node`);
-}
-
-// ===============================
-// POC - EXECUTE NODE (deprecated)
-// ===============================
-export async function executeNodes(name, parameters1, parameters2) {
-    return fetchJSON(`${BASE_URL}/poc/execute_nodes`, "POST", {
-        name_node: name,
-        parameters: {
-            parameters1: parameters1,
-            parameters2: parameters2
-        }
-    });
-}
-
-// ===============================
-// NODE EXECUTION - OpenAlea
+// NODE EXECUTION
 // ===============================
 /**
  * Execute a single OpenAlea node with given inputs
@@ -116,8 +96,15 @@ export async function executeNode(nodeData) {
 }
 
 // ===============================
-// WRAPPER UTILITAIRE
+// UTILITY FUNCTIONS
 // ===============================
+/**
+ * Fetch data from the API and return it as JSON.
+ * @param {string} url - The URL to fetch from.
+ * @param {string} method - The HTTP method to use (GET, POST, etc.).
+ * @param {Object} body - The body of the request (JSON object).
+ * @returns {Promise<Object>} - The JSON data from the API.
+ */
 async function fetchJSON(url, method = "GET", body = null) {
     try {
         const res = await fetch(url, {

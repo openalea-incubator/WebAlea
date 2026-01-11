@@ -2,9 +2,23 @@ import React, { useState } from "react";
 import NodeParameters from "./NodeParameters";
 import NodeDescription from "./NodeDescription";
 
+/**
+ * NodeDetailSection component.
+ * This component is used to display the detail section of the current node in the sidebar.
+ * It contains the parameters, description and view tabs.
+ * @returns {React.ReactNode} - The NodeDetailSection component.
+ */
 export default function NodeDetailSection() {
+    /**
+     * State to store the active tab.
+     * @type {string}
+     */
     const [activeTab, setActiveTab] = useState("parameters");
 
+    /**
+     * Function to render the content of the active tab.
+     * @returns {React.ReactNode} - The content of the active tab.
+     */
     const renderTabContent = () => {
         switch (activeTab) {
             case "parameters":
@@ -14,7 +28,7 @@ export default function NodeDetailSection() {
             case "view":
                 return (
                     <div style={{ padding: "12px" }}>
-                        <p>Vue / preview ici...</p>
+                        <p>Preview...</p>
                     </div>
                 );
             default:
@@ -31,7 +45,7 @@ export default function NodeDetailSection() {
                 overflow: "hidden",
             }}
         >
-            {/* Onglets - hauteur fixe */}
+            {/* Tabs - fixed height */}
             <div
                 style={{
                     flexShrink: 0,
@@ -62,7 +76,7 @@ export default function NodeDetailSection() {
                 </button>
             </div>
 
-            {/* Contenu de l'onglet actif - prend tout l'espace restant */}
+            {/* Content of the active tab - takes the remaining space */}
             <div
                 style={{
                     flex: 1,
