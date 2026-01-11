@@ -3,15 +3,44 @@ import NodeInput from "../NodeInputs.jsx";
 import NodeOutput from "../NodeOutputs.jsx";
 import { useFlow } from "../../../workspace/providers/FlowContextDefinition.jsx";
 
+/**
+ * NodeParameters component.
+ * This component is used to display the parameters of the current node in the sidebar.
+ * It contains the inputs and outputs of the node.
+ * @returns {React.ReactNode} - The NodeParameters component.
+ */
 export default function NodeParameters() {
-
+    /**
+     * State to store the current node.
+     * @type {object}
+     */
     const { currentNode, nodes, updateNode, onNodeExecute } = useFlow();
+    /**
+     * Node to display the parameters of.
+     * @type {object}
+     */
     const node = nodes.find(n => n.id === currentNode);
+    /**
+     * Inputs of the node.
+     * @type {array}
+     */
     const inputs = node ? node.data.inputs : [];
+    /**
+     * Outputs of the node.
+     * @type {array}
+     */
     const outputs = node ? node.data.outputs : [];
+    /**
+     * State to store if the node has changed.
+     * @type {boolean}
+     */
     const [isChanged, setIsChanged] = useState(false);
 
-    // Handle input value changes
+    /**
+     * Function to handle input value changes.
+     * @param {string} inputId - The id of the input.
+     * @param {any} newValue - The new value of the input.
+     */
     const handleInputChange = useCallback((inputId, newValue) => {
         if (!node) return;
 
@@ -23,16 +52,20 @@ export default function NodeParameters() {
         setIsChanged(true);
     }, [node, inputs, updateNode]);
 
-    // Lancer l'exécution du node
+    /**
+     * Function to launch the execution of the node.
+     */
     const handleLaunch = () => {
         if (node) {
-            console.log("Executing node with inputs:", inputs);
             onNodeExecute(node.id);
             setIsChanged(false);
         }
     };
 
-    // Aucun node sélectionné
+    /**
+     * If no node is selected, return a message.
+     * @returns {React.ReactNode} - The message.
+     */
     if (!node) {
         return <div className="p-3 bg-white rounded shadow-sm">No node selected.</div>;
     }
@@ -47,7 +80,7 @@ export default function NodeParameters() {
                 overflow: "hidden",
             }}
         >
-            {/* Header - hauteur fixe */}
+            {/* Header - fixed height */}
             <div
                 style={{
                     flexShrink: 0,
@@ -60,7 +93,7 @@ export default function NodeParameters() {
                 </h6>
             </div>
 
-            {/* --- PARAMÈTRES avec scrollbox --- */}
+            {/* --- PARAMETERS with scrollbox --- */}
             <div
                 style={{
                     flex: 1,
@@ -91,7 +124,7 @@ export default function NodeParameters() {
                 )}
             </div>
 
-            {/* --- BOUTON LANCER - hauteur fixe --- */}
+            {/* --- LAUNCH BUTTON - fixed height --- */}
             <div
                 style={{
                     flexShrink: 0,
@@ -106,7 +139,7 @@ export default function NodeParameters() {
                     onClick={handleLaunch}
                     style={{ width: "100%" }}
                 >
-                    Lancer
+                    Launch
                 </button>
             </div>
         </div>

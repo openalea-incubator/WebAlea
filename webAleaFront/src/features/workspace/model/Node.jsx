@@ -1,33 +1,55 @@
 /**
- * Classe utilitaire pour créer et sérialiser les objets Node de React Flow.
+ * Utility class used to create and serialize React Flow Node objects.
  *
- * Chaque noeud peut avoir un ID, une position, un titre, une couleur, un statut et des métadonnées.
- * Supporte les nodes OpenAlea avec packageName, nodeName, callable et description.
+ * Each node can define:
+ * - an ID
+ * - a position
+ * - a label
+ * - a color
+ * - a status
+ * - metadata
+ * - input and output ports
  *
- * Exemple d'utilisation :
+ * The class also supports OpenAlea-specific nodes through:
+ * - packageName
+ * - nodeName
+ * - callable
+ * - description
+ *
+ * Example usage:
+ *
  *  const node = new Node({
- *   id: 'n1',
- *   position: { x: 100, y: 200 },
- *   label: 'Mon Node',
- *   inputs: [{ id: 'in_0', name: 'x', type: 'float', interface: 'IFloat' }],
- *   outputs: [{ id: 'out_0', name: 'result', type: 'float', interface: 'IFloat' }],
- *   data: { packageName: 'openalea.math', nodeName: 'addition' }
- * });
- *
- * const serializedNode = node.serialize();
- * const jsonString = node.serializeToJSON();
+ *    id: 'n1',
+ *    position: { x: 100, y: 200 },
+ *    label: 'My Node',
+ *    inputs: [{ id: 'in_0', name: 'x', type: 'float', interface: 'IFloat' }],
+ *    outputs: [{ id: 'out_0', name: 'result', type: 'float', interface: 'IFloat' }],
+ *    data: {
+ *      packageName: 'openalea.math',
+ *      nodeName: 'addition'
+ *    }
+ *  });
  *
  */
 export class Node {
 
     /**
-     * Crée un objet nœud React Flow.
-     * @param {object} props - Les propriétés du nœud.
+     * Creates a React Flow node object.
+     *
+     * @param {Object} props - Node properties
+     * @param {string} props.id - Unique node identifier
+     * @param {string} [props.label] - Node display label
+     * @param {string} [props.type="custom"] - React Flow node type
+     * @param {{x: number, y: number}} [props.position={x:0,y:0}] - Node position
+     * @param {Object} [props.data] - Additional node data
+     * @param {Array} [props.inputs] - Input port definitions
+     * @param {Array} [props.outputs] - Output port definitions
      */
     constructor({ id, label, type = "custom", position = { x: 0, y: 0 }, data, inputs, outputs }) {
         this.id = id;
         this.type = type;
         this.position = position;
+
         this.data = {
             label: label || data?.label || null,
             color: data?.color || null,
@@ -36,7 +58,8 @@ export class Node {
             inputs: inputs || [],
             outputs: outputs || [],
             endpoint: data?.endpoint || null,
-            // OpenAlea node properties
+
+            // OpenAlea-specific properties
             packageName: data?.packageName || null,
             nodeName: data?.nodeName || label || null,
             callable: data?.callable || null,
@@ -45,13 +68,16 @@ export class Node {
     }
 
     /**
-     * Sérialise l'instance du nœud en un objet JavaScript minimal.
-     * @returns {object|null} L'objet nœud sérialisé.
+     * Serializes the node instance into a minimal plain JavaScript object
+     * compatible with React Flow.
+     *
+     * @returns {Object|null} Serialized node object or null if ID is missing
      */
     serialize() {
         if (!this.id) return null;
 
         const { id, position, type, data } = this;
+
         return {
             id,
             type: type,
@@ -64,31 +90,14 @@ export class Node {
                 inputs: data.inputs ?? [],
                 outputs: data.outputs ?? [],
                 endpoint: data.endpoint ?? null,
-                // OpenAlea node properties
+
+                // OpenAlea-specific properties
                 packageName: data.packageName ?? null,
                 nodeName: data.nodeName ?? null,
                 callable: data.callable ?? null,
                 description: data.description ?? '',
             },
         };
-    }
-
-    serializeData(entries = []) {
-        if (entries.length === 0) {
-            return entries;
-        };
-        // TODO
-    }
-
-
-    /**
-     * Sérialise l'instance du nœud en une chaîne JSON.
-     * @param {number} spacing - Espacement pour l'indentation JSON.
-     * @returns {string|null} La chaîne JSON ou null.
-     */
-    serializeToJSON(spacing = 2) {
-        const obj = this.serialize();
-        return obj ? JSON.stringify(obj, null, spacing) : null;
     }
 
 }

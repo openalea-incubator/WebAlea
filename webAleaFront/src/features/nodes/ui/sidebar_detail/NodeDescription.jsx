@@ -1,11 +1,23 @@
 import React from "react";
 import { useFlow } from "../../../workspace/providers/FlowContextDefinition.jsx";
 
+/**
+ * NodeDescription component. 
+ * This component is used to display the description of the current node in the sidebar.
+ * @returns {React.ReactNode} - The NodeDescription component.
+ */
 export default function NodeDescription() {
+    /**
+     * State to store the current node.
+     * @type {object}
+     */
     const { currentNode, nodes } = useFlow();
 
+    /**
+     * Node to display the description of.
+     * @type {object}
+     */
     const node = nodes.find(n => n.id === currentNode);
-    console.log("NodeDescription rendering for node:", node);
 
     if (!node) {
         return <div className="p-3 bg-white rounded shadow-sm">No node selected.</div>;

@@ -1,13 +1,13 @@
 /**
  * ToolBar.jsx
  *
- * Barre d'outils améliorée avec support du WorkflowEngine.
+ * Enhanced toolbar with WorkflowEngine support.
  *
- * Fonctionnalités:
- * - Exécution asynchrone du workflow complet
- * - Barre de progression
- * - Indicateur d'état
- * - Validation avant exécution
+ * Features:
+ *  - Asynchronous execution of the full workflow
+ *  - Progress bar with counts and error indicator
+ *  - Status indicator (running, completed, failed, stopped)
+ *  - Validation before execution
  */
 
 import { useState } from "react";
@@ -27,7 +27,12 @@ import { useFlow } from "../../workspace/providers/FlowContextDefinition.jsx";
 import { useLog } from "../../logger/providers/LogContextDefinition.jsx";
 
 /**
- * Composant de barre de progression
+ * Progress Bar Component
+ * Displays the progress of workflow execution.
+ *
+ * @param {object} progress - Progress object with percent, completed, total, failed
+ * @param {string} status - Current execution status
+ * @returns {React.ReactNode} - Progress bar element
  */
 function ProgressBar({ progress, status }) {
     const getBarColor = () => {
@@ -69,7 +74,11 @@ function ProgressBar({ progress, status }) {
 }
 
 /**
- * Indicateur d'état
+ * Status Indicator Component
+ * Displays the current status of workflow execution.
+ *
+ * @param {string} status - Current execution status
+ * @returns {React.ReactNode} - Status indicator element
  */
 function StatusIndicator({ status }) {
     const getIcon = () => {
@@ -109,6 +118,12 @@ function StatusIndicator({ status }) {
     );
 }
 
+/**
+ * ToolBar Component
+ * Main toolbar with enhanced workflow execution features.
+ *
+ * @returns {React.ReactNode} - The ToolBar component.
+ */
 export default function ToolBar() {
     const [showImportModal, setShowImportModal] = useState(false);
     const {
@@ -135,7 +150,7 @@ export default function ToolBar() {
     const handleImportData = (data) => {
         try {
             if (!data.nodes || !data.edges) {
-                throw new Error("Données invalides : noeuds ou connexions manquants.");
+                throw new Error("Invalid workflow data: missing nodes or edges");
             }
             setNodesAndEdges(data.nodes || [], data.edges || []);
             setShowImportModal(false);
@@ -144,10 +159,13 @@ export default function ToolBar() {
                 edges: data.edges.length
             });
         } catch (error) {
-            alert("Erreur lors de l'importation du workflow : " + error.message);
+            alert("Error importing workflow: " + error.message);
         }
     };
 
+    /**
+     * Handle Export. Exports the current workflow as a JSON file.
+     */
     const handleExport = () => {
         const data = { nodes, edges };
         try {
@@ -165,6 +183,9 @@ export default function ToolBar() {
         }
     };
 
+    /**
+     * Handle Info. Displays information about the current workflow.
+     */
     const handleInfo = () => {
         const customNodes = nodes.filter(n => n.type === 'custom');
         const primitiveNodes = nodes.filter(n => n.type !== 'custom');
@@ -178,6 +199,9 @@ export default function ToolBar() {
         );
     };
 
+    /**
+     * Handle Run. Validates and executes the workflow asynchronously.
+     */
     const handleRun = async () => {
         if (isRunning) {
             console.warn("Workflow already running");
@@ -185,7 +209,7 @@ export default function ToolBar() {
         }
 
         if (nodes.length === 0) {
-            alert("Le workflow est vide. Ajoutez des nodes avant d'exécuter.");
+            alert("Cannot run an empty workflow");
             return;
         }
 
@@ -213,6 +237,9 @@ export default function ToolBar() {
         }
     };
 
+    /**
+     * Handle Stop. Stops the currently running workflow.
+     */
     const handleStop = () => {
         if (!isRunning) {
             console.warn("Workflow not running");
@@ -230,7 +257,7 @@ export default function ToolBar() {
     return (
         <>
             <div className="row mb-4 px-4 align-items-center">
-                {/* Boutons gauche: Export/Import/Info */}
+                {/* Left Button : Export/Import/Info */}
                 <div className="col-md-4 d-flex gap-2 mb-2 mb-md-0">
                     <ButtonToolBar
                         icon={FaUpload}
@@ -251,7 +278,7 @@ export default function ToolBar() {
                     />
                 </div>
 
-                {/* Centre: Progression et état */}
+                {/* Center: Progress Bar & Status */}
                 <div className="col-md-4 d-flex justify-content-center align-items-center">
                     <ProgressBar
                         progress={executionProgress}
@@ -260,7 +287,7 @@ export default function ToolBar() {
                     <StatusIndicator status={executionStatus} />
                 </div>
 
-                {/* Boutons droite: Run/Stop */}
+                {/* Right Button : Run/Stop */}
                 <div className="col-md-4 d-flex gap-2 justify-content-md-end">
                     <ButtonToolBar
                         icon={isRunning ? FaSpinner : FaPlay}

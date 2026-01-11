@@ -2,6 +2,10 @@ import { useEffect, useRef } from "react";
 import { useLog } from "../providers/LogContextDefinition.jsx";
 import LogLine from "./LogLine.jsx";
 
+/**
+ * ConsoleLog component.
+ * @returns {React.ReactNode} - The ConsoleLog component.
+ */
 export default function ConsoleLog() {
 
 const { logs } = useLog();

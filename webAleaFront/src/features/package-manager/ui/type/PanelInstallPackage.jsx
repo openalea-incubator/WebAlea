@@ -6,9 +6,34 @@ import { getPackagesList, installPackage } from '../../../../service/PackageServ
 /**
  * Panel for installing OpenAlea packages from conda.
  * Features search, install status, and notifications.
+ * 
+ * TODO: Refactor this component :
+ * * It is a duplicate of the PanelModuleNode component.
+ * * It is not using the TreePackage component.
+ * * There are too many parameters.
+ * 
+ * @param {function} onPackageInstalled - The function to call when a package is installed.
+ * @param {array} packages - The packages to display.
+ * @param {function} setPackages - The function to set the packages.
+ * @param {array} filteredPackages - The filtered packages to display.
+ * @param {function} setFilteredPackages - The function to set the filtered packages.
+ * @param {boolean} loading - The loading state.
+ * @param {function} setLoading - The function to set the loading state.
+ * @param {string} installing - The package that is being installed.
+ * @param {function} setInstalling - The function to set the installing state.
+ * @param {Set} installedPackages - The installed packages.
+ * @param {function} setInstalledPackages - The function to set the installed packages.
+ * @param {string} searchTerm - The search term.
+ * @param {function} setSearchTerm - The function to set the search term.
+ * @param {object} snackbar - The snackbar state.
+ * @param {function} setSnackbar - The function to set the snackbar state.
+ * @returns {React.ReactNode} - The PanelInstallPackage component.
  */
 export default function PanelInstallPackage({ onPackageInstalled, packages, setPackages, filteredPackages, setFilteredPackages, loading, setLoading, installing, setInstalling, installedPackages, setInstalledPackages, searchTerm, setSearchTerm, snackbar, setSnackbar }) {
 
+    /**
+     * Use effect to fetch the packages.
+     */
     useEffect(() => {
 
         if (packages.length > 0) {
@@ -32,6 +57,9 @@ export default function PanelInstallPackage({ onPackageInstalled, packages, setP
         fetchPackages();
     }, []);
 
+    /**
+     * Use effect to filter the packages.
+     */
     useEffect(() => {
         if (searchTerm.trim() === '') {
             setFilteredPackages(packages);
@@ -48,12 +76,9 @@ export default function PanelInstallPackage({ onPackageInstalled, packages, setP
      * NOTE: We don't pass the version to let conda auto-resolve to a Python-compatible version.
      */
     const handleInstall = useCallback(async (pkg) => {
-        console.log("handleInstall called for:", pkg.name);
         setInstalling(pkg.name);
         try {
-            console.log("Calling installPackage API...");
             const result = await installPackage({ name: pkg.name });
-            console.log("Install result:", result);
 
             if (result.success) {
                 setInstalledPackages(prev => new Set([...prev, pkg.name]));

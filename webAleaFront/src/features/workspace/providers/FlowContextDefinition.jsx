@@ -1,13 +1,13 @@
 import { createContext, useContext } from 'react';
 
-// Création du Context
+// Context for managing workflow flows
 export const FlowContext = createContext(null);
 
-// Hook personnalisé pour accéder facilement au context
+// Custom hook to access the FlowContext
 export const useFlow = () => {
   const context = useContext(FlowContext);
   if (!context) {
-    throw new Error('useFlow doit être utilisé à l\'intérieur d\'un FlowProvider');
+    throw new Error('useFlow must be used within a FlowContextProvider');
   }
   return context;
 };

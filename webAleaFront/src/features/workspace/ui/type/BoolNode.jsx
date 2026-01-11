@@ -1,10 +1,17 @@
-import { Handle, Position } from "@xyflow/react";
 import "../../../../assets/css/custom_node.css";
-import { useFlow } from "../../providers/FlowContextDefinition";
-import { useLog } from "../../../logger/providers/LogContextDefinition.jsx";
-import { useEffect, useState } from "react";
+import {useFlow} from "../../providers/FlowContextDefinition";
+import {useLog} from "../../../logger/providers/LogContextDefinition.jsx";
+import {useEffect, useState} from "react";
 import CustomHandle from "../../ui/CustomHandle.jsx";
 
+/**
+ * BoolNode - A custom node component for selecting and outputting a boolean value.
+ * This node is rendered in the workflow editor and allows users to choose between true and false.
+ * @param nodeProps - The properties of the node, including id, data, and selection state.
+ * @param {string} nodeProps.id - The unique identifier of the node.
+ * @param {Object} nodeProps.data - The data associated with the node.
+ * @param {boolean} nodeProps.selected - Whether the node is currently selected.
+ */
 export default function BoolNode(nodeProps) {
     const { id, data = {}, selected } = nodeProps;
     const { updateNode } = useFlow();
