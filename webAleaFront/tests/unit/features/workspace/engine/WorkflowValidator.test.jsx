@@ -1,4 +1,4 @@
-import { WorkflowValidator } from "../../../../src/features/workspace/engine/WorkflowEngine";
+import { WorkflowValidator } from "../../../../../src/features/workspace/engine/WorkflowEngine";
 
 describe("WorkflowValidator", () => {
 

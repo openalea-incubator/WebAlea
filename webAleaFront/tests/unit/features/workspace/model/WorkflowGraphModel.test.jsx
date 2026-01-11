@@ -3,7 +3,7 @@ import {
     WFNode,
     buildGraphModel,
     getRootNodes,
-} from "../../../../src/features/workspace/model/WorkflowGraph";
+} from "../../../../../src/features/workspace/model/WorkflowGraph";
 
 describe("WFNode class", () => {
     test("WFNode instance is created correctly", () => {

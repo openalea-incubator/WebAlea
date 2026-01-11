@@ -7,7 +7,7 @@ export const FlowContext = createContext(null);
 export const useFlow = () => {
   const context = useContext(FlowContext);
   if (!context) {
-    throw new Error('useFlow doit être utilisé à l\'intérieur d\'un FlowProvider');
+    throw new Error('useFlow must be used within a FlowProvider');
   }
   return context;
 };
