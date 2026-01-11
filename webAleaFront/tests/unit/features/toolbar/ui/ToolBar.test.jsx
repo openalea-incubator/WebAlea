@@ -221,8 +221,7 @@ describe('ToolBar_file', () => {
         test('handleImportClick should open the modal', () => {
             render(<ToolBar/>);
 
-            const importButton = screen.getByTitle('Import a workflow');
-            fireEvent.click(importButton);
+            fireEvent.click(screen.getByTitle('Import a workflow'));
 
             expect(screen.getByTestId('import-modal')).toBeInTheDocument();
         });
@@ -348,25 +347,10 @@ describe('ToolBar_file', () => {
             });
         });
 
-        test('handleRun should show an error if workflow is empty', () => {
-            // Tester la logique directement
-            const nodes = [];
-
-            if (nodes.length === 0) {
-                window.alert("Le workflow est vide. Ajoutez des nodes avant d'exécuter.");
-                return;
-            }
-
-            expect(window.alert).toHaveBeenCalledWith(
-                "Le workflow est vide. Ajoutez des nodes avant d'exécuter."
-            );
-        });
-
         test('handleRun should not execute if already running', () => {
             render(<ToolBar />);
 
-            const executeButton = screen.getByTitle('Run workflow');
-            expect(executeButton).toBeDisabled();
+            expect(screen.getByTitle('Run workflow')).toBeDisabled();
 
             expect(mockExecuteWorkflow).not.toHaveBeenCalled();
         });
@@ -392,8 +376,7 @@ describe('ToolBar_file', () => {
         test('handleStop should not stop if workflow is not running', () => {
             render(<ToolBar />);
 
-            const stopButton = screen.getByTitle('Stop execution');
-            expect(stopButton).toBeDisabled();
+            expect(screen.getByTitle('Stop execution')).toBeDisabled();
 
             expect(mockStopWorkflow).not.toHaveBeenCalled();
         });
