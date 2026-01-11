@@ -555,7 +555,7 @@ class WorkflowErrorBoundary extends React.Component {
 #### 5.3 Logs structurés
 
 ```javascript
-// ConsoleLog amélioré
+// logger amélioré
 const logTypes = {
   INFO: { icon: 'info', color: '#17a2b8' },
   SUCCESS: { icon: 'check', color: '#28a745' },

@@ -1,15 +1,15 @@
 import { render, screen } from "@testing-library/react";
-import ConsoleLog from "../../../../src/features/logger/ui/ConsoleLog.jsx";
+import ConsoleLog from "../../../../../src/features/logger/ui/ConsoleLog.jsx";
 import React from "react";
 import { expect, test, describe } from '@jest/globals';
 
 // Mock the useLog hook
-import * as LogContext from "../../../../src/features/logger/providers/LogContextDefinition.jsx";
+import * as LogContext from "../../../../../src/features/logger/providers/LogContextDefinition.jsx";
 
 // eslint-disable-next-line no-undef
-jest.mock("../../../../src/features/logger/providers/LogContextDefinition.jsx");
+jest.mock("../../../../../src/features/logger/providers/LogContextDefinition.jsx");
 
-describe("ConsoleLog component", () => {
+describe("logger component", () => {
 
     test("displays the logs provided by the hook", () => {
         LogContext.useLog.mockReturnValue({
