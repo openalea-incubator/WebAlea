@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import ConsoleLog from "../../../../../src/features/logger/ui/ConsoleLog.jsx";
 import React from "react";
-import { expect, test, describe } from '@jest/globals';
+import {describe, test, expect} from "@jest/globals";
 
 // Mock the useLog hook
 import * as LogContext from "../../../../../src/features/logger/providers/LogContextDefinition.jsx";
