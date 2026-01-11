@@ -90,11 +90,11 @@ function StatusIndicator({ status }) {
 
     const getText = () => {
         switch (status) {
-            case 'running': return 'Exécution...';
-            case 'completed': return 'Terminé';
-            case 'failed': return 'Erreur';
-            case 'validation-error': return 'Validation échouée';
-            case 'stopped': return 'Arrêté';
+            case 'running': return 'Running...';
+            case 'completed': return 'Completed';
+            case 'failed': return 'Error';
+            case 'validation-error': return 'Validation failed';
+            case 'stopped': return 'Stopped';
             default: return '';
         }
     };
@@ -109,7 +109,7 @@ function StatusIndicator({ status }) {
     );
 }
 
-export default function ToolBar() {
+function ToolBar() {
     const [showImportModal, setShowImportModal] = useState(false);
     const {
         setNodesAndEdges,
@@ -288,3 +288,5 @@ export default function ToolBar() {
         </>
     );
 }
+
+export {ToolBar, ProgressBar, StatusIndicator};
