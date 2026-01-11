@@ -90,11 +90,11 @@ function StatusIndicator({ status }) {
 
     const getText = () => {
         switch (status) {
-            case 'running': return 'Exécution...';
-            case 'completed': return 'Terminé';
-            case 'failed': return 'Erreur';
-            case 'validation-error': return 'Validation échouée';
-            case 'stopped': return 'Arrêté';
+            case 'running': return 'Running...';
+            case 'completed': return 'Completed';
+            case 'failed': return 'Error';
+            case 'validation-error': return 'Validation failed';
+            case 'stopped': return 'Stopped';
             default: return '';
         }
     };
@@ -109,7 +109,7 @@ function StatusIndicator({ status }) {
     );
 }
 
-export default function ToolBar() {
+function ToolBar() {
     const [showImportModal, setShowImportModal] = useState(false);
     const {
         setNodesAndEdges,
@@ -135,7 +135,7 @@ export default function ToolBar() {
     const handleImportData = (data) => {
         try {
             if (!data.nodes || !data.edges) {
-                throw new Error("Données invalides : noeuds ou connexions manquants.");
+                throw new Error("Invalid data: missing nodes or connections.");
             }
             setNodesAndEdges(data.nodes || [], data.edges || []);
             setShowImportModal(false);
@@ -144,7 +144,7 @@ export default function ToolBar() {
                 edges: data.edges.length
             });
         } catch (error) {
-            alert("Erreur lors de l'importation du workflow : " + error.message);
+            alert("Error importing workflow: " + error.message);
         }
     };
 
@@ -161,7 +161,7 @@ export default function ToolBar() {
             downloadAnchorNode.remove();
             addLog("Workflow exported", { nodes: nodes.length, edges: edges.length });
         } catch (error) {
-            alert("Erreur lors de l'exportation du workflow : " + error.message);
+            alert("Error exporting workflow: " + error.message);
         }
     };
 
@@ -171,8 +171,8 @@ export default function ToolBar() {
 
         alert(
             `Workflow Info:\n` +
-            `- ${customNodes.length} nodes OpenAlea\n` +
-            `- ${primitiveNodes.length} nodes primitifs\n` +
+            `- ${customNodes.length} OpenAlea nodes\n` +
+            `- ${primitiveNodes.length} primitifs nodes\n` +
             `- ${edges.length} connexions\n\n` +
             `Status: ${executionStatus}`
         );
@@ -185,7 +185,7 @@ export default function ToolBar() {
         }
 
         if (nodes.length === 0) {
-            alert("Le workflow est vide. Ajoutez des nodes avant d'exécuter.");
+            alert('The workflow is empty. Add nodes before running.');
             return;
         }
 
@@ -236,18 +236,18 @@ export default function ToolBar() {
                         icon={FaUpload}
                         onClick={handleExport}
                         disabled={isRunning}
-                        title="Exporter le workflow"
+                        title="Export workflow"
                     />
                     <ButtonToolBar
                         icon={FaDownload}
                         onClick={handleImportClick}
                         disabled={isRunning}
-                        title="Importer un workflow"
+                        title="Import a workflow"
                     />
                     <ButtonToolBar
                         icon={FaInfoCircle}
                         onClick={handleInfo}
-                        title="Informations"
+                        title="Information"
                     />
                 </div>
 
@@ -266,7 +266,7 @@ export default function ToolBar() {
                         icon={isRunning ? FaSpinner : FaPlay}
                         onClick={handleRun}
                         disabled={isRunning || nodes.length === 0}
-                        title={isRunning ? "Exécution en cours..." : "Exécuter le workflow"}
+                        title={isRunning ? "Workflow running..." : "Run workflow"}
                         className={isRunning ? "fa-spin" : ""}
                         variant={isRunning ? "secondary" : "primary"}
                     />
@@ -274,7 +274,7 @@ export default function ToolBar() {
                         icon={FaStop}
                         onClick={handleStop}
                         disabled={!isRunning}
-                        title="Arrêter l'exécution"
+                        title="Stop execution"
                         variant="danger"
                     />
                 </div>
@@ -288,3 +288,5 @@ export default function ToolBar() {
         </>
     );
 }
+
+export {ToolBar, ProgressBar, StatusIndicator};
