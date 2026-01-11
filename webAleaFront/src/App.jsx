@@ -2,7 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './assets/css/app.css';
 import WorkSpace from './features/workspace/Workspace.jsx';
 import NodeDetailSection from './features/nodes/ui/sidebar_detail/NodeDetailSection.jsx';
-import ToolBar from './features/toolbar/ui/ToolBar.jsx';
+import {ToolBar} from './features/toolbar/ui/ToolBar.jsx';
 import PackageManager from './features/package-manager/ui/PackageManager.jsx';
 import ConsoleLog from './features/logger/ui/ConsoleLog.jsx';
 import { useState, useEffect } from 'react';
