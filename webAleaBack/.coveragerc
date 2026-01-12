@@ -1,0 +1,17 @@
+[run]
+omit =
+    **/__init__.py
+    **/runnable/**
+    **/tests/**
+    **/__pycache__/**
+    **/htmlcov/**
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    @abstractmethod
