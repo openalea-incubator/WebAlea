@@ -117,14 +117,3 @@ class Conda:
                 logger.error("Failed to install %s: %s", pkg, e)
                 results["failed"].append({"package": pkg, "error": str(e)})
         return results
-
-    @staticmethod
-    def install_all_packages(env_name: str, channel: str=settings.OPENALEA_CHANNEL):
-        """Install all packages in a conda environment.
-        Args:
-            env_name (str): The name of the conda environment.
-            channel (str): The conda channel to search. Defaults to settings.OPENALEA_CHANNEL.
-        """
-        packages = Conda.list_latest_packages(channel)
-        package_list = [f"{name}={info['version']}" for name, info in packages.items()]
-        return Conda.install_package_list(env_name, package_list)
