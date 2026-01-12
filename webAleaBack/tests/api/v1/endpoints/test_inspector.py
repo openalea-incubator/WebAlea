@@ -1,10 +1,10 @@
-"""Tests for the manager endpoints."""
+"""Tests for the inspector endpoints."""
 import unittest
 import unittest.mock
 
 from api.v1.endpoints import inspector
 
-class TestOpenAleaInspectorManager(unittest.TestCase):
+class TestOpenAleaInspectorInspector(unittest.TestCase):
     """Unit tests for OpenAlea Inspector endpoints."""
 
     # openalea inspector package desc file
