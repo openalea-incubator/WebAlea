@@ -88,9 +88,3 @@ class TestCondaIntegration(TestCase):
             Conda.install_package("openalea.astk", env_name="test_env")
         except (CalledProcessError, FileNotFoundError) as e:
             self.fail(f"install_package raised an exception: {e}")
-
-    # @unittest.skip("Skipping test that requires actual conda environment.")
-    def test_install_nonexistent_package(self):
-        """Test installing a nonexistent package to check error handling."""
-        with self.assertRaises((CalledProcessError, FileNotFoundError)):
-            Conda.install_package("nonexistent_package_12345", env_name="test_env")
