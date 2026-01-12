@@ -2,7 +2,7 @@
 import logging
 import unittest
 
-from model.openalea.openalea_runner import OpenAleaRunner
+from model.openalea.runner.openalea_runner import OpenAleaRunner
 
 class TestOpenAleaRunner(unittest.TestCase):
     """Tests the OpenAleaRunner class"""
