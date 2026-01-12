@@ -50,3 +50,23 @@ class TestOpenAleaInspectorMethods(TestCase):
         self.assertEqual(len(pkg_description["nodes"]), len(expected_description["nodes"]))
         # if this package gets updated, this test may fail
         self.assertEqual(pkg_description, expected_description)
+
+    @unittest.mock.patch("model.openalea.inspector.openalea_inspector.subprocess")
+    def test_list_wralea_packages(self, mock_subprocess):
+        """Test listing wralea packages in an OpenAlea package."""
+        # Setup mock subprocess.run
+        mock_subprocess.run.return_value.stdout = json.dumps([
+            "wralea_package_1",
+            "wralea_package_2",
+            "wralea_package_3"
+        ])
+        mock_subprocess.run.return_value.returncode = 0
+        mock_subprocess.run.return_value.stderr = ""
+
+        # Call the method
+        wralea_packages = OpenAleaInspector.list_wralea_packages()
+
+        # Assertions
+        self.assertIsInstance(wralea_packages, list)
+        self.assertIn("wralea_package_1", wralea_packages)
+        self.assertIn("wralea_package_2", wralea_packages)
