@@ -1,158 +1,159 @@
 # WebAlea
+
 Visual workflow programming for OpenAlea components
 
-# Guide d’installation – Environnement Docker
+# Installation Guide – Docker Environment
 
-Ce document explique **comment installer et lancer l’application WebAlea en local** à l’aide de Docker et Docker Compose.
+This document explains **how to install and run the WebAlea application locally** using Docker and Docker Compose.
 
-⚠️ **Aucune connaissance technique de Docker n’est requise.** Suivez simplement les étapes dans l’ordre.
+⚠️ **No technical knowledge of Docker is required.** Just follow the steps in order.
 
 ---
 
-## 1. Prérequis système
+## 1. System Requirements
 
-L’application fonctionne sur les systèmes suivants :
+The application works on the following systems:
 
 ### Windows
 
-* **Windows 10 ou Windows 11 (64 bits)**
+* **Windows 10 or Windows 11 (64-bit)**
 
 ### Linux
 
-* Distribution Linux récente (Ubuntu 20.04+, Debian 11+, Fedora, etc.)
-* Architecture **x86_64**
+* Recent Linux distribution (Ubuntu 20.04+, Debian 11+, Fedora, etc.)
+* **x86_64** architecture
 
 ---
 
-## 2. Connexion Internet requise
+## 2. Internet Connection Required
 
-Une **connexion Internet est obligatoire** dans les cas suivants :
+An **Internet connection is mandatory** in the following cases:
 
-* Lors de la **première installation** (téléchargement de Docker et des images Docker)
-* Lors du **téléchargement de dépendances**
-* Lors de l’utilisation de **services ou API externes** par l’application
+* During the **first installation** (downloading Docker and Docker images)
+* When **downloading dependencies**
+* When using **external services or APIs** via the application
 
-⚠️ Sans connexion Internet, l’application ne pourra pas être installée correctement.
-
----
-
-## 3. Installation de Docker
-
-Docker est utilisé pour lancer automatiquement l’environnement serveur de l’application.
+⚠️ Without an Internet connection, the application cannot be installed properly.
 
 ---
 
-### 3.1 Installation sur Windows
+## 3. Installing Docker
 
-#### Étape 1 – Télécharger Docker Desktop
+Docker is used to automatically run the application’s server environment.
 
-Téléchargez Docker Desktop pour Windows depuis le site officiel :
+---
+
+### 3.1 Installation on Windows
+
+#### Step 1 – Download Docker Desktop
+
+Download Docker Desktop for Windows from the official site:
 
 👉 [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
 
-Choisissez la version **Windows**.
+Choose the **Windows** version.
 
 ---
 
-#### Étape 2 – Installer Docker Desktop
+#### Step 2 – Install Docker Desktop
 
-* Lancez le fichier téléchargé
-* Conservez les options par défaut
-* Autorisez l’installation de WSL2 si cela est demandé
-* Redémarrez l’ordinateur si nécessaire
-
----
-
-#### Étape 3 – Vérifier Docker
-
-* Lancez **Docker Desktop**
-* Attendez que l’état indique **Docker is running**
-* L’icône Docker doit être visible dans la barre des tâches
-
-Docker Compose est inclus automatiquement.
+* Run the downloaded file
+* Keep the default options
+* Allow WSL2 installation if prompted
+* Restart the computer if necessary
 
 ---
 
-### 3.2 Installation sur Linux
+#### Step 3 – Verify Docker
 
-#### Étape 1 – Télécharger Docker Engine
+* Launch **Docker Desktop**
+* Wait until the status shows **Docker is running**
+* The Docker icon should be visible in the taskbar
 
-La méthode recommandée est l’installation via les dépôts officiels Docker.
+Docker Compose is included automatically.
 
-Documentation officielle :
+---
+
+### 3.2 Installation on Linux
+
+#### Step 1 – Download Docker Engine
+
+The recommended method is installation via the official Docker repositories.
+
+Official documentation:
 👉 [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)
 
-Exemple pour Ubuntu :
+Example for Ubuntu:
 
 ```bash
 sudo apt update
-# Met à jour la liste des paquets disponibles sur le système
+# Updates the list of available packages on the system
 
 sudo apt install -y ca-certificates curl gnupg
-# Installe les outils nécessaires pour télécharger et vérifier Docker
+# Installs the tools needed to download and verify Docker
 
 sudo install -m 0755 -d /etc/apt/keyrings
-# Crée le dossier qui stockera les clés de sécurité des dépôts
+# Creates the folder that will store repository security keys
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-# Télécharge et enregistre la clé officielle Docker
+# Downloads and saves the official Docker key
 
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
-# Autorise le système à lire la clé Docker
+# Allows the system to read the Docker key
 
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-# Ajoute le dépôt officiel Docker à la liste des sources
+# Adds the official Docker repository to the source list
 
 sudo apt update
-# Met à jour la liste des paquets avec le dépôt Docker
+# Updates the package list including the Docker repository
 
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-# Installe Docker Engine et Docker Compose
+# Installs Docker Engine and Docker Compose
 ```
 
 ---
 
-#### Étape 2 – Autoriser l’utilisateur courant
+#### Step 2 – Allow the Current User
 
-Pour éviter d’utiliser `sudo` à chaque commande :
+To avoid using `sudo` for every command:
 
 ```bash
 sudo usermod -aG docker $USER
-# Autorise l’utilisateur courant à utiliser Docker sans sudo
+# Allows the current user to use Docker without sudo
 ```
 
-➡️ Déconnectez-vous puis reconnectez-vous.
+➡️ Log out and log back in.
 
 ---
 
-#### Étape 3 – Vérifier Docker
+#### Step 3 – Verify Docker
 
 ```bash
 docker --version
-# Affiche la version installée de Docker
+# Shows the installed Docker version
 
 docker compose version
-# Vérifie que Docker Compose est bien installé
+# Checks that Docker Compose is installed
 ```
 
-Si des versions s’affichent, Docker est correctement installé.
+If versions are displayed, Docker is correctly installed.
 
 ---
 
-## 4. Lancement de l’application
+## 4. Running the Application
 
-Les scripts fournis s’adaptent automatiquement selon l’action demandée.
+The provided scripts automatically adapt according to the requested action.
 
-👉 Pour **démarrer** ou **arrêter** l’application, utilisez le même script avec un argument `start` ou `stop`.
+👉 To **start** or **stop** the application, use the same script with the argument `start` or `stop`.
 
 ---
 
-### 4.1 Contenu du dossier de l’application
+### 4.1 Contents of the Application Folder
 
-Le dossier fourni contient notamment :
+The provided folder contains, among others:
 
 * `docker-compose.yml`
 * `webalea.bat` (Windows)
@@ -160,13 +161,13 @@ Le dossier fourni contient notamment :
 
 ---
 
-### 4.2 Démarrer l’application
+### 4.2 Start the Application
 
-#### Sur Windows
+#### On Windows
 
-1. Vérifiez que **Docker Desktop est lancé**
-2. Ouvrez un terminal (Invite de commandes ou PowerShell) dans le dossier de l’application
-3. Exécutez :
+1. Ensure **Docker Desktop is running**
+2. Open a terminal (Command Prompt or PowerShell) in the application folder
+3. Run:
 
 ```
 webalea.bat start
@@ -174,28 +175,28 @@ webalea.bat start
 
 ---
 
-#### Sur Linux
+#### On Linux
 
-1. Ouvrez un terminal dans le dossier de l’application
-2. Rendre le script exécutable (une seule fois) :
+1. Open a terminal in the application folder
+2. Make the script executable (one-time operation):
 
 ```bash
 chmod +x webalea.sh
-# Autorise l’exécution du script
+# Allows script execution
 ```
 
-3. Démarrer l’application :
+3. Start the application:
 
 ```bash
 ./webalea.sh start
-# Démarre l’application via Docker
+# Starts the application via Docker
 ```
 
 ---
 
-### 4.3 Accéder à l’application
+### 4.3 Access the Application
 
-Une fois le démarrage terminé, ouvrez votre navigateur et accédez à :
+Once the startup is complete, open your browser and go to:
 
 ```
 http://localhost:3000
@@ -203,11 +204,11 @@ http://localhost:3000
 
 ---
 
-## 5. Arrêter l’application
+## 5. Stop the Application
 
 ### Windows
 
-Dans un terminal, exécutez :
+In a terminal, run:
 
 ```
 webalea.bat stop
@@ -217,123 +218,123 @@ webalea.bat stop
 
 ### Linux
 
-Dans le dossier de l’application :
+In the application folder:
 
 ```bash
 ./webalea.sh stop
-# Arrête proprement les conteneurs Docker
+# Properly stops the Docker containers
 ```
 
 ---
 
-## 6. Lancement depuis WSL (Windows Subsystem for Linux)
+## 6. Running from WSL (Windows Subsystem for Linux)
 
-Cette section concerne les utilisateurs **Windows utilisant WSL**.
-
----
-
-### 6.1 Prérequis spécifiques WSL
-
-* Docker Desktop installé sur Windows
-* Option **“Use the WSL 2 based engine”** activée dans Docker Desktop
-* Distribution Linux WSL installée (Ubuntu recommandé)
+This section is for **Windows users using WSL**.
 
 ---
 
-### 6.2 Démarrer l’application depuis WSL
+### 6.1 WSL-Specific Requirements
 
-1. Ouvrez votre terminal WSL
-2. Placez-vous dans le dossier du projet (ex : `/mnt/c/Users/.../WebAlea`)
-3. Vérifiez que Docker est accessible :
+* Docker Desktop installed on Windows
+* **“Use the WSL 2 based engine”** option enabled in Docker Desktop
+* WSL Linux distribution installed (Ubuntu recommended)
+
+---
+
+### 6.2 Start the Application from WSL
+
+1. Open your WSL terminal
+2. Navigate to the project folder (e.g., `/mnt/c/Users/.../WebAlea`)
+3. Verify Docker accessibility:
 
 ```bash
 docker ps
-# Vérifie que Docker Desktop est accessible depuis WSL
+# Checks that Docker Desktop is accessible from WSL
 ```
 
-4. Démarrez l’application :
+4. Start the application:
 
 ```bash
 ./webalea.sh start
-# Démarre l’application via Docker depuis WSL
+# Starts the application via Docker from WSL
 ```
 
 ---
 
-### 6.3 Arrêter l’application depuis WSL
+### 6.3 Stop the Application from WSL
 
 ```bash
 ./webalea.sh stop
-# Arrête les services Docker
+# Stops Docker services
 ```
 
 ---
 
-⚠️ Important : si une erreur d’exécution apparaît, il est très probable que le fichier `webalea.sh` soit en **format Windows (CRLF)** au lieu du format Linux (LF).
+⚠️ Important: if a runtime error occurs, it is very likely that the `webalea.sh` file is in **Windows format (CRLF)** instead of Linux format (LF).
 
-### Correction du problème CRLF sous WSL
+### Fixing CRLF Issues under WSL
 
-Si vous voyez des erreurs du type :
+If you see errors like:
 
 * `cannot execute: required file not found`
 * `syntax error near unexpected token $'do
   ''`
 
-Cela signifie que le script a été créé ou modifié sous Windows.
+It means the script was created or modified in Windows.
 
-#### Étape 1 – Vérifier le format du fichier
+#### Step 1 – Check the File Format
 
 ```bash
 file webalea.sh
-# Indique si le fichier utilise des fins de ligne Windows (CRLF)
+# Indicates if the file uses Windows line endings (CRLF)
 ```
 
-Si la sortie contient `CRLF line terminators`, le fichier doit être converti.
+If the output contains `CRLF line terminators`, the file must be converted.
 
 ---
 
-#### Étape 2 – Convertir le fichier en format Linux
+#### Step 2 – Convert the File to Linux Format
 
-Méthode recommandée :
+Recommended method:
 
 ```bash
 sudo apt install dos2unix
-# Installe l’outil de conversion (une seule fois)
+# Installs the conversion tool (one-time)
 
 dos2unix webalea.sh
-# Convertit le fichier en format Linux (LF)
+# Converts the file to Linux format (LF)
 ```
 
-Méthode alternative (sans installation) :
+Alternative method (without installation):
 
 ```bash
 sed -i 's/
 $//' webalea.sh
-# Supprime les caractères Windows CRLF
+# Removes Windows CRLF characters
 ```
 
 ---
 
-#### Étape 3 – Vérifier le shebang
+#### Step 3 – Check the Shebang
 
-La première ligne du fichier doit être :
+The first line of the file must be:
 
 ```bash
 #!/usr/bin/env bash
 ```
 
-Cette ligne indique à Linux comment exécuter le script.
+This line tells Linux how to execute the script.
 
 ---
 
-#### Étape 4 – Rendre le script exécutable
+#### Step 4 – Make the Script Executable
 
 ```bash
 chmod +x webalea.sh
-# Autorise l’exécution du script
+# Allows script execution
 ```
 
-Après ces étapes, la commande suivante doit fonctionner :
+After these steps, the following command should work:
 
 ```bash
 ./webalea.sh start
@@ -341,37 +342,37 @@ Après ces étapes, la commande suivante doit fonctionner :
 
 ---
 
-## 7. Problèmes courants
+## 7. Common Issues
 
-### Docker n’est pas lancé
+### Docker Not Running
 
-**Symptôme :** l’application ne démarre pas.
+**Symptom:** the application does not start.
 
-**Solution :**
+**Solution:**
 
-* Ouvrir Docker Desktop (Windows)
-* Vérifier que le service Docker est actif (Linux)
-* Relancer le script de démarrage
-
----
-
-### Port déjà utilisé
-
-**Symptôme :** message indiquant qu’un port est occupé.
-
-**Solution :**
-
-* Fermer les applications utilisant déjà ces ports
-* Ou contacter le support technique
+* Open Docker Desktop (Windows)
+* Check that the Docker service is active (Linux)
+* Restart the startup script
 
 ---
 
-### Première exécution lente
+### Port Already in Use
 
-Lors du premier lancement, Docker télécharge les images nécessaires.
+**Symptom:** message indicating a port is occupied.
 
-👉 Cela peut prendre plusieurs minutes selon la connexion Internet.
+**Solution:**
+
+* Close applications already using these ports
+* Or contact technical support
 
 ---
 
-✅ **Une fois Docker installé, l’utilisation quotidienne se limite au lancement et à l’arrêt de l’application via les scripts fournis.**
+### First Run is Slow
+
+During the first launch, Docker downloads the required images.
+
+👉 This may take several minutes depending on your Internet connection.
+
+---
+
+✅ **Once Docker is installed, daily use is limited to starting and stopping the application via the provided scripts.**
