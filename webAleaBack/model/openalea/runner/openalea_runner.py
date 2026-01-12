@@ -46,7 +46,8 @@ class OpenAleaRunner:
                 ["python3", OpenAleaRunner.SCRIPT_PATH, json.dumps(node_info)],
                 capture_output=True,
                 text=True,
-                timeout=timeout
+                timeout=timeout,
+                check=False
             )
 
             # Log stderr if any (for debugging)
@@ -60,7 +61,7 @@ class OpenAleaRunner:
                     logging.info("OpenAleaRunner: Execution result: %s", response)
                     return response
                 except json.JSONDecodeError as e:
-                    logging.error("Failed to parse subprocess output: %s", result.stdout)
+                    logging.error("Failed to decode JSON response: %s", e)
                     return {
                         "success": False,
                         "error": f"Invalid JSON response: {result.stdout[:200]}"
