@@ -5,7 +5,7 @@ import logging
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from webAleaBack.model.openalea.runner.openalea_runner import OpenAleaRunner
+from model.openalea.runner.openalea_runner import OpenAleaRunner
 
 router = APIRouter()
 
