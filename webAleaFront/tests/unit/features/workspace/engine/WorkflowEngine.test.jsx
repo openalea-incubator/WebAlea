@@ -1,38 +1,244 @@
-import { beforeEach } from "@jest/globals";
-import WorkflowEngine, { NodeState } from "../../../../../src/features/workspace/engine/WorkflowEngine";
-import { createCustomNode } from "../../../../__helpers__/workflowTestUtils";
-import { act } from "@testing-library/react";
+/* ------------------------------------------------------------------ */
+/* MOCK BACKEND API */
+/* ------------------------------------------------------------------ */
+jest.mock(
+    "../../../../../src/api/managerAPI.js",
+    () => ({
+        executeNode: jest.fn()
+    })
+);
 
-describe("WorkflowEngine (WFNode)", () => {
+/* ========================================================= */
+/* IMPORTS */
+/* ========================================================= */
+
+
+import WorkflowEngine, {
+    NodeState,
+    computeTopologicalOrder,
+    WorkflowValidator
+} from "../../../../../src/features/workspace/engine/WorkflowEngine";
+
+import { executeNode } from "../../../../../src/api/managerAPI.js";
+import {
+    describe,
+    test,
+    expect,
+    beforeEach
+} from "@jest/globals";
+
+/* ------------------------------------------------------------------ */
+/* MOCK VALIDATOR (déjà testé ailleurs) */
+/* ------------------------------------------------------------------ */
+jest.spyOn(WorkflowValidator, "validate");
+
+/* ------------------------------------------------------------------ */
+/* HELPERS */
+/* ------------------------------------------------------------------ */
+const createNode = (id, overrides = {}) => ({
+    id,
+    label: `Node ${id}`,
+    type: "custom",
+    inputs: [],
+    outputs: [],
+    packageName: "pkg",
+    nodeName: "node",
+    ...overrides
+});
+
+/* ================================================================== */
+/* TESTS */
+/* ================================================================== */
+
+describe("WorkflowEngine – tests unitaires", () => {
 
     let engine;
 
     beforeEach(() => {
+        jest.clearAllMocks();
         engine = new WorkflowEngine();
     });
 
-    test("start should initialize the engine", async () => {
-        const startResult = await engine.start();
-        expect(startResult).toBe(true);
+    /* --------------------------------------------------------------- */
+    /* CONSTRUCTOR */
+    /* --------------------------------------------------------------- */
+
+    test("initialisation par défaut", () => {
+        expect(engine.running).toBe(false);
+        expect(engine.graph).toEqual([]);
+        expect(engine.edges).toEqual([]);
+        expect(engine.results).toEqual({});
+        expect(engine.nodeStates.size).toBe(0);
     });
 
-    test("executeNode should call executeNodeManual on the engine", async () => {
-        const node = createCustomNode("node-1", "TestNode", { someParam: 42 });
+    /* --------------------------------------------------------------- */
+    /* bindModel */
+    /* --------------------------------------------------------------- */
 
-        await act(async () => {
-            await engine.executeNodeManual(node.id);
+    test("bindModel initialise le graphe et reset l'état", () => {
+        const graph = [createNode("A")];
+        const edges = [];
+
+        engine.bindModel(graph, edges);
+
+        expect(engine.graph).toBe(graph);
+        expect(engine.edges).toBe(edges);
+        expect(engine.nodeStates.get("A")).toBe(NodeState.PENDING);
+    });
+
+    /* --------------------------------------------------------------- */
+    /* start() – guards */
+    /* --------------------------------------------------------------- */
+
+    test("start échoue si aucun modèle n'est lié", async () => {
+        const result = await engine.start();
+
+        expect(result.success).toBe(false);
+        expect(result.error).toBe("No model bound");
+    });
+
+    test("start échoue si déjà en cours d'exécution", async () => {
+        engine.running = true;
+
+        const result = await engine.start();
+
+        expect(result.success).toBe(false);
+        expect(result.error).toBe("Already running");
+    });
+
+    test("start échoue si validation invalide", async () => {
+        WorkflowValidator.validate.mockReturnValueOnce({
+            valid: false,
+            errors: [{ type: "ERROR" }],
+            warnings: []
         });
 
-        expect(WorkflowEngine.prototype.executeNodeManual).toHaveBeenCalledWith(node.id);
+        engine.bindModel([createNode("A")], []);
+
+        const listener = jest.fn();
+        engine.onUpdate(listener);
+
+        const result = await engine.start();
+
+        expect(result.success).toBe(false);
+        expect(listener).toHaveBeenCalledWith(
+            "validation-error",
+            { errors: [{ type: "ERROR" }] }
+        );
     });
 
-    test("NodeState constants should be defined correctly", () => {
-        expect(NodeState.PENDING).toBe("pending");
-        expect(NodeState.READY).toBe("ready");
-        expect(NodeState.RUNNING).toBe("running");
-        expect(NodeState.COMPLETED).toBe("completed");
-        expect(NodeState.ERROR).toBe("error");
-        expect(NodeState.SKIPPED).toBe("skipped");
-        expect(NodeState.CANCELLED).toBe("cancelled");
-    }); 
+    test("start émet un warning si validation partielle", async () => {
+        WorkflowValidator.validate.mockReturnValueOnce({
+            valid: true,
+            errors: [],
+            warnings: [{ type: "WARN" }]
+        });
+
+        engine.bindModel([createNode("A")], []);
+
+        const listener = jest.fn();
+        engine.onUpdate(listener);
+
+        await engine.start();
+
+        expect(listener).toHaveBeenCalledWith(
+            "validation-warnings",
+            { warnings: [{ type: "WARN" }] }
+        );
+    });
+
+    /* --------------------------------------------------------------- */
+    /* stop() */
+    /* --------------------------------------------------------------- */
+
+    test("stop annule les nodes actifs", () => {
+        engine.running = true;
+        engine.graph = [createNode("A"), createNode("B")];
+
+        engine.nodeStates.set("A", NodeState.RUNNING);
+        engine.nodeStates.set("B", NodeState.PENDING);
+
+        const listener = jest.fn();
+        engine.onUpdate(listener);
+
+        engine.stop();
+
+        expect(engine.nodeStates.get("A")).toBe(NodeState.CANCELLED);
+        expect(engine.nodeStates.get("B")).toBe(NodeState.CANCELLED);
+        expect(listener).toHaveBeenCalledWith("workflow-stopped", {});
+    });
+
+    /* --------------------------------------------------------------- */
+    /* executeNodeManual */
+    /* --------------------------------------------------------------- */
+
+    test("executeNodeManual retourne les outputs si succès backend", async () => {
+        const node = createNode("A");
+
+        executeNode.mockResolvedValueOnce({
+            success: true,
+            outputs: [{ value: 123 }]
+        });
+
+        const outputs = await engine.executeNodeManual(node);
+
+        expect(outputs).toEqual([{ value: 123 }]);
+        expect(executeNode).toHaveBeenCalledTimes(1);
+    });
+
+    test("executeNodeManual lève une erreur si backend échoue", async () => {
+        const node = createNode("A");
+
+        executeNode.mockResolvedValueOnce({
+            success: false,
+            error: "Backend error"
+        });
+
+        await expect(engine.executeNodeManual(node))
+            .rejects.toThrow("Backend error");
+    });
+
+    /* --------------------------------------------------------------- */
+    /* NodeState */
+    /* --------------------------------------------------------------- */
+
+    test("NodeState constants", () => {
+        expect(NodeState).toEqual({
+            PENDING: "pending",
+            READY: "ready",
+            RUNNING: "running",
+            COMPLETED: "completed",
+            ERROR: "error",
+            SKIPPED: "skipped",
+            CANCELLED: "cancelled"
+        });
+    });
+
+});
+
+/* ================================================================== */
+/* computeTopologicalOrder */
+/* ================================================================== */
+
+describe("computeTopologicalOrder", () => {
+
+    test("ordre simple sans dépendance", () => {
+        const graph = [{ id: "A" }, { id: "B" }];
+        const edges = [{ source: "A", target: "B" }];
+
+        const order = computeTopologicalOrder(graph, edges);
+
+        expect(order).toEqual(["A", "B"]);
+    });
+
+    test("détecte un cycle", () => {
+        const graph = [{ id: "A" }, { id: "B" }];
+        const edges = [
+            { source: "A", target: "B" },
+            { source: "B", target: "A" }
+        ];
+
+        expect(() => computeTopologicalOrder(graph, edges))
+            .toThrow("Cycle detected in workflow");
+    });
 });
