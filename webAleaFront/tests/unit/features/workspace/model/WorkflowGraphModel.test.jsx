@@ -5,7 +5,14 @@ import {
     getRootNodes,
 } from "../../../../../src/features/workspace/model/WorkflowGraph";
 
+import { nodesUI, edgesUI } from "../../../../__helpers__/WorkflowGraphUtils.js";
+
+/* ================================================================== */
+/* TESTS */
+/* ================================================================== */
+
 describe("WFNode class", () => {
+
     test("WFNode instance is created correctly", () => {
         const nodeData = {
             id: "node1",
@@ -33,47 +40,13 @@ describe("WFNode class", () => {
 
 describe("WorkflowGraph model", () => {
     test("buildGraphModel builds a graph with custom nodes only", () => {
-        // ARRANGE — données d’entrée
-        const nodesUI = [
-            {
-            id: "A",
-            type: "custom",
-            data: {
-                inputs: [{ name: "in1" }],
-                outputs: [{ name: "out1" }],
-                packageName: "pkg",
-                nodeName: "NodeA",
-                label: "Node A",
-            },
-            },
-            {
-            id: "B",
-            type: "custom",
-            data: {
-                inputs: [],
-                outputs: [],
-            },
-            },
-            {
-            id: "P1",
-            type: "primitive",
-            data: {},
-            },
-        ];
 
-        const edgesUI = [
-            { source: "A", target: "B" },
-            { source: "P1", target: "A" },
-        ];
-
-        // ACT — appel de la fonction testée
         const { graph, edges } = buildGraphModel(nodesUI, edgesUI);
 
-        // ASSERT — vérifications
-        expect(graph).toHaveLength(2);           // seulement les custom
-        expect(edges).toHaveLength(1);           // seulement A → B
+        expect(graph).toHaveLength(2);           // only custom nodes A and B
+        expect(edges).toHaveLength(1);           // only edge A -> B
 
-        expect(graph[0]).toBeInstanceOf(WFNode); // vraie instance
+        expect(graph[0]).toBeInstanceOf(WFNode); 
         expect(graph[0].id).toBe("A");
         expect(graph[0].next).toEqual(["B"]);
     });
@@ -102,8 +75,5 @@ describe("WorkflowGraph model", () => {
     });
 });
 
-describe("WorkflowValidation class", () => {
-    
-})
 
 

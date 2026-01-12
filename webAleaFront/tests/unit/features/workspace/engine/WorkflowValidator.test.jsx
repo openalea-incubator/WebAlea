@@ -1,22 +1,19 @@
 import { WorkflowValidator } from "../../../../../src/features/workspace/engine/WorkflowEngine";
+import { baseNode } from "../../../../__helpers__/WorkflowUtils.js";
 
-describe("WorkflowValidator", () => {
+/* ================================================================== */
+/* TESTS */
+/* ================================================================== */
 
-    const baseNode = {
-        id: "A",
-        label: "Node A",
-        type: "custom",
-        inputs: [],
-        outputs: []
-    };
+describe("WorkflowValidator Units Tests", () => {
 
-    test("workflow vide → erreur", () => {
+    test("empty workflow => error", () => {
         const result = WorkflowValidator.validate([], []);
         expect(result.valid).toBe(false);
         expect(result.errors[0].type).toBe("EMPTY_WORKFLOW");
     });
 
-    test("cycle détecté", () => {
+    test("cycle detected", () => {
         const graph = [
             { ...baseNode, id: "A" },
             { ...baseNode, id: "B" }
@@ -33,7 +30,7 @@ describe("WorkflowValidator", () => {
         expect(result.errors.some(e => e.type === "CYCLE_DETECTED")).toBe(true);
     });
 
-    test("input obligatoire non connecté", () => {
+    test("unconnected required input", () => {
         const graph = [{
             ...baseNode,
             inputs: [{ id: "i1", name: "input", optional: false }]
@@ -45,7 +42,7 @@ describe("WorkflowValidator", () => {
         expect(result.errors[0].type).toBe("UNCONNECTED_INPUT");
     });
 
-    test("warning si package manquant", () => {
+    test("missing package warning", () => {
         const graph = [{ ...baseNode, type: "custom" }];
 
         const result = WorkflowValidator.validate(graph, []);

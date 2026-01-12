@@ -27,8 +27,10 @@ import {
     beforeEach
 } from "@jest/globals";
 
+import { createNode } from "../../../../__helpers__/WorkflowUtils.js";
+
 /* ------------------------------------------------------------------ */
-/* MOCK VALIDATOR (déjà testé ailleurs) */
+/* MOCK VALIDATOR (tested separately) */
 /* ------------------------------------------------------------------ */
 jest.spyOn(WorkflowValidator, "validate");
 
@@ -50,7 +52,7 @@ const createNode = (id, overrides = {}) => ({
 /* TESTS */
 /* ================================================================== */
 
-describe("WorkflowEngine – tests unitaires", () => {
+describe("WorkflowEngine - Units Tests", () => {
 
     let engine;
 
@@ -63,7 +65,7 @@ describe("WorkflowEngine – tests unitaires", () => {
     /* CONSTRUCTOR */
     /* --------------------------------------------------------------- */
 
-    test("initialisation par défaut", () => {
+    test("default initialization", () => {
         expect(engine.running).toBe(false);
         expect(engine.graph).toEqual([]);
         expect(engine.edges).toEqual([]);
@@ -75,7 +77,7 @@ describe("WorkflowEngine – tests unitaires", () => {
     /* bindModel */
     /* --------------------------------------------------------------- */
 
-    test("bindModel initialise le graphe et reset l'état", () => {
+    test("bindModel initializes the graph and resets the state", () => {
         const graph = [createNode("A")];
         const edges = [];
 
@@ -90,14 +92,14 @@ describe("WorkflowEngine – tests unitaires", () => {
     /* start() – guards */
     /* --------------------------------------------------------------- */
 
-    test("start échoue si aucun modèle n'est lié", async () => {
+    test("start fails if no model is bound", async () => {
         const result = await engine.start();
 
         expect(result.success).toBe(false);
         expect(result.error).toBe("No model bound");
     });
 
-    test("start échoue si déjà en cours d'exécution", async () => {
+    test("start fails if already running", async () => {
         engine.running = true;
 
         const result = await engine.start();
@@ -106,7 +108,7 @@ describe("WorkflowEngine – tests unitaires", () => {
         expect(result.error).toBe("Already running");
     });
 
-    test("start échoue si validation invalide", async () => {
+    test("start fails if validation is invalid", async () => {
         WorkflowValidator.validate.mockReturnValueOnce({
             valid: false,
             errors: [{ type: "ERROR" }],
@@ -127,7 +129,7 @@ describe("WorkflowEngine – tests unitaires", () => {
         );
     });
 
-    test("start émet un warning si validation partielle", async () => {
+    test("start emits a warning if validation has warnings", async () => {
         WorkflowValidator.validate.mockReturnValueOnce({
             valid: true,
             errors: [],
@@ -151,7 +153,7 @@ describe("WorkflowEngine – tests unitaires", () => {
     /* stop() */
     /* --------------------------------------------------------------- */
 
-    test("stop annule les nodes actifs", () => {
+    test("stop cancels active nodes", () => {
         engine.running = true;
         engine.graph = [createNode("A"), createNode("B")];
 
@@ -172,7 +174,7 @@ describe("WorkflowEngine – tests unitaires", () => {
     /* executeNodeManual */
     /* --------------------------------------------------------------- */
 
-    test("executeNodeManual retourne les outputs si succès backend", async () => {
+    test("executeNodeManual returns outputs if backend succeeds", async () => {
         const node = createNode("A");
 
         executeNode.mockResolvedValueOnce({
@@ -186,7 +188,7 @@ describe("WorkflowEngine – tests unitaires", () => {
         expect(executeNode).toHaveBeenCalledTimes(1);
     });
 
-    test("executeNodeManual lève une erreur si backend échoue", async () => {
+    test("executeNodeManual throws an error if backend fails", async () => {
         const node = createNode("A");
 
         executeNode.mockResolvedValueOnce({
@@ -222,7 +224,7 @@ describe("WorkflowEngine – tests unitaires", () => {
 
 describe("computeTopologicalOrder", () => {
 
-    test("ordre simple sans dépendance", () => {
+    test("simple order without dependencies", () => {
         const graph = [{ id: "A" }, { id: "B" }];
         const edges = [{ source: "A", target: "B" }];
 
@@ -231,7 +233,7 @@ describe("computeTopologicalOrder", () => {
         expect(order).toEqual(["A", "B"]);
     });
 
-    test("détecte un cycle", () => {
+    test("detects a cycle", () => {
         const graph = [{ id: "A" }, { id: "B" }];
         const edges = [
             { source: "A", target: "B" },

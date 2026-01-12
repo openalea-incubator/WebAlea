@@ -2,7 +2,11 @@ import { renderHook } from '@testing-library/react';
 import { useFlow, FlowContext } from '../../../../../src/features/workspace/providers/FlowContextDefinition.jsx';
 import {describe, test, expect} from "@jest/globals";
 
-describe('useFlow', () => {
+/* ========================================================= */
+/* TESTS */
+/* ========================================================= */
+
+describe('FlowContextDefinition Units Tests', () => {
 
     test('should throw an error if used outside of FlowProvider', () => {
         // Expect an error to be thrown

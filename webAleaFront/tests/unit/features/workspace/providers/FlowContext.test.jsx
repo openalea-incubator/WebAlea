@@ -4,7 +4,7 @@
  */
 
 /* =========================================================
-    MOCKS  (Always before imports)
+    MOCKS 
    ========================================================= */
 
 jest.mock('@xyflow/react', () => ({
@@ -75,7 +75,7 @@ const createSetStateMock = (initial = []) =>
     TESTS
    ========================================================= */
 
-describe('FlowProvider', () => {
+describe('FlowProvider Units Tests', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
