@@ -3,10 +3,10 @@ import json
 import subprocess
 import logging
 
-logger = logging.getLogger(__name__)
-
 from packaging.version import Version
 from core.config import settings
+
+logger = logging.getLogger(__name__)
 
 class Conda:
     """
@@ -24,7 +24,7 @@ class Conda:
         Returns:
             dict: A dictionary of packages and their versions.
         """
-        
+
         result = subprocess.run(
             ["conda", "search", "--override-channels", "-c", channel, "openalea*", "--json"],
             stdout=subprocess.PIPE,
@@ -48,13 +48,23 @@ class Conda:
         packages = Conda.list_packages(channel)
         latest_versions = {}
         for package_name, package_list in packages.items():
-            if not "alinea" in package_name:
+            if "alinea" not in package_name:
                 latest_entry = max(package_list, key=lambda e: Version(e["version"]))
                 latest_versions[package_name] = latest_entry
         return latest_versions
 
     @staticmethod
     def install_package(package_name: str, version: str = None, env_name: str = None):
+        """installs a package in the conda environment
+
+        Args:
+            package_name (str): the package to install
+            version (str, optional): the version. Defaults to latest.
+            env_name (str, optional): the conda environment name. Defaults to default environment.
+
+        Raises:
+            RuntimeError: if installation fails
+        """
         pkg = f"{package_name}={version}" if version else package_name
         env_name = env_name or settings.CONDA_ENV_NAME
 
@@ -67,13 +77,14 @@ class Conda:
             "-y",
         ]
 
-        logger.info(f"Running command: {' '.join(cmd)}")
+        logger.info("Running command: %s", ' '.join(cmd))
 
         result = subprocess.run(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            check=False,
         )
 
         logger.info("Conda stdout:\n%s", result.stdout)
@@ -84,7 +95,7 @@ class Conda:
                 f"Conda install failed for {pkg} (exit code {result.returncode})"
             )
 
-        logger.info(f"Package {pkg} installed successfully")
+        logger.info("Package %s installed successfully", pkg)
 
     @staticmethod
     def install_package_list(env_name : str, package_list: list) -> dict:
@@ -103,7 +114,7 @@ class Conda:
                 Conda.install_package(pkg, env_name=env_name)
                 results["installed"].append(pkg)
             except (subprocess.CalledProcessError, FileNotFoundError, RuntimeError) as e:
-                logger.error(f"Failed to install {pkg}: {e}")
+                logger.error("Failed to install %s: %s", pkg, e)
                 results["failed"].append({"package": pkg, "error": str(e)})
         return results
 

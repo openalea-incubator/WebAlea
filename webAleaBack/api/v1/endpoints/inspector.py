@@ -30,6 +30,17 @@ def fetch_wralea_packages():
 
 @router.get("/installed/{package_name}")
 def fetch_package_nodes(package_name: str):
+    """fetch a list of present nodes within a specified package
+
+    Args:
+        package_name (str): the name of the package to inspect
+
+    Raises:
+        HTTPException: If the package is not found or other errors occur.
+
+    Returns:
+        dict: Description of the package nodes.
+    """
     logging.info("Fetching information for package: %s", package_name)
     try:
         description = OpenAleaInspector.describe_openalea_package(package_name)
@@ -37,8 +48,8 @@ def fetch_package_nodes(package_name: str):
         return description
 
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e
 
     except Exception as e:
         logging.exception("UNEXPECTED ERROR in fetch_package_nodes")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
