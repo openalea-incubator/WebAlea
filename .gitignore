@@ -2,3 +2,4 @@
 __pycache__/
 package-lock.json
 .vscode/
+logs/app.log
