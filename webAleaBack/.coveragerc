@@ -1,7 +1,7 @@
 [run]
 omit =
     **/__init__.py
-    **/runnable/**
+    **/runnable/**  # TODO: delete this line once TIs are made
     **/tests/**
     **/__pycache__/**
     **/htmlcov/**
