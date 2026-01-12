@@ -20,6 +20,8 @@ class TestOpenAleaInspectorMethods(TestCase):
             "openalea.flow",
             "openalea.core"
         ])
+        mock_subprocess.run.return_value.returncode = 0
+        mock_subprocess.run.return_value.stderr = ""
 
         # Call the method
         installed_packages = OpenAleaInspector.list_installed_openalea_packages()
@@ -29,16 +31,19 @@ class TestOpenAleaInspectorMethods(TestCase):
         self.assertIn("openalea.astk", installed_packages)
         self.assertIn("openalea.flow", installed_packages)
 
-    # @unittest.skip("Skipping test that requires actual OpenAlea package.")
-    def test_describe_openalea_package(self):
+    @unittest.mock.patch("model.openalea.inspector.openalea_inspector.subprocess")
+    def test_describe_openalea_package(self, mock_subprocess):
         """Test describing an OpenAlea package."""
+        # Setup mock subprocess.run
+        with open(self.mock_openalea_desc_file, encoding="utf-8") as f:
+            mock_description = f.read()
+        mock_subprocess.run.return_value.stdout = mock_description
+        mock_subprocess.run.return_value.returncode = 0
+        mock_subprocess.run.return_value.stderr = ""
+        # Call the method
         pkg_description = OpenAleaInspector.describe_openalea_package("openalea.astk")
 
-        expected_description = open(
-            self.mock_openalea_desc_file,
-            encoding="utf-8"
-        ).read()
-        expected_description = json.loads(expected_description)
+        expected_description = json.loads(mock_description)
 
         self.assertIsInstance(pkg_description, dict)
         self.assertIn("nodes", pkg_description)
