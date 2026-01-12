@@ -12,6 +12,10 @@ class TestAppRouter(unittest.TestCase):
         "fetch_package_list",
         "fetch_latest_package_versions",
         "install_packages_in_env",
+        "fetch_installed_openalea_packages",
+        "fetch_wralea_packages",
+        "fetch_package_nodes",
+        "execute_single_node",
     }
 
     def test_manager_router_included(self):
