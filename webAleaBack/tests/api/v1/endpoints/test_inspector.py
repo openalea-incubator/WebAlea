@@ -4,7 +4,7 @@ import unittest.mock
 
 from api.v1.endpoints import inspector
 
-class TestOpenAleaInspectorInspector(unittest.TestCase):
+class TestOpenAleaInspector(unittest.TestCase):
     """Unit tests for OpenAlea Inspector endpoints."""
 
     # openalea inspector package desc file
