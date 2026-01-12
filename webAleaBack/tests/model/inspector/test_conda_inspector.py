@@ -70,3 +70,49 @@ class TestOpenAleaInspectorMethods(TestCase):
         self.assertIsInstance(wralea_packages, list)
         self.assertIn("wralea_package_1", wralea_packages)
         self.assertIn("wralea_package_2", wralea_packages)
+
+
+class TestOpenAleaInspectorFailure(TestCase):
+    """Unit tests for OpenAleaInspector class failure cases"""
+
+    @unittest.mock.patch("model.openalea.inspector.openalea_inspector.subprocess")
+    def test_list_installed_openalea_packages_failure(self, mock_subprocess):
+        """Test failure case for listing installed OpenAlea packages."""
+        # Setup mock subprocess.run to simulate failure
+        mock_subprocess.run.return_value.stdout = ""
+        mock_subprocess.run.return_value.returncode = 1
+        mock_subprocess.run.return_value.stderr = "Error occurred"
+
+        # Call the method
+        installed_packages = OpenAleaInspector.list_installed_openalea_packages()
+
+        # Assertions
+        self.assertIsInstance(installed_packages, list)
+        self.assertEqual(len(installed_packages), 0)
+
+    @unittest.mock.patch("model.openalea.inspector.openalea_inspector.subprocess")
+    def test_describe_openalea_package_failure(self, mock_subprocess):
+        """Test failure case for describing an OpenAlea package."""
+        # Setup mock subprocess.run to simulate failure
+        mock_subprocess.run.return_value.stdout = ""
+        mock_subprocess.run.return_value.returncode = 1
+        mock_subprocess.run.return_value.stderr = "Error occurred"
+
+        # Call the method and expect ValueError
+        with self.assertRaises(ValueError):
+            OpenAleaInspector.describe_openalea_package("nonexistent_package")
+
+    @unittest.mock.patch("model.openalea.inspector.openalea_inspector.subprocess")
+    def test_list_wralea_packages_failure(self, mock_subprocess):
+        """Test failure case for listing wralea packages."""
+        # Setup mock subprocess.run to simulate failure
+        mock_subprocess.run.return_value.stdout = ""
+        mock_subprocess.run.return_value.returncode = 1
+        mock_subprocess.run.return_value.stderr = "Error occurred"
+
+        # Call the method
+        wralea_packages = OpenAleaInspector.list_wralea_packages()
+
+        # Assertions
+        self.assertIsInstance(wralea_packages, list)
+        self.assertEqual(len(wralea_packages), 0)
