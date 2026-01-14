@@ -27,7 +27,6 @@ import {
     beforeEach
 } from "@jest/globals";
 
-import { createNode } from "../../../../__helpers__/WorkflowUtils.js";
 
 /* ------------------------------------------------------------------ */
 /* MOCK VALIDATOR (tested separately) */
@@ -37,16 +36,7 @@ jest.spyOn(WorkflowValidator, "validate");
 /* ------------------------------------------------------------------ */
 /* HELPERS */
 /* ------------------------------------------------------------------ */
-const createNode = (id, overrides = {}) => ({
-    id,
-    label: `Node ${id}`,
-    type: "custom",
-    inputs: [],
-    outputs: [],
-    packageName: "pkg",
-    nodeName: "node",
-    ...overrides
-});
+import { createNode } from "../../../../__helpers__/WorkflowUtils.js";
 
 /* ================================================================== */
 /* TESTS */

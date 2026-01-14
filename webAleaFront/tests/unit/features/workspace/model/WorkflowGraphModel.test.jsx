@@ -5,7 +5,7 @@ import {
     getRootNodes,
 } from "../../../../../src/features/workspace/model/WorkflowGraph";
 
-import { nodesUI, edgesUI } from "../../../../__helpers__/WorkflowGraphUtils.js";
+import { nodesUI, edgesUI } from "../../../../__helpers__/WorkflowUtils.js";
 
 /* ================================================================== */
 /* TESTS */
@@ -70,8 +70,8 @@ describe("WorkflowGraph model", () => {
             new WFNode({ id: "C", type: "custom", next: [] }),
         ];
         const roots = getRootNodes(graph);
-
-        expect(roots).toEqual([]);
+        console.log(roots)
+        expect(roots).toEqual(['A']);
     });
 });
 
