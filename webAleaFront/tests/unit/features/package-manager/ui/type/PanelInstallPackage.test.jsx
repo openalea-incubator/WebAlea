@@ -4,7 +4,15 @@ import "@testing-library/jest-dom";
 import PanelInstallPackage from "../../../../../../src/features/package-manager/ui/type/PanelInstallPackage.jsx";
 import * as PackageService from "../../../../../../src/service/PackageService.js";
 
+/* ===========================
+    Mocks
+=========================== */
+
 jest.mock("../../../../../../src/service/PackageService.js");
+
+/* ===========================
+    Tests
+=========================== */
 
 describe("PanelInstallPackage Unit Tests", () => {
     let props;
@@ -110,10 +118,10 @@ describe("PanelInstallPackage Unit Tests", () => {
 
     fireEvent.change(screen.getByPlaceholderText("Search packages..."), { target: { value: "alpha" } });
 
-    // Vérifie que setSearchTerm a été appelé
+    // Verify that setSearchTerm was called
     expect(setSearchTermMock).toHaveBeenCalledWith("alpha");
 
-    // Vérifie le filtrage simulé
+    // Verify the simulated filtering
     expect(setFilteredPackagesMock).toHaveBeenCalledWith([{ name: "alpha", version: "1.0" }]);
     });
 
@@ -134,7 +142,7 @@ describe("PanelInstallPackage Unit Tests", () => {
     test("snackbar closes on handleCloseSnackbar", () => {
         let snackbarState = { open: true, message: "Test", severity: "success" };
         const setSnackbarMock = jest.fn((fn) => {
-            // Appelle la fonction passée avec l'état actuel
+            // Calls the function passed with the current state
             snackbarState = fn(snackbarState);
         });
 
@@ -146,11 +154,11 @@ describe("PanelInstallPackage Unit Tests", () => {
             />
         );
 
-        // récupère le bouton de fermeture dans Alert (MUI ajoute un bouton hidden role="button")
+        // retrieves the close button in Alert (MUI adds a hidden button with role="button")
         const closeBtn = screen.getByRole("button", { hidden: true });
         fireEvent.click(closeBtn);
 
-        // on vérifie que la fonction a modifié le state correctement
+        // verifies that the function modified the state correctly
         expect(snackbarState).toEqual({ open: false, message: "Test", severity: "success" });
     });
 

@@ -22,7 +22,6 @@ jest.mock(
     })
 );
 
-// Mock du service API
 jest.mock(
     "../../../../../src/service/PackageService.js",
     () => ({
@@ -33,7 +32,6 @@ jest.mock(
     })
 );
 
-// Mock des sous-composants 
 jest.mock(
     "../../../../../src/features/package-manager/ui/type/PanelModuleNode.jsx",
     () => (props) => (

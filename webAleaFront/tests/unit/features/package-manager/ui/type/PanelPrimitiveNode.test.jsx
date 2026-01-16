@@ -5,7 +5,10 @@ import PanelPrimitiveNode from "../../../../../../src/features/package-manager/u
 import { Node } from "../../../../../../src/features/workspace/model/Node.jsx";
 import { type } from "node:os";
 
-// Mock TreePackage pour le test
+/* ===========================
+    Mocks
+=========================== */
+
 jest.mock("../../../../../../src/features/package-manager/model/TreePackage.jsx", () => {
     return jest.fn().mockImplementation((id, label) => ({
         id,
@@ -24,6 +27,10 @@ jest.mock("../../../../../../src/features/package-manager/model/TreePackage.jsx"
         }
     }));
 });
+
+/* ===========================
+    Tests
+=========================== */
 
 describe("PanelPrimitiveNode with TreePackage", () => {
     let onAddNodeMock;

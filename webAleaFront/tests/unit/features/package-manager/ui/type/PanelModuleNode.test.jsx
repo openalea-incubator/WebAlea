@@ -5,6 +5,10 @@ import {
     getNodesList
 } from '../../../../../../src/service/PackageService.js';
 
+/* ===========================
+    Mocks
+=========================== */
+
 jest.mock('../../../../../../src/service/PackageService.js');
 jest.mock('@mui/x-tree-view', () => ({
     RichTreeView: ({ items, onItemClick, onItemExpansionToggle }) => {
@@ -30,35 +34,38 @@ jest.mock('@mui/x-tree-view', () => ({
 }));
 
 
-    const baseProps = {
-        onAddNode: jest.fn(),
-        version: '1.0',
-        treeItems: [],
-        setTreeItems: jest.fn(),
-        loading: false,
-        setLoading: jest.fn(),
-        loadingPackage: null,
-        setLoadingPackage: jest.fn(),
-        loadedPackages: new Set(),
-        setLoadedPackages: jest.fn(),
-        expandedItems: [],
-        setExpandedItems: jest.fn(),
-    };
+const baseProps = {
+    onAddNode: jest.fn(),
+    version: '1.0',
+    treeItems: [],
+    setTreeItems: jest.fn(),
+    loading: false,
+    setLoading: jest.fn(),
+    loadingPackage: null,
+    setLoadingPackage: jest.fn(),
+    loadedPackages: new Set(),
+    setLoadedPackages: jest.fn(),
+    expandedItems: [],
+    setExpandedItems: jest.fn(),
+};
 
-    describe('PanelModuleNode', () => {
+/* ===========================
+    Tests
+=========================== */
 
-        beforeEach(() => {
+describe('PanelModuleNode', () => {
+
+    beforeEach(() => {
         jest.clearAllMocks();
     });
-
     // ---------- GLOBAL STATES ----------
 
-        test('shows global loader when loading is true', () => {
+    test('shows global loader when loading is true', () => {
         render(<PanelModuleNode {...baseProps} loading={true} />);
         expect(screen.getByText(/Loading packages/i)).toBeInTheDocument();
     });
 
-        test('shows empty state when no packages exist', () => {
+    test('shows empty state when no packages exist', () => {
         render(
             <PanelModuleNode
             {...baseProps}
