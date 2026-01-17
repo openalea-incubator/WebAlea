@@ -4,12 +4,14 @@ import {
     getVisualPackagesList,
     getNodesList
 } from '../../../../../../src/service/PackageService.js';
+import { jest, beforeEach, test, expect, describe } from "@jest/globals";
 
 /* ===========================
     Mocks
 =========================== */
 
 jest.mock('../../../../../../src/service/PackageService.js');
+
 jest.mock('@mui/x-tree-view', () => ({
     RichTreeView: ({ items, onItemClick, onItemExpansionToggle }) => {
     const renderItems = (nodes) =>
@@ -31,6 +33,10 @@ jest.mock('@mui/x-tree-view', () => ({
 
     return <div>{renderItems(items)}</div>;
     }
+}));
+
+jest.mock("../../../../../../src/config/api", () => ({
+    API_BASE_URL: "http://test-api"
 }));
 
 

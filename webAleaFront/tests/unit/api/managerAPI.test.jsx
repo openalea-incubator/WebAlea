@@ -130,7 +130,5 @@ describe("managerAPI", () => {
             })
         }));
         expect(data).toEqual(mockResponse);
-
     });
-
 });

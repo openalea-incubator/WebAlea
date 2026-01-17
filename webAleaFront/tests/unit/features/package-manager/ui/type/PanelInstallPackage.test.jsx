@@ -3,12 +3,17 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import PanelInstallPackage from "../../../../../../src/features/package-manager/ui/type/PanelInstallPackage.jsx";
 import * as PackageService from "../../../../../../src/service/PackageService.js";
+import { jest, beforeEach, test, expect, describe } from "@jest/globals";
 
 /* ===========================
     Mocks
 =========================== */
 
 jest.mock("../../../../../../src/service/PackageService.js");
+
+jest.mock("../../../../../../src/config/api", () => ({
+    API_BASE_URL: "http://test-api"
+}));
 
 /* ===========================
     Tests
