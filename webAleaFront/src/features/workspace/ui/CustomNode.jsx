@@ -1,14 +1,29 @@
-    import React, { useCallback, useMemo } from "react";
-import { Handle, Position } from "@xyflow/react";
+import React, { useCallback, useMemo } from "react";
 import { useFlow } from '../providers/FlowContextDefinition.jsx';
 import "../../../assets/css/custom_node.css";
 import CustomHandle from "./CustomHandle.jsx";
 
 /**
  * CustomNode.jsx
- * Noeud React Flow custom.
+ * A customizable node component for a workflow editor.
+ * The node displays a label, status indicator, metadata details,
+ * and dynamically renders input and output handles based on provided props.
+ *
+ * Props:
+ * - id: Unique identifier for the node.
+ * - data: An object containing:
+ *   - label: The display label of the node.
+ *   - color: Background color of the node.
+ *   - status: Current status of the node (e.g., "queued", "running", "done", "error", "ready").
+ *   - metadata: Additional information to display in a collapsible section.
+ *   - inputs: Array of input handle definitions.
+ *   - outputs: Array of output handle definitions.
+ *
+ * The node's border color changes based on its status, and clicking the status indicator
+ * cycles through predefined statuses for demonstration purposes.
  */
 
+//TODO: Refactor status management to be more flexible and extensible => possibly via a status config object.
 const getBorderColor = (status) => {
     switch (status) {
         case "queued": return "#ff9800";   // Orange - waiting in queue
@@ -43,7 +58,7 @@ export default function CustomNode(nodeProps) {
         updateNode(id, { status: nextStatus });
     }, [id, nextStatus, updateNode]);
 
-    // Dynamiques : couleur, status, height selon inputs
+    // Dynamic styles based on inputs/outputs
     const dynamicNodeStyle = {
         backgroundColor: color || "#f0f0f0",
         border: `2px solid ${borderColor}`,

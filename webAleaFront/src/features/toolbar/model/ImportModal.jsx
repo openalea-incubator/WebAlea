@@ -3,6 +3,20 @@ import { Modal, Button } from "react-bootstrap";
 import { FiUpload, FiCheck } from "react-icons/fi";
 import "../../../assets/css/modal.css"; 
 
+/**
+ * ImportModal
+ *
+ * This React component provides a modal dialog for importing JSON files (workflow).
+ * Users can choose a file to import via drag-and-drop or by clicking to open a file dialog.
+ * The component reads the JSON file, parses its content, and passes the parsed data
+ * to the provided `onImport` callback, then closes the modal.
+ * 
+ * @param {boolean} show - boolean to control the visibility of the modal
+ * @param {function} onClose - callback function to close the modal
+ * @param {function} onImport - callback function to handle the imported JSON data
+ *
+ */
+
 export default function ImportModal({ show, onClose, onImport }) {
     const [fileData, setFileData] = useState(null);
     const [dragOver, setDragOver] = useState(false);

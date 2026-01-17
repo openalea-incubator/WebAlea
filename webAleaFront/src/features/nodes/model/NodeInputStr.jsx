@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from "react";
 
+/**
+ * NodeInputString component.
+ * @param {string} inputName - The name of the input.
+ * @param {string} value - The value of the input.
+ * @param {function} onChange - The function to call when the input changes.
+ * @returns {React.ReactNode} - The NodeInputString component.
+ */
 export default function NodeInputString({ inputName, value = "", onChange }) {
+    /**
+     * State to store the internal value. It is used to store the value of the input.
+     * @type {string}
+     */
     const [internalValue, setInternalValue] = useState(value);
 
-    // Sync internal state when prop changes (when selecting a different node)
+    /**
+     * Sync internal state when prop changes (when selecting a different node).
+     */
     useEffect(() => {
         setInternalValue(value);
     }, [value]);

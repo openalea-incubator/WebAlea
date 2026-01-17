@@ -5,6 +5,14 @@ import { useLog } from "../../../logger/providers/LogContextDefinition.jsx";
 import { useFlow } from "../../providers/FlowContextDefinition";
 import CustomHandle from "../../ui/CustomHandle.jsx";
 
+/**
+ * StringNode - A custom node component for inputting and outputting a string value.
+ * This node is rendered in the workflow editor and allows users to enter a string.
+ *
+ * @param nodeProps - The properties of the node, including id and data.
+ * @param {string} nodeProps.id - The unique identifier of the node.
+ * @param {Object} nodeProps.data - The data associated with the node.
+ */
 export default function StringNode(nodeProps) {
     const { id, data = {} } = nodeProps;
     const { updateNode } = useFlow();

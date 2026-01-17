@@ -1,8 +1,9 @@
 /**
  * useWorkflowExecution.jsx
  *
- * Hook personnalisé pour gérer l'exécution de workflows.
- * Fournit une interface simple pour exécuter, arrêter et suivre la progression.
+ * Custom React hook responsible for managing workflow execution.
+ * It provides a high-level API to validate, execute, stop, and monitor
+ * the progress of a workflow.
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -10,7 +11,7 @@ import { WorkflowEngine, WorkflowValidator, NodeState } from '../engine/Workflow
 import { buildGraphModel } from '../model/WorkflowGraph.jsx';
 
 /**
- * États possibles de l'exécution
+ * Possible execution states for a workflow
  */
 export const ExecutionStatus = {
     IDLE: 'idle',
@@ -22,13 +23,14 @@ export const ExecutionStatus = {
 };
 
 /**
- * Hook pour gérer l'exécution de workflows
+ * Hook used to control workflow execution lifecycle.
  *
  * @param {Object} options
- * @param {Function} options.onNodeStateChange - Callback quand l'état d'un node change
- * @param {Function} options.onNodeResult - Callback quand un node produit un résultat
- * @param {Function} options.onLog - Callback pour les logs
- * @returns {Object} API d'exécution
+ * @param {Function} [options.onNodeStateChange] - Called whenever a node state changes
+ * @param {Function} [options.onNodeResult] - Called when a node produces a result
+ * @param {Function} [options.onLog] - Called for logging engine events
+ *
+ * @returns {Object} Workflow execution API
  */
 export function useWorkflowExecution(options = {}) {
     const {
@@ -37,7 +39,10 @@ export function useWorkflowExecution(options = {}) {
         onLog
     } = options;
 
-    // État
+    /* ---------------------------------------------------------------------
+     * State
+     * ------------------------------------------------------------------ */
+
     const [status, setStatus] = useState(ExecutionStatus.IDLE);
     const [progress, setProgress] = useState({
         total: 0,
@@ -50,15 +55,21 @@ export function useWorkflowExecution(options = {}) {
     const [warnings, setWarnings] = useState([]);
     const [results, setResults] = useState({});
 
-    // Références
+    /* ---------------------------------------------------------------------
+     * References
+     * ------------------------------------------------------------------ */
+
     const engineRef = useRef(null);
     const nodeStatesRef = useRef(new Map());
 
-    // Initialiser le moteur
+    /**
+     * Initialize the workflow engine once and clean it up on unmount
+     */
     useEffect(() => {
         if (!engineRef.current) {
             engineRef.current = new WorkflowEngine();
         }
+
         return () => {
             if (engineRef.current?.running) {
                 engineRef.current.stop();
@@ -67,7 +78,10 @@ export function useWorkflowExecution(options = {}) {
     }, []);
 
     /**
-     * Log helper
+     * Centralized logging helper
+     *
+     * @param {string} message
+     * @param {*} [data]
      */
     const log = useCallback((message, data = null) => {
         console.log(`[WorkflowExecution] ${message}`, data || '');
@@ -77,7 +91,9 @@ export function useWorkflowExecution(options = {}) {
     }, [onLog]);
 
     /**
-     * Met à jour la progression
+     * Recomputes workflow progress based on node states
+     *
+     * @param {Map<string, NodeState>} nodeStates
      */
     const updateProgress = useCallback((nodeStates) => {
         const total = nodeStates.size;
@@ -91,18 +107,23 @@ export function useWorkflowExecution(options = {}) {
             else if (state === NodeState.SKIPPED) skipped++;
         }
 
-        const percent = total > 0 ? Math.round(((completed + failed + skipped) / total) * 100) : 0;
+        const percent = total > 0
+            ? Math.round(((completed + failed + skipped) / total) * 100)
+            : 0;
 
         setProgress({ total, completed, failed, skipped, percent });
     }, []);
 
     /**
-     * Handler pour les événements du moteur
+     * Handles all events emitted by the workflow engine
+     *
+     * @param {string} event
+     * @param {Object} payload
      */
     const handleEngineEvent = useCallback((event, payload) => {
         switch (event) {
             case 'workflow-start':
-                log(`Workflow démarré avec ${payload.totalNodes} nodes`);
+                log(`Workflow started with ${payload.totalNodes} nodes`);
                 nodeStatesRef.current.clear();
                 for (const node of payload.graph) {
                     nodeStatesRef.current.set(node.id, NodeState.PENDING);
@@ -113,78 +134,81 @@ export function useWorkflowExecution(options = {}) {
             case 'node-state-change':
                 nodeStatesRef.current.set(payload.id, payload.state);
                 updateProgress(nodeStatesRef.current);
-                if (onNodeStateChange) {
-                    onNodeStateChange(payload.id, payload.state);
-                }
+                onNodeStateChange?.(payload.id, payload.state);
                 break;
 
             case 'node-start':
-                log(`Node "${payload.label}" démarré`, { nodeId: payload.id });
+                log(`Node "${payload.label}" started`, { nodeId: payload.id });
                 break;
 
             case 'node-result':
-                log(`Node "${payload.id}" terminé`, { result: payload.result });
-                if (onNodeResult) {
-                    onNodeResult(payload.id, payload.result);
-                }
+                log(`Node "${payload.id}" produced a result`, { result: payload.result });
+                onNodeResult?.(payload.id, payload.result);
                 break;
 
             case 'node-done':
-                log(`Node "${payload.label}" complété`);
+                log(`Node "${payload.label}" completed`);
                 break;
 
             case 'node-error':
-                log(`Node "${payload.id}" en erreur: ${payload.error}`, { error: payload.error });
-                setErrors(prev => [...prev, {
-                    type: 'EXECUTION_ERROR',
-                    nodeId: payload.id,
-                    message: payload.error
-                }]);
+                log(`Node "${payload.id}" failed: ${payload.error}`, { error: payload.error });
+                setErrors(prev => [
+                    ...prev,
+                    {
+                        type: 'EXECUTION_ERROR',
+                        nodeId: payload.id,
+                        message: payload.error
+                    }
+                ]);
                 break;
 
             case 'node-skipped':
-                log(`Node "${payload.id}" sauté: ${payload.reason}`);
+                log(`Node "${payload.id}" skipped: ${payload.reason}`);
                 break;
 
             case 'workflow-done':
-                if (payload.success) {
-                    log('Workflow terminé avec succès');
-                    setStatus(ExecutionStatus.COMPLETED);
-                } else {
-                    log('Workflow terminé avec des erreurs');
-                    setStatus(ExecutionStatus.FAILED);
-                }
+                setStatus(payload.success
+                    ? ExecutionStatus.COMPLETED
+                    : ExecutionStatus.FAILED
+                );
+                log(payload.success
+                    ? 'Workflow completed successfully'
+                    : 'Workflow completed with errors'
+                );
                 setResults(payload.results);
                 break;
 
             case 'workflow-error':
-                log(`Workflow échoué: ${payload.error}`);
+                log(`Workflow failed: ${payload.error}`);
                 setStatus(ExecutionStatus.FAILED);
-                setErrors(prev => [...prev, {
-                    type: 'WORKFLOW_ERROR',
-                    message: payload.error
-                }]);
+                setErrors(prev => [
+                    ...prev,
+                    {
+                        type: 'WORKFLOW_ERROR',
+                        message: payload.error
+                    }
+                ]);
                 break;
 
             case 'workflow-stopped':
-                log('Workflow arrêté par l\'utilisateur');
+                log('Workflow stopped by user');
                 setStatus(ExecutionStatus.STOPPED);
                 break;
 
             case 'validation-error':
-                log('Erreurs de validation', payload.errors);
+                log('Validation errors detected', payload.errors);
                 setErrors(payload.errors);
                 break;
 
             case 'validation-warnings':
-                log('Avertissements de validation', payload.warnings);
+                log('Validation warnings detected', payload.warnings);
                 setWarnings(payload.warnings);
                 break;
         }
     }, [log, onNodeStateChange, onNodeResult, updateProgress]);
 
     /**
-     * Configure le listener du moteur
+     * Attach the engine event listener
      */
     useEffect(() => {
         const engine = engineRef.current;
@@ -195,7 +219,11 @@ export function useWorkflowExecution(options = {}) {
     }, [handleEngineEvent]);
 
     /**
-     * Valide le workflow sans l'exécuter
+     * Validates a workflow without executing it
+     *
+     * @param {Array} nodes
+     * @param {Array} edges
+     * @returns {Object} Validation result
      */
     const validate = useCallback((nodes, edges) => {
         const { graph, edges: customEdges } = buildGraphModel(nodes, edges);
@@ -208,49 +236,47 @@ export function useWorkflowExecution(options = {}) {
     }, []);
 
     /**
-     * Exécute le workflow
+     * Executes a workflow
+     *
+     * @param {Array} nodes
+     * @param {Array} edges
+     * @returns {Promise<Object>} Execution result
      */
     const execute = useCallback(async (nodes, edges) => {
         const engine = engineRef.current;
+
         if (!engine) {
-            log('Erreur: Moteur non initialisé');
+            log('Error: workflow engine not initialized');
             return { success: false, error: 'Engine not initialized' };
         }
 
-        // Reset état
+        // Reset execution state
         setStatus(ExecutionStatus.VALIDATING);
         setErrors([]);
         setWarnings([]);
         setResults({});
         setProgress({ total: 0, completed: 0, failed: 0, skipped: 0, percent: 0 });
 
-        // Construire le modèle
+        // Build execution model
         const { graph, edges: customEdges } = buildGraphModel(nodes, edges);
+        log('Workflow model built', { nodes: graph.length, edges: customEdges.length });
 
-        log('Modèle construit', { nodes: graph.length, edges: customEdges.length });
-
-        // Lier au moteur
+        // Bind model and start execution
         engine.bindModel(graph, customEdges);
-
-        // Exécuter
         setStatus(ExecutionStatus.RUNNING);
-        const result = await engine.start();
 
-        return result;
+        return await engine.start();
     }, [log]);
 
     /**
-     * Arrête l'exécution
+     * Stops the current workflow execution
      */
     const stop = useCallback(() => {
-        const engine = engineRef.current;
-        if (engine) {
-            engine.stop();
-        }
+        engineRef.current?.stop();
     }, []);
 
     /**
-     * Réinitialise l'état
+     * Resets the hook state to its initial values
      */
     const reset = useCallback(() => {
         setStatus(ExecutionStatus.IDLE);
@@ -262,7 +288,7 @@ export function useWorkflowExecution(options = {}) {
     }, []);
 
     return {
-        // État
+        // State
         status,
         progress,
         errors,
@@ -277,7 +303,7 @@ export function useWorkflowExecution(options = {}) {
         reset,
         validate,
 
-        // Accès au moteur (pour cas avancés)
+        // Advanced usage
         engine: engineRef.current
     };
 }
