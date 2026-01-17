@@ -27,6 +27,7 @@ class OpenAleaInspector:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            check=False,
         )
         # Log stderr if present for debugging
         if result.stderr:
@@ -39,7 +40,7 @@ class OpenAleaInspector:
         # parse output: prefer JSON, fallback to Python literal
         try:
             packages = json.loads(result.stdout)
-        except (json.JSONDecodeError, TypeError, ValueError):
+        except ValueError:
             try:
                 packages = ast.literal_eval(result.stdout)
             except (ValueError, SyntaxError):
@@ -65,6 +66,7 @@ class OpenAleaInspector:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            check=False,
         )
         # Log stderr if present for debugging
         if result.stderr:
@@ -77,7 +79,7 @@ class OpenAleaInspector:
         # parse output: prefer JSON, fallback to Python literal
         try:
             description = json.loads(result.stdout)
-        except (json.JSONDecodeError, TypeError, ValueError):
+        except ValueError:
             try:
                 description = ast.literal_eval(result.stdout)
             except (ValueError, SyntaxError):
@@ -99,6 +101,7 @@ class OpenAleaInspector:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            check=False,
         )
         # Log stderr if present for debugging
         if result.stderr:
@@ -111,7 +114,7 @@ class OpenAleaInspector:
         # parse output
         try:
             packages = json.loads(result.stdout)
-        except (json.JSONDecodeError, TypeError, ValueError):
+        except (ValueError):
             logging.error("Failed to parse wralea packages output: %s", result.stdout)
             packages = []
         return packages

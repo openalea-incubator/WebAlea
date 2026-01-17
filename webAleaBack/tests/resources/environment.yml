@@ -1,10 +1,10 @@
 name: test_env
 channels:
+  - openalea3        # Priorité aux packages OpenAlea
   - conda-forge
-  - openalea3
   - defaults
 dependencies:
-  - python=3.11
+  - python>=3.10,<3.13   # Plage flexible, conda choisira la meilleure version
   - fastapi
   - uvicorn
   - pydantic

@@ -5,6 +5,7 @@ Module used via subprocess to for dynamic python instance management.
 """
 import logging
 import json
+import re
 import sys
 from typing import Any, Dict
 
@@ -101,7 +102,6 @@ def parse_dict_like_string(s: str) -> dict:
     Returns:
         dict: Parsed dictionary with name, interface, value, etc.
     """
-    import re
 
     result = {}
 
@@ -245,7 +245,7 @@ def serialize_node_puts(puts) -> list:
 
             serialized.append(put_dict)
 
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError, KeyError) as e:
             # Fallback for any unexpected format
             logging.warning("Failed to serialize port %d: %s - %s", idx, put, e)
             serialized.append({
@@ -285,7 +285,7 @@ def serialize_node(node_factory) -> dict:
 
 
 
-def normalize_package_name(package_name: str, available_keys: list) -> str:
+def normalize_package_name(package_name: str, available_keys: list) -> str|None:
     """Try to find the correct package name in the PackageManager.
 
     OpenAlea PackageManager may use different naming conventions:
@@ -339,8 +339,10 @@ def describe_openalea_package(package_name: str) -> Dict[str, Any]:
     resolved_name = normalize_package_name(package_name, available_keys)
 
     if resolved_name is None:
-        logging.warning("Package '%s' has no visual nodes (wralea). Available packages with nodes: %s",
-                       package_name, available_keys)
+        logging.warning(
+                "Package '%s' has no visual nodes (wralea). Available packages with nodes: %s",
+                package_name, available_keys
+            )
         # Return empty nodes instead of error - package exists but has no visual nodes
         return {"package_name": package_name, "nodes": {}, "has_wralea": False}
 
@@ -356,7 +358,7 @@ def describe_openalea_package(package_name: str) -> Dict[str, Any]:
 
 if __name__ == "__main__":
     logging.info("describing an OpenAlea package by subprocess")
-    
+
     if len(sys.argv) != 2:
         logging.error("Package name argument is required.")
         sys.exit(1)

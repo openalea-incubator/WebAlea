@@ -1,26 +1,7 @@
 # WebAlea - BackEnd
 **This is the specidfied documentation for the back end**
 ## start the project
-you can run
-```bash
-../webalea.sh start
-```
-## Conda environment
-A conda environment is deployed in webAleaBack.
-It is used to retrieve conda packages and execute them.
-Every entrypoints regarding the use of conda is available in the conda package.
-### test environment
-A test environment is in the project.
-In order to pass the pytest the following steps are required : 
-```bash
-cd webAleaBack
-```
-```bash
-conda env create - tests/environment.yml
-```
-```bash
-conda activate test_env
-```
+Please refer to the README.md file within the top level package.
 ## Best practices
 ### API versionning
 If significant changes are made, it is best to increment the API version.

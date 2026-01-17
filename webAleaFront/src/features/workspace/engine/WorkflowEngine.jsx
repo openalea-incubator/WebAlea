@@ -11,7 +11,7 @@
  *  - Real-time feedback through events: emits lifecycle events (workflow-start, node-start, node-result, node-error, node-skipped, node-done, node-state-change, workflow-done, etc.) for UI updates and logging.
  */
 
-import { executeNode } from "../../../api/managerAPI.js";
+import { executeNode } from "../../../api/runnerAPI.js";
 
 // =============================================================================
 // TYPES & CONSTANTS
