@@ -1,5 +1,17 @@
 import { WorkflowValidator } from "../../../../../src/features/workspace/engine/WorkflowEngine";
 import { baseNode } from "../../../../__helpers__/WorkflowUtils.js";
+import { 
+    jest, beforeEach, test, expect, describe
+} 
+from "@jest/globals";
+
+/* ================================================================== */
+/* MOCKS */
+/* ================================================================== */
+
+jest.mock("../../../../../src/config/api", () => ({
+    API_BASE_URL: "http://test-api"
+}));
 
 /* ================================================================== */
 /* TESTS */

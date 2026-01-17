@@ -1,6 +1,5 @@
 // managerAPI.js
-const BASE_URL = "http://localhost:8000/api/v1/manager";
-
+import { API_BASE_URL } from "../config/api";
 // ==============================
 // LISTE DES PACKAGES
 // ==============================
@@ -9,7 +8,7 @@ const BASE_URL = "http://localhost:8000/api/v1/manager";
  * @returns {Promise<Object>}
  */
 export async function fetchPackageList() {
-    return fetchJSON(`${BASE_URL}/`);
+    return fetchJSON(`${API_BASE_URL}/`);
 }
 
 /**
@@ -17,7 +16,7 @@ export async function fetchPackageList() {
  * @returns {Promise<Object>}
  */
 export async function fetchLatestPackageVersions() {
-    return fetchJSON(`${BASE_URL}/latest`);
+    return fetchJSON(`${API_BASE_URL}/latest`);
 }
 
 // ===============================
@@ -32,7 +31,7 @@ export async function fetchLatestPackageVersions() {
  */
 export async function installPackages(packages, envName = null) {
     console.log("Installing packages:", packages, "in env:", envName);
-    return fetchJSON(`${BASE_URL}/install`, "POST", {
+    return fetchJSON(`${API_BASE_URL}/install`, "POST", {
         packages: packages,   // [{name: "pkg", version: "1.2"}]
         env_name: envName,
     });
@@ -46,7 +45,7 @@ export async function installPackages(packages, envName = null) {
  * @returns {Promise<Object>}
  */
 export async function fetchInstalledOpenAleaPackages() {
-    return fetchJSON(`${BASE_URL}/installed`);
+    return fetchJSON(`${API_BASE_URL}/installed`);
 }
 
 /**
@@ -55,7 +54,7 @@ export async function fetchInstalledOpenAleaPackages() {
  * @returns {Promise<Object>}
  */
 export async function fetchWraleaPackages() {
-    return fetchJSON(`${BASE_URL}/wralea`);
+    return fetchJSON(`${API_BASE_URL}/wralea`);
 }
 
 /**
@@ -64,27 +63,7 @@ export async function fetchWraleaPackages() {
  * @returns {Promise<Object>}
  */
 export async function fetchPackageNodes(packageName) {
-    return fetchJSON(`${BASE_URL}/installed/${packageName}`);   
-}
-
-// ===============================
-// POC - GET NODE LIST
-// ===============================
-export async function getNodes() {
-    return fetchJSON(`${BASE_URL}/poc/get_node`);
-}
-
-// ===============================
-// POC - EXECUTE NODE (deprecated)
-// ===============================
-export async function executeNodes(name, parameters1, parameters2) {
-    return fetchJSON(`${BASE_URL}/poc/execute_nodes`, "POST", {
-        name_node: name,
-        parameters: {
-            parameters1: parameters1,
-            parameters2: parameters2
-        }
-    });
+    return fetchJSON(`${API_BASE_URL}/installed/${packageName}`);   
 }
 
 // ===============================
@@ -102,7 +81,7 @@ export async function executeNodes(name, parameters1, parameters2) {
 export async function executeNode(nodeData) {
     const { nodeId, packageName, nodeName, inputs } = nodeData;
 
-    return fetchJSON(`${BASE_URL}/execute/node`, "POST", {
+    return fetchJSON(`${API_BASE_URL}/execute/node`, "POST", {
         node_id: nodeId,
         package_name: packageName,
         node_name: nodeName,
