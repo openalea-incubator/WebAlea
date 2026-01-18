@@ -95,6 +95,7 @@ class OpenAleaInspector:
 
         Returns:
             list: A list of dicts with 'name' and 'module' for each wralea package.
+            example: [{"name": "package1", "module": "package1.module"}, ...]
         """
         result = subprocess.run(
             ["python3", OpenAleaInspector.list_wralea_script],

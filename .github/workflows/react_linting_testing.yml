@@ -15,7 +15,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: webAleaFront
-        run: npm ci
+        run: npm install
 
       # linting
       - name: Run ESLint
@@ -25,7 +25,7 @@ jobs:
       # testing
       - name: Run tests with coverage
         working-directory: webAleaFront
-        run: npm test -- --coverage --watchAll=false
+        run: npm run test:all
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -33,4 +33,3 @@ jobs:
           files: webAleaFront/coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
-          fail_ci_if_error: true

@@ -229,7 +229,7 @@ export async function getVisualPackagesList() {
     try {
         const response = await fetchWraleaPackages();
 
-        // Backend returns: {wralea_packages: [...]}
+        // Backend returns: {wralea_packages: [{name: "...", module: "..."}, ...]}
         const wraleaPackages = safeArray(response?.wralea_packages);
 
         return wraleaPackages

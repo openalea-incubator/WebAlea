@@ -1,8 +1,6 @@
 // managerAPI.js
+import { API_BASE_URL } from "../config/api";
 import { fetchJSON } from "./utils.js";
-
-
-const BASE_URL = "http://localhost:8000/api/v1/manager";
 
 // ==============================
 // PACKAGE LIST
@@ -12,7 +10,7 @@ const BASE_URL = "http://localhost:8000/api/v1/manager";
  * @returns {Promise<Object>}
  */
 export async function fetchPackageList() {
-    return fetchJSON(`${BASE_URL}/`);
+    return fetchJSON(`${API_BASE_URL}/`);
 }
 
 /**
@@ -20,11 +18,11 @@ export async function fetchPackageList() {
  * @returns {Promise<Object>}
  */
 export async function fetchLatestPackageVersions() {
-    return fetchJSON(`${BASE_URL}/latest`);
+    return fetchJSON(`${API_BASE_URL}/latest`);
 }
 
 // ===============================
-// INSTALLATION DES PACKAGES
+// PACKAGE INSTALLATION
 // ===============================
 
 /**
@@ -35,7 +33,7 @@ export async function fetchLatestPackageVersions() {
  */
 export async function installPackages(packages, envName = null) {
     console.log("Installing packages:", packages, "in env:", envName);
-    return fetchJSON(`${BASE_URL}/install`, "POST", {
+    return fetchJSON(`${API_BASE_URL}/install`, "POST", {
         packages: packages,   // [{name: "pkg", version: "1.2"}]
         env_name: envName,
     });

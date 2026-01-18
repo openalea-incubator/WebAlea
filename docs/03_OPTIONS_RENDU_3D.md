@@ -316,7 +316,7 @@ class PlantGLSerializer:
 #### 3.1 Composant Viewer3D
 
 ```jsx
-// webAleaFront/src/features/viewer3d/components/Viewer3D.jsx
+// webAleaFront/src/features/viewer3d/features/Viewer3D.jsx
 
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Environment } from '@react-three/drei';

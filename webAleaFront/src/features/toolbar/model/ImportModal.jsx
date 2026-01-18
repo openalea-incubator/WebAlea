@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Modal, Button } from "react-bootstrap";
 import { FiUpload, FiCheck } from "react-icons/fi";
-import "../../../assets/css/modal.css"; 
+import "../../../assets/css/modal.css";
 
 /**
  * ImportModal
@@ -40,7 +40,7 @@ export default function ImportModal({ show, onClose, onImport }) {
         const json = JSON.parse(event.target.result);
         setFileData(json);
         } catch (err) {
-        alert("Fichier JSON invalide : " + err);
+        alert("Invalid JSON file : " + err);
         setIsImported(false);
         }
     };
@@ -90,6 +90,7 @@ export default function ImportModal({ show, onClose, onImport }) {
                 accept=".json"
                 ref={fileInputRef}
                 className="file-input"
+                data-testid="file-input"
                 onChange={handleFileChange}
             />
         </button>

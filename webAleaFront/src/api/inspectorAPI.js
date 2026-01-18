@@ -1,9 +1,6 @@
 // inspectorAPI.js
 import { fetchJSON } from "./utils.js";
-
-
-const BASE_URL = "http://localhost:8000/api/v1/inspector";
-
+import { API_BASE_URL } from "../config/api";
 
 
 // ===============================
@@ -14,7 +11,7 @@ const BASE_URL = "http://localhost:8000/api/v1/inspector";
  * @returns {Promise<Object>}
  */
 export async function fetchInstalledOpenAleaPackages() {
-    return fetchJSON(`${BASE_URL}/installed`);
+    return fetchJSON(`${API_BASE_URL}/installed`);
 }
 
 /**
@@ -23,7 +20,7 @@ export async function fetchInstalledOpenAleaPackages() {
  * @returns {Promise<Object>}
  */
 export async function fetchWraleaPackages() {
-    return fetchJSON(`${BASE_URL}/wralea`);
+    return fetchJSON(`${API_BASE_URL}/wralea`);
 }
 
 /**
@@ -32,5 +29,5 @@ export async function fetchWraleaPackages() {
  * @returns {Promise<Object>} - The list of nodes for the given package.
  */
 export async function fetchPackageNodes(packageName) {
-    return fetchJSON(`${BASE_URL}/installed/${packageName}`);   
+    return fetchJSON(`${API_BASE_URL}/installed/${packageName}`);   
 }
