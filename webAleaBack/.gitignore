@@ -1,0 +1,5 @@
+.pytest_cache/
+.coverage
+htmlcov/
+conda_openalea_packages.json
+*.log

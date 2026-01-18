@@ -1,0 +1,24 @@
+services:
+  backend:
+    build:
+      context: ./webAleaBack
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_HOME=/app
+    networks:
+      - webalea-network
+
+  frontend:
+    build:
+      context: ./webAleaFront
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - webalea-network
+
+networks:
+  webalea-network:
+    driver: bridge

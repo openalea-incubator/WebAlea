@@ -1,0 +1,56 @@
+name: Python linting and testing
+
+on: [push, pull_request]
+env:
+  PYTHONPATH: "${{ github.workspace }}/webAleaBack:${PYTHONPATH}"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      # conda setup
+      - name: setup conda test environment
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-activate-base: false
+          python-version: ${{ matrix.python-version }}
+          environment-file: webAleaBack/tests/resources/environment.yml
+          activate-environment: test_env
+      
+      # Install dependencies for linting and testing
+      - name: Install testing and linting dependencies
+        run: |
+          conda run -n test_env pip install pylint pytest pytest-cov coverage codecov
+
+      # linting
+      - name: Analysing the code with pylint
+        working-directory: webAleaBack
+        # run and fail if the score is less than 8.0
+        run: conda run -n test_env pylint --fail-under=8.0 $(git ls-files '*.py')
+
+      # testing
+      - name: Running the tests with coverage
+        working-directory: webAleaBack
+        # run pytest with config file pytest.ini
+        run: conda run -n test_env pytest -c pytest.ini
+
+      - name: Report coverage
+        working-directory: webAleaBack
+        run: |
+          conda run -n test_env coverage report --fail-under=80
+          conda run -n test_env coverage xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: webAleaBack/coverage.xml
+

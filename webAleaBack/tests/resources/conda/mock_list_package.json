@@ -1,0 +1,148 @@
+{
+    "openalea.astk": [
+        {
+            "arch": null,
+            "build": "py_0",
+            "build_number": 0,
+            "channel": "https://conda.anaconda.org/openalea3/noarch",
+            "constrains": [],
+            "depends": [
+                "pvlib",
+                "python >=3.8"
+            ],
+            "fn": "openalea.astk-v2.4.1-py_0.conda",
+            "license": "CeCILL_C",
+            "md5": "01e5f48ee2d22dd06fe5d34fc45372cf",
+            "name": "openalea.astk",
+            "noarch": "python",
+            "package_type": "noarch_python",
+            "platform": null,
+            "sha256": "d9bcf94f0d673cf5782aa91b234a0d93a016e550bbaf41ba3b8eb06e4a12f8eb",
+            "size": 152632,
+            "subdir": "noarch",
+            "timestamp": 1744379355486,
+            "url": "https://conda.anaconda.org/openalea3/noarch/openalea.astk-v2.4.1-py_0.conda",
+            "version": "v2.4.1"
+        },
+        {
+            "arch": null,
+            "build": "py_0",
+            "build_number": 0,
+            "channel": "https://conda.anaconda.org/openalea3/noarch",
+            "constrains": [],
+            "depends": [
+                "pvlib",
+                "python >=3.8"
+            ],
+            "fn": "openalea.astk-v3.0.0-py_0.conda",
+            "license": "CeCILL_C",
+            "md5": "9b763030fd25ba29d92e1f4d0af30766",
+            "name": "openalea.astk",
+            "noarch": "python",
+            "package_type": "noarch_python",
+            "platform": null,
+            "sha256": "7225f4dae9e959849eef7fc78fcaea72dafa52d6345dc3b00ffe3495d63849a9",
+            "size": 150960,
+            "subdir": "noarch",
+            "timestamp": 1744379660164,
+            "url": "https://conda.anaconda.org/openalea3/noarch/openalea.astk-v3.0.0-py_0.conda",
+            "version": "v3.0.0"
+        },
+        {
+            "arch": null,
+            "build": "py_0",
+            "build_number": 0,
+            "channel": "https://conda.anaconda.org/openalea3/noarch",
+            "constrains": [],
+            "depends": [
+                "pvlib",
+                "python >=3.8"
+            ],
+            "fn": "openalea.astk-v3.0.1-py_0.conda",
+            "license": "CeCILL_C",
+            "md5": "c2d5b5ae0ae910e5e2eb64f9b75ccfc0",
+            "name": "openalea.astk",
+            "noarch": "python",
+            "package_type": "noarch_python",
+            "platform": null,
+            "sha256": "776bc4625713a3e05e10199305bb6e538988d1f605881b6e4cf62b866d8f9af9",
+            "size": 150901,
+            "subdir": "noarch",
+            "timestamp": 1744647820381,
+            "url": "https://conda.anaconda.org/openalea3/noarch/openalea.astk-v3.0.1-py_0.conda",
+            "version": "v3.0.1"
+        },
+        {
+            "arch": null,
+            "build": "py_0",
+            "build_number": 0,
+            "channel": "https://conda.anaconda.org/openalea3/noarch",
+            "constrains": [],
+            "depends": [
+                "pvlib",
+                "python >=3.8"
+            ],
+            "fn": "openalea.astk-v3.0.2-py_0.conda",
+            "license": "CECILL-C",
+            "md5": "6cfd0a43646c37c3451a6e9540c2a658",
+            "name": "openalea.astk",
+            "noarch": "python",
+            "package_type": "noarch_python",
+            "platform": null,
+            "sha256": "4ee7d71d0a0e4c93f40738da5df75765c868d2902a7f0db1941b22de526bd100",
+            "size": 150911,
+            "subdir": "noarch",
+            "timestamp": 1744715601936,
+            "url": "https://conda.anaconda.org/openalea3/noarch/openalea.astk-v3.0.2-py_0.conda",
+            "version": "v3.0.2"
+        },
+        {
+            "arch": null,
+            "build": "py_0",
+            "build_number": 0,
+            "channel": "https://conda.anaconda.org/openalea3/noarch",
+            "constrains": [],
+            "depends": [
+                "pvlib",
+                "python >=3.8"
+            ],
+            "fn": "openalea.astk-v3.0.3-py_0.conda",
+            "license": "CECILL-C",
+            "md5": "1d49153f3ad0a4acbf6262c3860bc71b",
+            "name": "openalea.astk",
+            "noarch": "python",
+            "package_type": "noarch_python",
+            "platform": null,
+            "sha256": "95031f38b83caf79eff7f2e59e2279403f59ba26cc00027f53a54f5c2b1196fc",
+            "size": 149801,
+            "subdir": "noarch",
+            "timestamp": 1744730606115,
+            "url": "https://conda.anaconda.org/openalea3/noarch/openalea.astk-v3.0.3-py_0.conda",
+            "version": "v3.0.3"
+        },
+        {
+            "arch": null,
+            "build": "py_0",
+            "build_number": 0,
+            "channel": "https://conda.anaconda.org/openalea3/noarch",
+            "constrains": [],
+            "depends": [
+                "pvlib",
+                "python >=3.8"
+            ],
+            "fn": "openalea.astk-3.0.3-py_0.conda",
+            "license": "CECILL-C",
+            "md5": "cb3c6be3b70ae13718c13b00c0045e8d",
+            "name": "openalea.astk",
+            "noarch": "python",
+            "package_type": "noarch_python",
+            "platform": null,
+            "sha256": "42863d30b7cb932b4799be7bb57dfaf70b77bd7eec2ecae6c23c3360b21de793",
+            "size": 149976,
+            "subdir": "noarch",
+            "timestamp": 1744732478344,
+            "url": "https://conda.anaconda.org/openalea3/noarch/openalea.astk-3.0.3-py_0.conda",
+            "version": "3.0.3"
+        }
+    ]
+}

@@ -1,0 +1,476 @@
+/* ============================================================================
+    PACKAGE MANAGER - Clean & Sober Styling
+   ============================================================================ */
+
+/* --- Container Principal --- */
+.package-manager {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+
+/* --- Header avec Tabs --- */
+.package-manager-header {
+    flex-shrink: 0;
+    background: #f5f5f5;
+    padding: 12px 16px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.package-manager-title {
+    color: #333;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+/* --- Tabs Container --- */
+.package-manager-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 0;
+}
+
+.package-manager-tab {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.package-manager-tab:hover {
+    background: #e8e8e8;
+    color: #333;
+}
+
+.package-manager-tab.active {
+    background: #ffffff;
+    color: #111;
+    font-weight: 600;
+    border: 1px solid #e0e0e0;
+    border-bottom: 1px solid #ffffff;
+    margin-bottom: -1px;
+}
+
+.package-manager-tab-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* Hide tab text on very small screens */
+@media (max-width: 400px) {
+    .package-manager-tab span:not(.package-manager-tab-icon) {
+        display: none;
+    }
+    .package-manager-tab {
+        padding: 10px 16px;
+    }
+}
+
+/* --- Content Area --- */
+.package-manager-content {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+}
+
+/* --- Panel Commun --- */
+.panel-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.panel-scrollable {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+.panel-scrollable::-webkit-scrollbar {
+    width: 6px;
+}
+
+.panel-scrollable::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.panel-scrollable::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.panel-scrollable::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* --- Loading State --- */
+.panel-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: #666;
+    gap: 12px;
+}
+
+.panel-loading-text {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+/* --- Empty State --- */
+.panel-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: #888;
+}
+
+.panel-empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.panel-empty-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.panel-empty-subtitle {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+/* --- Tree View Styling --- */
+.tree-container {
+    padding: 4px 0;
+}
+
+/* Package item in tree */
+.tree-package-item {
+    border-radius: 6px;
+    margin: 2px 0;
+    transition: background-color 0.15s ease;
+}
+
+.tree-package-item:hover {
+    background-color: #f5f5f5;
+}
+
+/* Node item in tree (leaf) */
+.tree-node-item {
+    border-radius: 4px;
+    margin: 1px 0;
+    padding-left: 8px;
+    border-left: 2px solid transparent;
+    transition: all 0.15s ease;
+}
+
+.tree-node-item:hover {
+    background-color: #f0f0f0;
+    border-left-color: #333;
+}
+
+/* --- Search Bar --- */
+.search-container {
+    margin-bottom: 12px;
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 12px 10px 36px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #333;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+.search-input::placeholder {
+    color: #aaa;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 0.9rem;
+}
+
+/* --- Package List (Install Tab) --- */
+.package-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.package-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+}
+
+.package-item:hover {
+    border-color: #999;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.package-item.installed {
+    background: #f9f9f9;
+    border-color: #ccc;
+}
+
+.package-item.installing {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.package-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.package-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.package-version {
+    display: inline-block;
+    font-size: 0.7rem;
+    color: #888;
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-top: 2px;
+}
+
+.package-action {
+    flex-shrink: 0;
+    margin-left: 12px;
+}
+
+.install-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #333;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.install-button:hover {
+    background: #333;
+    color: #fff;
+    border-color: #333;
+}
+
+.install-button:disabled {
+    background: #f5f5f5;
+    color: #999;
+    border-color: #e0e0e0;
+    cursor: not-allowed;
+}
+
+.installed-icon {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* --- Package Count Badge --- */
+.package-count {
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 8px;
+    padding-left: 4px;
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+/* --- Loading Package Indicator --- */
+.loading-package-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+    color: #333;
+}
+
+/* --- Primitive Nodes Styling --- */
+.primitive-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.primitive-item:hover {
+    border-color: #999;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateX(4px);
+}
+
+.primitive-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.primitive-icon.float {
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid #e0e0e0;
+}
+
+.primitive-icon.string {
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid #e0e0e0;
+}
+
+.primitive-icon.boolean {
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid #e0e0e0;
+}
+
+.primitive-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.primitive-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.primitive-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.primitive-type {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 2px;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 600px) {
+    .package-manager-header {
+        padding: 10px 12px 0;
+    }
+
+    .package-manager-tab {
+        padding: 8px 10px;
+        font-size: 0.75rem;
+    }
+
+    .panel-container {
+        padding: 10px;
+    }
+
+    .package-item {
+        padding: 8px 10px;
+    }
+
+    .package-name {
+        font-size: 0.8rem;
+    }
+}
+
+@keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+}
+ 
+.panel-container {
+    animation: fadeIn 0.2s ease-out;
+    }
+
+/* --- Animations --- */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.loading-pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+}
