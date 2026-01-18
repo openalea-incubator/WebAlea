@@ -14,10 +14,10 @@ jest.mock(
 
 
 import WorkflowEngine, {
-    NodeState,
-    computeTopologicalOrder,
     WorkflowValidator
 } from "../../../../../src/features/workspace/engine/WorkflowEngine";
+
+import { NodeState, computeTopologicalOrder } from "../../../../../src/features/workspace/Utils/workflowUtils.js";
 
 import { executeNode } from "../../../../../src/api/runnerAPI.js";
 import {
