@@ -130,7 +130,7 @@ describe("managerAPI", () => {
             ]
         };
         const data = await executeNode(nodeData);
-        expect(fetch).toHaveBeenCalledWith(API_BASE_URL + "/execute/node", expect.objectContaining({
+        expect(fetch).toHaveBeenCalledWith(API_BASE_URL + "/execute", expect.objectContaining({
             method: "POST",
             body: JSON.stringify({
                 node_id: "node1",

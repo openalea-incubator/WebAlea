@@ -1,6 +1,6 @@
 // runnerAPI.js
 import { fetchJSON } from "./utils.js";
-import { API_BASE_URL } from "../config/api";
+import { API_BASE_URL_RUNNER } from "../config/api";
 
 // ===============================
 // NODE EXECUTION
@@ -17,7 +17,7 @@ import { API_BASE_URL } from "../config/api";
 export async function executeNode(nodeData) {
     const { nodeId, packageName, nodeName, inputs } = nodeData;
 
-    return fetchJSON(`${API_BASE_URL}/execute/node`, "POST", {
+    return fetchJSON(`${API_BASE_URL_RUNNER}/execute`, "POST", {
         node_id: nodeId,
         package_name: packageName,
         node_name: nodeName,
