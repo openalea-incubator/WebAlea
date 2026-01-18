@@ -6,6 +6,10 @@ import {useFlow} from '../../../../../src/features/workspace/providers/FlowConte
 import {useLog} from '../../../../../src/features/logger/providers/LogContextDefinition.jsx';
 import {ImportModal} from '../../../../../src/features/toolbar/model/ImportModal.jsx';
 
+/* ======================
+    Mocks
+====================== */
+
 // Define test id for StatusIndicator
 jest.mock('react-icons/fa', () => ({
     FaSpinner: () => <span data-testid="spinner-icon">Spinner</span>,
@@ -43,6 +47,9 @@ jest.mock('../../../../../src/features/toolbar/model/ImportModal.jsx', () => {
     };
 });
 
+/* ======================
+    Tests
+====================== */
 
 describe('ToolBar_file', () => {
     describe('ProgressBar', () => {

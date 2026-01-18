@@ -6,8 +6,16 @@ import {describe, test, expect} from "@jest/globals";
 // Mock the useLog hook
 import * as LogContext from "../../../../../src/features/logger/providers/LogContextDefinition.jsx";
 
+/* ======================
+    Mocks
+====================== */
+
 // eslint-disable-next-line no-undef
 jest.mock("../../../../../src/features/logger/providers/LogContextDefinition.jsx");
+
+/* ======================
+    Tests
+====================== */
 
 describe("logger component", () => {
 

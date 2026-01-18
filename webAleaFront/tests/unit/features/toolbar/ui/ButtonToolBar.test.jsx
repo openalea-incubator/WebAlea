@@ -1,8 +1,11 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ButtonToolBar from '../../../../../src/features/toolbar/ui/ButtonToolBar.jsx';
 import { FiUpload } from 'react-icons/fi';
 import {describe, test, expect} from "@jest/globals";
+
+/* ======================
+    Tests
+====================== */
 
 describe('ButtonToolBar', () => {
 

@@ -3,6 +3,10 @@ import LogProvider from '../../../../../src/features/logger/providers/LogContext
 import { useLog } from '../../../../../src/features/logger/providers/LogContextDefinition.jsx';
 import { describe, test, expect, beforeEach } from "@jest/globals";
 
+/* ======================
+    Tests
+====================== */
+
 describe('LogProvider Units Tests', () => {
 
     // Function to wrap the hook with the LogProvider

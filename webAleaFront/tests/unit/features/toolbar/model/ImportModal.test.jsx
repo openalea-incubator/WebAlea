@@ -1,14 +1,21 @@
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ImportModal from '../../../../../src/features/toolbar/model/ImportModal.jsx';
-import {describe, test, expect} from "@jest/globals";
+import {describe, test, expect, beforeEach} from "@jest/globals";
+
+/* ======================
+    Mocks
+====================== */
 
 // Mock react-icons icons
 jest.mock('react-icons/fi', () => ({
     FiUpload: () => <div data-testid="upload-icon">Upload</div>,
     FiCheck: () => <div data-testid="check-icon">Check</div>
 }));
+
+/* ======================
+    Tests
+====================== */
 
 describe('ImportModal', () => {
     const mockOnClose = jest.fn();

@@ -20,6 +20,10 @@ import {
 from "@jest/globals";
 import { API_BASE_URL } from "../../../src/config/api";
 
+/* =========================
+    Mocks
+======================== */
+
 // Mock global fetch
 globalThis.fetch = jest.fn();
 
@@ -27,6 +31,10 @@ globalThis.fetch = jest.fn();
 jest.mock("../../../src/config/api", () => ({
     API_BASE_URL: "http://test-api",
 }));
+
+/* =========================
+    Tests
+======================== */
 
 describe("managerAPI", () => {
 

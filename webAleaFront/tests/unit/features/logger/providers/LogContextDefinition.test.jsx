@@ -2,6 +2,10 @@ import { renderHook } from '@testing-library/react';
 import { useLog, LogContext } from '../../../../../src/features/logger/providers/LogContextDefinition.jsx';
 import {describe, test, expect} from "@jest/globals";
 
+/* ======================
+    Tests
+====================== */
+
 describe('useLog', () => {
 
     test('should throw an error if used outside of LogProvider', () => {

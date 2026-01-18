@@ -2,8 +2,7 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import PanelPrimitiveNode from "../../../../../../src/features/package-manager/ui/type/PanelPrimitiveNode.jsx";
-import { Node } from "../../../../../../src/features/workspace/model/Node.jsx";
-import { type } from "node:os";
+import { jest, beforeEach, test, expect, describe } from "@jest/globals";
 
 /* ===========================
     Tests

@@ -29,7 +29,7 @@ import {
 
 
 /* ------------------------------------------------------------------ */
-/* MOCK VALIDATOR (tested separately) */
+/* MOCK VALIDATOR 
 /* ------------------------------------------------------------------ */
 jest.spyOn(WorkflowValidator, "validate");
 

@@ -4,6 +4,10 @@ import NodeInput from "../../../../src/features/nodes/ui/NodeInputs";
 import React from "react";
 import { describe, test, expect, jest } from "@jest/globals";
 
+/* ======================
+    Tests
+====================== */
+
 describe("NodeInputs Unit Tests", () => {
 
     test("renders 'No inputs' when inputs array is empty", () => {
