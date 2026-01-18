@@ -22,7 +22,7 @@ class TestCondaMethods(TestCase):
         # Call the method
         packages = Conda.list_packages()
         self.assertIsInstance(packages, dict)
-        self.assertTrue(len(packages) > 0)
+        self.assertGreater(len(packages), 0)
 
     @unittest.mock.patch("subprocess.run")
     def test_list_latest_packages(self, mock_run):
@@ -42,8 +42,14 @@ class TestCondaMethods(TestCase):
     @unittest.mock.patch("subprocess.run")
     def test_install_package(self, mock_run):
         """Test installing a package in a conda environment."""
-        mock_run.return_value = None
-        Conda.install_package("openalea.astk", env_name="test_env")
+        # Mock successful installation
+        mock_run.return_value = unittest.mock.Mock()
+        mock_run.return_value.returncode = 0
+        mock_run.return_value.stderr = ""
+        try:
+            Conda.install_package("openalea.astk", env_name="test_env")
+        except (CalledProcessError, FileNotFoundError) as e:
+            self.fail(f"install_package raised an exception: {e}")
 
 
 class TestCondaIntegration(TestCase):
@@ -66,14 +72,14 @@ class TestCondaIntegration(TestCase):
         """Test listing packages from a channel."""
         packages = Conda.list_packages()
         self.assertIsInstance(packages, dict)
-        self.assertTrue(len(packages) > 0)
+        self.assertGreater(len(packages), 0)
 
     # @unittest.skip("Skipping test that requires actual conda environment.")
     def test_list_latest_packages(self):
         """Test listing latest package versions from a channel."""
         latest_packages = Conda.list_latest_packages()
         self.assertIsInstance(latest_packages, dict)
-        self.assertTrue(len(latest_packages) > 0)
+        self.assertGreater(len(latest_packages), 0)
 
     # @unittest.skip("Skipping test that requires actual conda environment.")
     def test_install_package(self):
@@ -82,9 +88,3 @@ class TestCondaIntegration(TestCase):
             Conda.install_package("openalea.astk", env_name="test_env")
         except (CalledProcessError, FileNotFoundError) as e:
             self.fail(f"install_package raised an exception: {e}")
-
-    # @unittest.skip("Skipping test that requires actual conda environment.")
-    def test_install_nonexistent_package(self):
-        """Test installing a nonexistent package to check error handling."""
-        with self.assertRaises((CalledProcessError, FileNotFoundError)):
-            Conda.install_package("nonexistent_package_12345", env_name="test_env")

@@ -19,6 +19,12 @@ function parseOutputName(output) {
     return name || "output";
 }
 
+/**
+ * NodeOutput component.
+ * This component is used to display the outputs of a node in the sidebar.
+ * @param {object} outputs - The outputs data.
+ * @returns {React.ReactNode} - The NodeOutput component.
+ */
 export default function NodeOutput({ outputs }) {
     if (!outputs || outputs.length === 0) {
         return <div className="text-muted small">No outputs</div>;

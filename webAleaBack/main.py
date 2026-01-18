@@ -1,9 +1,10 @@
 """Main application file for the webAleaBack FastAPI application."""
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from core.config import settings
 from api.v1 import router as v1_router
-from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

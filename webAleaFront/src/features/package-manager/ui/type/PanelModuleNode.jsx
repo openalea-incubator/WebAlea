@@ -6,9 +6,17 @@ import { getVisualPackagesList, getNodesList } from '../../../../service/Package
 /**
  * Panel displaying visual OpenAlea packages and their nodes.
  * Uses lazy loading - nodes are fetched when a package is expanded.
+ * 
+ * TODO: Refactor this component :
+ * * It is a duplicate of the PanelInstallPackage component.
+ * * It is not using the TreePackage component.
+ * * There are too many parameters.
+ * 
  */
 export default function PanelModuleNode({ onAddNode, version, treeItems, setTreeItems, loading, setLoading, loadingPackage, setLoadingPackage, loadedPackages, setLoadedPackages, expandedItems, setExpandedItems }) {
-    // Initial fetch of visual packages
+    /**
+     * Use effect to fetch the visual packages.
+     */
     useEffect(() => {
 
         if (treeItems.length > 0) {
@@ -50,7 +58,6 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
 
         try {
             const packageNodes = await getNodesList({ name: packageId });
-            console.log(`Loaded ${packageNodes.length} nodes for ${packageId}:`, packageNodes);
 
             const nodeItems = packageNodes.map(node => ({
                 id: `${packageId}::${node.name}`,
@@ -99,7 +106,6 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
         if (!clickedItem) return;
 
         if (clickedItem.isNode && onAddNode) {
-            console.log("Adding node to workspace:", clickedItem);
             onAddNode(clickedItem);
             return;
         }

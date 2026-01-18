@@ -4,7 +4,7 @@ import './index.css'
 import App from './App.jsx'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FlowProvider } from './features/workspace/providers/FlowContext.jsx';
-import { LogProvider } from './features/logger/providers/LogContext.jsx';
+import LogProvider from './features/logger/providers/LogContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

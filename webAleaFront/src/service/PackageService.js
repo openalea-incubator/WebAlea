@@ -8,13 +8,15 @@
  */
 
 import {
-    fetchPackageList,
-    fetchLatestPackageVersions,
-    fetchPackageNodes,
     installPackages,
-    fetchInstalledOpenAleaPackages,
-    fetchWraleaPackages
+    fetchLatestPackageVersions,
 } from "../api/managerAPI";
+
+import {
+    fetchInstalledOpenAleaPackages,
+    fetchWraleaPackages,
+    fetchPackageNodes
+} from "../api/inspectorAPI";
 
 // ============================================================================
 // TYPE DEFINITIONS (JSDoc for IDE support)

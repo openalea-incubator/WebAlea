@@ -1,10 +1,12 @@
 // managerAPI.js
 import { API_BASE_URL } from "../config/api";
+import { fetchJSON } from "./utils.js";
+
 // ==============================
-// LISTE DES PACKAGES
+// PACKAGE LIST
 // ==============================
 /**
- * 
+ * Fetch the list of all conda packages.
  * @returns {Promise<Object>}
  */
 export async function fetchPackageList() {
@@ -12,7 +14,7 @@ export async function fetchPackageList() {
 }
 
 /**
- * 
+ * Fetch the latest versions of all conda packages.
  * @returns {Promise<Object>}
  */
 export async function fetchLatestPackageVersions() {
@@ -24,7 +26,7 @@ export async function fetchLatestPackageVersions() {
 // ===============================
 
 /**
- * 
+ * Install packages in the conda environment.
  * @param {Array} packages 
  * @param {string|null} envName 
  * @returns {Promise<Object>}
@@ -92,27 +94,4 @@ export async function executeNode(nodeData) {
             value: input.value
         }))
     });
-}
-
-// ===============================
-// WRAPPER UTILITAIRE
-// ===============================
-async function fetchJSON(url, method = "GET", body = null) {
-    try {
-        const res = await fetch(url, {
-            method,
-            headers: { "Content-Type": "application/json" },
-            body: body ? JSON.stringify(body) : null,
-        });
-
-        if (!res.ok) {
-            throw new Error(`Erreur API : HTTP ${res.status}`);
-        }
-
-        return await res.json();
-
-    } catch (err) {
-        console.error("Erreur fetchJSON:", err);
-        throw err;
-    }
 }

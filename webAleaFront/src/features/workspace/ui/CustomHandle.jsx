@@ -8,7 +8,7 @@ import {
 } from '@xyflow/react';
 import { useFlow } from '../providers/FlowContextDefinition.jsx';
 
-// Couleurs par type d'interface
+// Mapping from types/interfaces to colors
 const typeColors = {
   string: "#1976d2",
   float: "#8e24aa",
@@ -27,14 +27,16 @@ const typeColors = {
 };
 
 /**
- * Détermine la couleur selon le type ou interface
+ * Get color based on type or interface name.
+ * @param {string} typeOrInterface - The type or interface name.
+ * @returns {string} - The corresponding color.
  */
 function getColorFromType(typeOrInterface) {
   if (!typeOrInterface) return typeColors.any;
 
   const t = typeOrInterface.toLowerCase();
 
-  // Match direct (for frontend types: float, string, boolean, array, etc.)
+  // Direct match (for frontend types: float, string, boolean, array, etc.)
   if (typeColors[t]) return typeColors[t];
 
   // Map OpenAlea interface names (IFloat, IInt, IStr, etc.)
@@ -55,51 +57,47 @@ function getColorFromType(typeOrInterface) {
 
 export default function CustomHandle({ id, label, style, interfaceType, onChange = null, dataType }) {
 
-  // Détermination du type réel du handle
+  // Check if this is an input or output handle
   const isInput = dataType === 'input';
   const handleType = isInput ? 'target' : 'source';
 
-  // ID du node parent (celui qui contient ce handle)
   const parentNodeId = useNodeId();
   const { setNodes } = useFlow();
 
-  // Récupère les connexions de CE handle
+  // Get connections for this handle
   const connections = useNodeConnections({
     handleType,
     handleId: id,
   });
 
-  // Une seule connexion pour ce handle (sinon on prend la première)
   const connection = connections?.[0];
 
-  // Node ID du node connecté
   const connectedNodeId = isInput
     ? connection?.source
     : connection?.target;
 
-  // Handle ID du handle connecté
   const connectedHandleId = isInput
     ? connection?.sourceHandle
     : connection?.targetHandle;
 
-  // Récupère les data du node connecté
+  // Get data of the connected node
   const connectedNode = useNodesData(connectedNodeId);
 
-  // IO du node connecté selon ton besoin :
-  // - Si CE handle est target => on lit OUTPUTS du source
-  // - Si CE handle est source => on lit INPUTS du target
+  // Get the IO (input/output) definitions of the connected node
+  // - If this handle is target (input) => We read OUTPUTS of the source
+  // - If this handle is source (output) => We read INPUTS of the target
   const connectedIO = isInput
-    ? connectedNode?.data?.outputs // target → lit outputs
-    : connectedNode?.data?.inputs; // source → lit inputs
+    ? connectedNode?.data?.outputs // target → outputs
+    : connectedNode?.data?.inputs; // source → inputs
 
-  // On récupère l'IO spécifique correspondant au handle connecté
+    // Find the connected IO definition by its handle ID
   const linkedValue = connectedIO?.find((io) => io.id === connectedHandleId);
 
-  // Synchronisation: propager la valeur connectée vers l'input du node parent
+    // Effect to update parent node's input value when connection changes
   useEffect(() => {
     if (!isInput || !parentNodeId) return;
 
-    // Cas 1: Il y a une connexion avec une valeur
+    // First case: A connection exists - update the input value
     if (connection && linkedValue !== undefined) {
       const newValue = linkedValue?.value;
 
@@ -109,7 +107,6 @@ export default function CustomHandle({ id, label, style, interfaceType, onChange
 
           const updatedInputs = (node.data.inputs || []).map((input) => {
             if (input.id === id) {
-              // Ne mettre à jour que si la valeur ou le flag a changé
               if (input.value !== newValue || !input.fromConnection) {
                 return { ...input, value: newValue, fromConnection: true };
               }
@@ -124,12 +121,12 @@ export default function CustomHandle({ id, label, style, interfaceType, onChange
         })
       );
 
-      // Callback optionnel
       if (onChange) {
         onChange(newValue);
       }
     }
-    // Cas 2: La connexion a été supprimée - retirer le flag fromConnection
+
+    // Case 2: No connection - remove the fromConnection flag
     else if (!connection) {
       setNodes((prevNodes) =>
         prevNodes.map((node) => {
@@ -137,7 +134,7 @@ export default function CustomHandle({ id, label, style, interfaceType, onChange
 
           const updatedInputs = (node.data.inputs || []).map((input) => {
             if (input.id === id && input.fromConnection) {
-              // Retirer le flag mais garder la dernière valeur
+              // Remove fromConnection flag but keep current value
               const { fromConnection, ...rest } = input;
               return rest;
             }
@@ -153,15 +150,15 @@ export default function CustomHandle({ id, label, style, interfaceType, onChange
     }
   }, [linkedValue, connection, onChange, isInput, parentNodeId, id, setNodes]);
 
-  // Calcul de la couleur basée sur le type/interface
-  // Si interfaceType est défini, on utilise getColorFromType
-  // Sinon, on garde le style.background passé en prop (pour les primitives)
+  // Memoized style with color based on interfaceType
+  // Override background color if interfaceType is provided
+  // (for non-primitive types)
   const handleStyle = useMemo(() => {
     if (interfaceType) {
       const color = getColorFromType(interfaceType);
       return { ...style, background: color };
     }
-    // Pas d'interfaceType -> garder le style original (primitives)
+    // No interfaceType provided, return original style
     return style;
   }, [style, interfaceType]);
 

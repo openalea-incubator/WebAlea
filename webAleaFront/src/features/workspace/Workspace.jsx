@@ -8,6 +8,11 @@ import '@xyflow/react/dist/style.css';
 import '../../assets/css/workspace.css'; // Css perso
 import { useFlow } from './providers/FlowContextDefinition.jsx';
 
+/**
+ * WorkSpace - The main workspace component that renders the flow editor.
+ * It utilizes ReactFlow to display nodes and edges, and provides controls for interaction.
+ * The component retrieves nodes, edges, and related handlers from the Flow context.
+ */
 export default function WorkSpace() {
 
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect, nodesTypes, onNodeClick } = useFlow();
