@@ -12,7 +12,7 @@ function parseOutputName(output) {
             const nameMatch = name.match(/'name':\s*'([^']+)'/);
             if (nameMatch) name = nameMatch[1];
         } catch (e) {
-            console.warn("Failed to parse output name:", output.name);
+            console.warn("Failed to parse output name:", output.name, e);
         }
     }
 

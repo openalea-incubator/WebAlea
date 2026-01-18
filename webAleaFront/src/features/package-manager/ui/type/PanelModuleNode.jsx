@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { RichTreeView } from '@mui/x-tree-view';
 import { FiPackage, FiLoader } from 'react-icons/fi';
 import { getVisualPackagesList, getNodesList } from '../../../../service/PackageService.js';

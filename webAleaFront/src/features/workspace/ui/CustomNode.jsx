@@ -54,6 +54,7 @@ export default function CustomNode(nodeProps) {
     const borderColor = useMemo(() => getBorderColor(status), [status]);
     const nextStatus = useMemo(() => getNextStatus(status), [status]);
 
+    // eslint-disable-next-line no-unused-vars
     const handleStatusClick = useCallback(() => {
         updateNode(id, { status: nextStatus });
     }, [id, nextStatus, updateNode]);

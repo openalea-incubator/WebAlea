@@ -18,7 +18,7 @@ import {
     jest, beforeEach, test, expect, describe
 } 
 from "@jest/globals";
-import { API_BASE_URL } from "../../../src/config/api";
+import { API_BASE_URL_MANAGER, API_BASE_URL_INSPECTOR, API_BASE_URL_RUNNER } from "../../../src/config/api";
 
 /* =========================
     Mocks
@@ -29,7 +29,9 @@ globalThis.fetch = jest.fn();
 
 // Mock the API_BASE_URL to avoid using the real environment variable
 jest.mock("../../../src/config/api", () => ({
-    API_BASE_URL: "http://test-api",
+    API_BASE_URL_MANAGER: "http://test-api-manager",
+    API_BASE_URL_INSPECTOR: "http://test-api-inspector",
+    API_BASE_URL_RUNNER: "http://test-api-runner",
 }));
 
 /* =========================
@@ -49,7 +51,7 @@ describe("managerAPI", () => {
             json: async () => mockResponse,
         });
         const data = await fetchInstalledOpenAleaPackages();
-        expect(fetch).toHaveBeenCalledWith(API_BASE_URL + "/installed", expect.any(Object));
+        expect(fetch).toHaveBeenCalledWith(API_BASE_URL_INSPECTOR + "/installed", expect.any(Object));
         expect(data).toEqual(mockResponse);
     });
 
@@ -60,7 +62,7 @@ describe("managerAPI", () => {
             json: async () => mockResponse,
         });
         const data = await fetchLatestPackageVersions();
-        expect(fetch).toHaveBeenCalledWith(API_BASE_URL + "/latest", expect.any(Object));
+        expect(fetch).toHaveBeenCalledWith(API_BASE_URL_MANAGER + "/latest", expect.any(Object));
         expect(data).toEqual(mockResponse);
     });
 
@@ -71,7 +73,7 @@ describe("managerAPI", () => {
             json: async () => mockResponse,
         });
         const data = await fetchPackageList();
-        expect(fetch).toHaveBeenCalledWith(API_BASE_URL + "/", expect.any(Object));
+        expect(fetch).toHaveBeenCalledWith(API_BASE_URL_MANAGER + "/", expect.any(Object));
         expect(data).toEqual(mockResponse);
     });
 
@@ -82,7 +84,7 @@ describe("managerAPI", () => {
             json: async () => mockResponse,
         });
         const data = await fetchWraleaPackages();
-        expect(fetch).toHaveBeenCalledWith(API_BASE_URL + "/wralea", expect.any(Object));
+        expect(fetch).toHaveBeenCalledWith(API_BASE_URL_INSPECTOR + "/wralea", expect.any(Object));
         expect(data).toEqual(mockResponse);
     });
 
@@ -93,7 +95,7 @@ describe("managerAPI", () => {
             json: async () => mockResponse,
         });
         const data = await fetchPackageNodes("packageA");
-        expect(fetch).toHaveBeenCalledWith(API_BASE_URL + "/installed/packageA", expect.any(Object));
+        expect(fetch).toHaveBeenCalledWith(API_BASE_URL_INSPECTOR + "/installed/packageA", expect.any(Object));
         expect(data).toEqual(mockResponse);
     });
 
@@ -104,7 +106,7 @@ describe("managerAPI", () => {
             json: async () => mockResponse,
         });
         const data = await installPackages([{name: "packageA", version: "1.2"}], "env1");
-        expect(fetch).toHaveBeenCalledWith(API_BASE_URL + "/install", expect.objectContaining({
+        expect(fetch).toHaveBeenCalledWith(API_BASE_URL_MANAGER + "/install", expect.objectContaining({
             method: "POST",
             body: JSON.stringify({
                 packages: [{name: "packageA", version: "1.2"}],
@@ -130,7 +132,7 @@ describe("managerAPI", () => {
             ]
         };
         const data = await executeNode(nodeData);
-        expect(fetch).toHaveBeenCalledWith(API_BASE_URL + "/execute", expect.objectContaining({
+        expect(fetch).toHaveBeenCalledWith(API_BASE_URL_RUNNER + "/execute", expect.objectContaining({
             method: "POST",
             body: JSON.stringify({
                 node_id: "node1",

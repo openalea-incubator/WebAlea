@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useCallback } from "react";
 import NodeInput from "../NodeInputs.jsx";
 import NodeOutput from "../NodeOutputs.jsx";
 import { useFlow } from "../../../workspace/providers/FlowContextDefinition.jsx";
@@ -30,11 +30,6 @@ export default function NodeParameters() {
      * @type {array}
      */
     const outputs = node ? node.data.outputs : [];
-    /**
-     * State to store if the node has changed.
-     * @type {boolean}
-     */
-    const [isChanged, setIsChanged] = useState(false);
 
     /**
      * Function to handle input value changes.
@@ -49,7 +44,6 @@ export default function NodeParameters() {
         );
 
         updateNode(node.id, { inputs: updatedInputs });
-        setIsChanged(true);
     }, [node, inputs, updateNode]);
 
     /**
@@ -58,7 +52,6 @@ export default function NodeParameters() {
     const handleLaunch = () => {
         if (node) {
             onNodeExecute(node.id);
-            setIsChanged(false);
         }
     };
 

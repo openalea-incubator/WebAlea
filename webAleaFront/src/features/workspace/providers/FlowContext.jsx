@@ -22,7 +22,8 @@ import FloatNode from '../ui/type/FloatNode.jsx';
 import StringNode from '../ui/type/StringNode.jsx';
 import BoolNode from '../ui/type/BoolNode.jsx';
 import { useLog } from '../../logger/providers/LogContextDefinition.jsx';
-import { WorkflowEngine, NodeState } from '../engine/WorkflowEngine.jsx';
+import { WorkflowEngine } from '../engine/WorkflowEngine.jsx';
+import { NodeState } from '../Utils/workflowUtils.js';
 import { buildGraphModel, WFNode } from '../model/WorkflowGraph.jsx';
 
 const FLOW_KEY_NODES = 'reactFlowCacheNodes';

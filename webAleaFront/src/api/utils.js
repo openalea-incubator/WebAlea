@@ -1,7 +1,7 @@
 // utils.js
 
 // ===============================
-// WRAPPER UTILITAIRE
+// WRAPPER UTILS FOR FETCH API
 // ===============================
 export async function fetchJSON(url, method = "GET", body = null) {
     try {

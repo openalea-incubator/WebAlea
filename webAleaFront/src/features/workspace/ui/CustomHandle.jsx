@@ -55,7 +55,7 @@ function getColorFromType(typeOrInterface) {
   return typeColors.default;
 }
 
-export default function CustomHandle({ id, label, style, interfaceType, onChange = null, dataType }) {
+export default function CustomHandle({ id, style, interfaceType, onChange = null, dataType }) {
 
   // Check if this is an input or output handle
   const isInput = dataType === 'input';
@@ -135,6 +135,7 @@ export default function CustomHandle({ id, label, style, interfaceType, onChange
           const updatedInputs = (node.data.inputs || []).map((input) => {
             if (input.id === id && input.fromConnection) {
               // Remove fromConnection flag but keep current value
+              // eslint-disable-next-line no-unused-vars
               const { fromConnection, ...rest } = input;
               return rest;
             }
