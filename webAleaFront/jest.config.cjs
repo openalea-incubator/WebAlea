@@ -25,6 +25,8 @@ module.exports = {
         "!src/**/*.spec.js",
         "!src/**/__mocks__/**",
         "!src/config/**",
+        "!src/main.jsx",
+        "!src/App.jsx"
     ],
 
     coveragePathIgnorePatterns: [

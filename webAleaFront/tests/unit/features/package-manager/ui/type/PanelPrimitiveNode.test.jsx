@@ -6,29 +6,6 @@ import { Node } from "../../../../../../src/features/workspace/model/Node.jsx";
 import { type } from "node:os";
 
 /* ===========================
-    Mocks
-=========================== */
-
-jest.mock("../../../../../../src/features/package-manager/model/TreePackage.jsx", () => {
-    return jest.fn().mockImplementation((id, label) => ({
-        id,
-        label,
-        version: "unknown",
-        children: [],
-        childrenCount: 0,
-        serialize: function() {
-            return {
-                id: this.id,
-                label: this.label,
-                version: this.version,
-                children: this.children,
-                childrenCount: this.childrenCount,
-            };
-        }
-    }));
-});
-
-/* ===========================
     Tests
 =========================== */
 
