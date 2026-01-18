@@ -12,10 +12,10 @@ describe('FlowContextDefinition Units Tests', () => {
         // Expect an error to be thrown
         expect(() => {
             renderHook(() => useFlow());
-        }).toThrow('useFlow must be used within a FlowProvider');
+        }).toThrow('useFlow must be used within a FlowContextProvider');
     });
 
-    test('should return the context when used within FlowProvider', () => {
+    test('should return the context when used within FlowContextProvider', () => {
         const mockContext = { logs: [], addLog: jest.fn() };
 
         const wrapper = ({ children }) => (

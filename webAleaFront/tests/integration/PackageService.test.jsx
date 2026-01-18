@@ -4,18 +4,33 @@ import {
 from "@jest/globals";
 
 import { getPackagesList, getVisualPackagesList, isInstalledPackage, getInstalledPackagesList, getNodesList, installPackage  } from "../../src/service/PackageService";
-import { fetchLatestPackageVersions, fetchWraleaPackages, fetchInstalledOpenAleaPackages, installPackages, fetchPackageNodes  } from "../../src/api/managerAPI";
+import { fetchLatestPackageVersions, installPackages  } from "../../src/api/managerAPI";
+import { fetchWraleaPackages, fetchInstalledOpenAleaPackages, fetchPackageNodes } from "../../src/api/inspectorAPI";
+
+/* ========================
+    Mocks
+======================== */
 
 jest.mock("../../src/api/managerAPI", () => ({
     fetchLatestPackageVersions: jest.fn(),
-    fetchWraleaPackages: jest.fn(),
-    fetchInstalledOpenAleaPackages: jest.fn(),
-    fetchPackageNodes: jest.fn(),
     installPackages: jest.fn(),
 }));
 
+jest.mock("../../src/api/inspectorAPI", () => ({
+    fetchWraleaPackages: jest.fn(),
+    fetchInstalledOpenAleaPackages: jest.fn(),
+    fetchPackageNodes: jest.fn(),
+}));
 
-describe("PackageService", () => {
+jest.mock('../../src/config/api', () => ({
+    API_BASE_URL: 'http://testapi.local'
+}));
+
+/* ========================
+    Tests
+======================== */
+
+describe("PackageService Unit Tests", () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -47,6 +62,7 @@ describe("PackageService", () => {
                 { name: "plantgl", module: "openalea.plantgl_wralea" },
             ],
         });
+
 
         const result = await getVisualPackagesList();
 

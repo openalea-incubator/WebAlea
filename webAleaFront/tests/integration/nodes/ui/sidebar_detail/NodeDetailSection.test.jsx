@@ -61,7 +61,7 @@ describe("NodeDetailSection Integration Tests", () => {
         await user.click(viewButton);
 
         expect(
-            screen.getByText("Vue / preview ici...")
+            screen.getByText("Preview...")
         ).toBeInTheDocument();
     });
 
@@ -71,7 +71,7 @@ describe("NodeDetailSection Integration Tests", () => {
 
         await user.click(screen.getByRole("button", { name: /view/i }));
         expect(
-            screen.getByText("Vue / preview ici...")
+            screen.getByText("Preview...")
         ).toBeInTheDocument();
 
         await user.click(screen.getByRole("button", { name: /parameters/i }));

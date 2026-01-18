@@ -2,7 +2,7 @@
 /* MOCK BACKEND API */
 /* ------------------------------------------------------------------ */
 jest.mock(
-    "../../../../../src/api/managerAPI.js",
+    "../../../../../src/api/runnerAPI.js",
     () => ({
         executeNode: jest.fn()
     })
@@ -19,7 +19,7 @@ import WorkflowEngine, {
     WorkflowValidator
 } from "../../../../../src/features/workspace/engine/WorkflowEngine";
 
-import { executeNode } from "../../../../../src/api/managerAPI.js";
+import { executeNode } from "../../../../../src/api/runnerAPI.js";
 import {
     describe,
     test,

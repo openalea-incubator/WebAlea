@@ -1,13 +1,18 @@
 import { 
-    fetchInstalledOpenAleaPackages, 
     fetchLatestPackageVersions,
     fetchPackageList,
-    fetchPackageNodes,
-    fetchWraleaPackages,
-    installPackages,
-    executeNode
+    installPackages
 }  
 from "../../../src/api/managerAPI";
+
+import { 
+    fetchWraleaPackages,
+    fetchInstalledOpenAleaPackages,
+    fetchPackageNodes
+} 
+from "../../../src/api/inspectorAPI";
+
+import { executeNode } from "../../../src/api/runnerAPI";
 
 import { 
     jest, beforeEach, test, expect, describe

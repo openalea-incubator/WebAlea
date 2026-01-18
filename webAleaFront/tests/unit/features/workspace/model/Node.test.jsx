@@ -71,21 +71,6 @@ describe("Node Class Unit Tests", () => {
         expect(node.serialize()).toBeNull();
     });
 
-    test("serializeToJSON returns JSON string with default spacing", () => {
-        const node = new Node({ id: "n3", label: "Node3" });
-        const json = node.serializeToJSON();
-        expect(typeof json).toBe("string");
-        const obj = JSON.parse(json);
-        expect(obj.id).toBe("n3");
-        expect(obj.data.label).toBe("Node3");
-    });
-
-    test("serializeToJSON returns JSON string with custom spacing", () => {
-        const node = new Node({ id: "n4", label: "Node4" });
-        const json = node.serializeToJSON(4);
-        expect(json.startsWith("{\n    ")).toBe(true); // indented
-    });
-
     test("node uses default values when data is missing", () => {
         const node = new Node({ id: "n5" });
         expect(node.data.status).toBe("ready");

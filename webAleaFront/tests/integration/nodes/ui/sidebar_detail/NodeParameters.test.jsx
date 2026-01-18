@@ -106,11 +106,11 @@ describe("NodeParameters Integration Tests", () => {
         );
     });
 
-    test("executes node and resets changed state when clicking Lancer", async () => {
+    test("executes node and resets changed state when clicking launch", async () => {
         const user = userEvent.setup();
         render(<NodeParameters />);
 
-        const launchButton = screen.getByRole("button", { name: /lancer/i });
+        const launchButton = screen.getByRole("button", { name: /launch/i });
 
         await user.click(launchButton);
 
