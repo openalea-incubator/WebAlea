@@ -8,7 +8,7 @@ class TestOpenAleaInspector(unittest.TestCase):
     """Unit tests for OpenAlea Inspector endpoints."""
 
     # openalea inspector package desc file
-    openalea_package_desc_file = "tests/resources/conda/openalea_package_desc.json"
+    openalea_package_desc_file = "tests/resources/conda/openalea.astk_description.json"
 
     app_router = inspector.router
 
