@@ -1,7 +1,6 @@
 [run]
 omit =
     **/__init__.py
-    **/runnable/**
     **/tests/**
     **/__pycache__/**
     **/htmlcov/**
