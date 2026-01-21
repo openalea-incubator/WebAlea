@@ -21,7 +21,7 @@ You can skip those by uncommenting the skip line before integration tests.
 Use the `tests/resources/environment.yml` file to set up the test environment.
 ```bash
 conda env create -f tests/resources/environment.yml
-conda activate webalea-test
+conda activate webalea_test_env
 ```
 
 After setup, you can run the tests following the steps in [Launch Tests](#launch-tests).
