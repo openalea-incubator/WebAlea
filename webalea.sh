@@ -3,18 +3,13 @@
 # Script to manage Docker Compose services
 
 if [ "$1" == "start" ]; then
-    # Unpause the containers if they are paused
-    docker-compose unpause 2>/dev/null
-    # If unpause failed (exit code not 0), start the services
-    if [ $? -ne 0 ]; then
-        docker-compose up -d
-    fi
+    docker compose up -d
 
     # Give Docker a moment to settle
     sleep 1
 
     # Show the running services and their published localhost addresses (if any)
-    ids=$(docker-compose ps -q)
+    ids=$(docker compose ps -q)
     if [ -z "$ids" ]; then
         echo "No containers found."
     else
@@ -49,10 +44,10 @@ if [ "$1" == "start" ]; then
     fi
 elif [ "$1" == "stop" ]; then
     # Pause the containers without removing or cleaning them
-    docker-compose pause
+    docker compose pause
 elif [ "$1" == "rebuild" ]; then
     # Rebuild and launch the backend and frontend using Docker Compose
-    docker-compose up --build -d
+    docker compose up --build -d
 else
     # Display help section
     echo "Usage: $0 {start|stop|rebuild}"
