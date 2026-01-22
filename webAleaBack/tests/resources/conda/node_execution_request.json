@@ -1,0 +1,9 @@
+{
+    "node_id": "node_1",
+    "package_name": "openalea.core",
+    "node_name": "addition",
+    "inputs": [
+        {"id": "in_0", "name": "a", "type": "float", "value": 5},
+        {"id": "in_1", "name": "b", "type": "float", "value": 3}
+    ]
+}

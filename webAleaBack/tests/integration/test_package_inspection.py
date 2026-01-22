@@ -7,7 +7,6 @@ import os
 import json
 
 from api.v1.endpoints.inspector import fetch_installed_openalea_packages, fetch_wralea_packages, fetch_package_nodes
-from types import SimpleNamespace
 
 load_dotenv("tests/.env")
 
@@ -16,7 +15,7 @@ class TestPackageInspectionIntegration(TestCase):
 
     installed_package = os.getenv("INSTALLED_PACKAGE")
     package_description_file = os.getenv("PACKAGE_DESCRIPTION_FILE")
-    list_wralea_packages_file = os.getenv("list_wralea_packages_file")
+    list_wralea_packages_file = os.getenv("LIST_WRALEA_PACKAGES_FILE")
 
     def test_fetch_installed_openalea_packages(self):
         """Test fetching the list of installed OpenAlea packages in the current environment."""

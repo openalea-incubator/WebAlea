@@ -5,6 +5,7 @@ omit =
     **/__pycache__/**
     **/htmlcov/**
     **/main.py
+    ""/runnable/**
 
 [report]
 exclude_lines =
