@@ -1,7 +1,11 @@
 {
     "success": true,
-    "node_id": "node_1",
     "outputs": [
-        {"index": 0, "name": "result", "value": 8, "type": "float"}
+        {
+            "index": 0,
+            "name": "out",
+            "value": true,
+            "type": "boolean"
+        }
     ]
 }

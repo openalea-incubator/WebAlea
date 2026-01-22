@@ -1,9 +1,19 @@
 {
-    "node_id": "node_1",
-    "package_name": "openalea.core",
-    "node_name": "addition",
+    "node_id": "n7798-openalea.math::==",
+    "package_name": "openalea.math",
+    "node_name": "==",
     "inputs": [
-        {"id": "in_0", "name": "a", "type": "float", "value": 5},
-        {"id": "in_1", "name": "b", "type": "float", "value": 3}
+        {
+            "id": "port_0_a",
+            "name": "a",
+            "type": "float",
+            "value": 0
+        },
+        {
+            "id": "port_1_b",
+            "name": "b",
+            "type": "float",
+            "value": 0
+        }
     ]
 }
