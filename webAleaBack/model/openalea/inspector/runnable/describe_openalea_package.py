@@ -9,9 +9,9 @@ import re
 import sys
 from typing import Any, Dict
 
+from model.openalea.inspector.runnable.constants import KNOWN_INTERFACES, INTERFACE_TO_FRONTEND_TYPE_MAP
+
 from openalea.core.pkgmanager import PackageManager
-
-
 
 def get_interface_type(interface) -> str:
     """Extract the interface type name from an OpenAlea interface object.
@@ -26,28 +26,21 @@ def get_interface_type(interface) -> str:
         return "None"
 
     try:
-        # 1. If it's a CLASS (e.g., IFloat, IInt) - check this FIRST
+        # an interface class
         if isinstance(interface, type):
             return interface.__name__
 
-        # 2. If it's an INSTANCE (e.g., IFloat(), IInt(0, 100))
+        # an interface instance
         if hasattr(interface, '__class__'):
             class_name = interface.__class__.__name__
             # Avoid generic/meta class names
             if class_name not in ('type', 'NoneType', 'ABCMeta', 'MetaClass'):
                 return class_name
 
-        # 3. Fallback: extract from string representation
+        # Fallback: extract from string representation
         iface_str = str(interface)
 
-        # Known OpenAlea interface types
-        known_interfaces = [
-            'IFloat', 'IInt', 'IStr', 'IBool', 'ISequence', 'IDict',
-            'IFileStr', 'IDirStr', 'ITextStr', 'ICodeStr', 'IEnumStr',
-            'IRGBColor', 'IDateTime', 'ITuple', 'ITuple3', 'IFunction', 'IData'
-        ]
-
-        for iface_type in known_interfaces:
+        for iface_type in KNOWN_INTERFACES:
             if iface_type in iface_str:
                 return iface_type
 
@@ -66,27 +59,7 @@ def interface_to_type(interface_name: str) -> str:
     Returns:
         str: The frontend type (e.g., "float", "string", "boolean")
     """
-    mapping = {
-        'IFloat': 'float',
-        'IInt': 'float',  # Treated as float in frontend for numeric input
-        'IStr': 'string',
-        'ITextStr': 'string',
-        'ICodeStr': 'string',
-        'IFileStr': 'string',
-        'IDirStr': 'string',
-        'IBool': 'boolean',
-        'IEnumStr': 'enum',
-        'ISequence': 'array',
-        'IDict': 'object',
-        'IRGBColor': 'color',
-        'IDateTime': 'string',
-        'ITuple': 'array',
-        'ITuple3': 'array',
-        'IFunction': 'function',
-        'IData': 'any',
-        'None': 'any',
-    }
-    return mapping.get(interface_name, 'any')
+    return INTERFACE_TO_FRONTEND_TYPE_MAP.get(interface_name, 'any')
 
 
 def parse_dict_like_string(s: str) -> dict:
