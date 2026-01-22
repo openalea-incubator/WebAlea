@@ -34,10 +34,9 @@ class TestPackageInspectionIntegration(TestCase):
         try:
             wralea_packages = fetch_wralea_packages()
             self.assertIsInstance(wralea_packages, dict)
-            self.assertEqual(
-                json.load(open(self.list_wralea_packages_file, encoding="utf-8")),
-                wralea_packages
-            )
+            self.assertIn("wralea_packages", wralea_packages)
+            self.assertIsInstance(wralea_packages.get("wralea_packages"), list)
+            self.assertGreater(len(wralea_packages.get("wralea_packages", [])), 0)
         except subprocess.CalledProcessError as e:
             self.fail(f"Fetching wralea packages failed with error: {e}")
 

@@ -2,10 +2,10 @@
 omit =
     **/__init__.py
     **/tests/**
+    **/runner/**
     **/__pycache__/**
     **/htmlcov/**
     **/main.py
-    ""/runnable/**
 
 [report]
 exclude_lines =
