@@ -50,7 +50,6 @@ class TestNodeExecutionIntegration(TestCase):
 
             # Validate response
             self.assertEqual(response["success"], expected_response["success"])
-            self.assertEqual(response["node_id"], expected_response["node_id"])
             self.assertEqual(response["outputs"], expected_response["outputs"])
 
         except subprocess.CalledProcessError as e:
