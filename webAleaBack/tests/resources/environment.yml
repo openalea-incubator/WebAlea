@@ -16,6 +16,7 @@ dependencies:
   - setuptools
   # test dependencies
   - pytest
+  - pylint
   - coverage
   - pytest-cov
   # openalea packages

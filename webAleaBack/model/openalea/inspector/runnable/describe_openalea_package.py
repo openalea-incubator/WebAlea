@@ -9,9 +9,11 @@ import re
 import sys
 from typing import Any, Dict
 
-from model.openalea.inspector.runnable.constants import KNOWN_INTERFACES, INTERFACE_TO_FRONTEND_TYPE_MAP
-
 from openalea.core.pkgmanager import PackageManager
+
+from model.openalea.inspector.runnable.constants import (
+    KNOWN_INTERFACES, INTERFACE_TO_FRONTEND_TYPE_MAP
+)
 
 def get_interface_type(interface) -> str:
     """Extract the interface type name from an OpenAlea interface object.
