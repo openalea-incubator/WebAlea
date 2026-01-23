@@ -13,7 +13,7 @@ IF "%ARG%"=="start" (
     REM Show the running services and their published localhost addresses (simplified)
     FOR /F "tokens=*" %%i IN ('docker-compose ps -q') DO (
         SET ID=%%i
-        FOR /F "tokens=*" %%p IN ('docker inspect -f "%%{{range $p,$conf := .NetworkSettings.Ports}}{{if $conf}}{{printf "%%s=%%s:%%s\n" $p (index $conf 0).HostIp (index $conf 0).HostPort}}{{else}}{{printf "%%s=unmapped\n" $p}}{{end}}{{end}}" %%i') DO (
+        FOR /F "tokens=*" %%p IN ('docker inspect -f "%%{{range $p,$conf := .NetworkSettings.Ports}}{{if $conf}}{{printf "%s=%s:%s\n" $p (index $conf 0).HostIp (index $conf 0).HostPort}}{{else}}{{printf "%s=unmapped\n" $p}}{{end}}{{end}}" %%i') DO (
             SET LINE=%%p
             SET PROTOPORT=!LINE:*=!
             SET MAPPING=!LINE:*!=!
@@ -34,10 +34,23 @@ IF "%ARG%"=="start" (
     )
 ) ELSE IF "%ARG%"=="stop" (
     REM Stop and clean up Docker Compose services
-    docker-compose down --volumes --remove-orphans
+    REM docker compose down --volumes --remove-orphans
+    docker compose pause
+) ELSE IF "%ARG%"=="clean-volumes" (
+    REM Stop and clean up Docker Compose services
+    docker compose down --volumes
+) ELSE IF "%ARG%"=="clean-containers" (
+    REM Stop and clean up Docker Compose services
+    docker compose down --remove-orphans
+) ELSE IF "%ARG%"=="clean" (
+    REM Stop and clean up Docker Compose services
+    docker compose down --volumes --remove-orphans
 ) ELSE (
     REM Display help section
-    ECHO Usage: %0 ^{start^|stop^}
+    ECHO Usage: %0 ^{start^|stop^|clean-volumes^|clean-containers^|clean^}
     ECHO start - Launch the backend and frontend using Docker Compose
     ECHO stop  - Stop and clean up Docker Compose services
+    ECHO clean-volumes - Delete volume ^=^> reset volumes env
+    ECHO clean-containers - Delete container ^=^> reset containers env
+    ECHO clean - Delete volume and container ^=^> reset docker env
 )
