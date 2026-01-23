@@ -16,7 +16,6 @@ export const NodeState = {
     CANCELLED: 'cancelled'  // Cancelled by user
 };
 
-
 export function getColorFromBar(status) {
     return () => {
         switch (status) {
@@ -28,3 +27,13 @@ export function getColorFromBar(status) {
         }
     };
 }
+
+export const stateToStatus = {
+    [NodeState.PENDING]: 'queued',
+    [NodeState.READY]: 'queued',
+    [NodeState.RUNNING]: 'running',
+    [NodeState.COMPLETED]: 'done',
+    [NodeState.ERROR]: 'error',
+    [NodeState.SKIPPED]: 'skipped',
+    [NodeState.CANCELLED]: 'ready'
+};

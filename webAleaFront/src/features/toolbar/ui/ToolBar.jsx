@@ -25,7 +25,7 @@ import {
 } from "react-icons/fa";
 import { useFlow } from "../../workspace/providers/FlowContextDefinition.jsx";
 import { useLog } from "../../logger/providers/LogContextDefinition.jsx";
-import { getColorFromBar } from "../../workspace/utils/nodeUtils.js";
+import { getColorFromBar, NodeState } from "../../workspace/utils/nodeUtils.js";
 
 /**
  * Progress Bar Component
@@ -91,8 +91,8 @@ function StatusIndicator({ status }) {
 
     const getText = () => {
         switch (status) {
-            case 'running': return 'Running...';
-            case 'completed': return 'Completed';
+            case NodeState.RUNNING: return 'Running...';
+            case NodeState.COMPLETED: return 'Completed';
             case 'failed': return 'Error';
             case 'validation-error': return 'Validation failed';
             case 'stopped': return 'Stopped';

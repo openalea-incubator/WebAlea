@@ -23,22 +23,13 @@ import StringNode from '../ui/type/StringNode.jsx';
 import BoolNode from '../ui/type/BoolNode.jsx';
 import { useLog } from '../../logger/providers/LogContextDefinition.jsx';
 import { WorkflowEngine } from '../engine/WorkflowEngine.jsx';
-import { NodeState } from '../Utils/nodeUtils.js';
+import { stateToStatus, NodeState } from '../Utils/nodeUtils.js';
 import { buildGraphModel, WFNode } from '../model/WorkflowGraph.jsx';
 
 const FLOW_KEY_NODES = 'reactFlowCacheNodes';
 const FLOW_KEY_EDGES = 'reactFlowCacheEdges';
 
 // State to status mapping
-const stateToStatus = {
-    [NodeState.PENDING]: 'queued',
-    [NodeState.READY]: 'queued',
-    [NodeState.RUNNING]: 'running',
-    [NodeState.COMPLETED]: 'done',
-    [NodeState.ERROR]: 'error',
-    [NodeState.SKIPPED]: 'skipped',
-    [NodeState.CANCELLED]: 'ready'
-};
 
 const getInitialState = (key) => {
     try {
