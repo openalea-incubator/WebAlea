@@ -9,7 +9,6 @@ class TestAppRouter(unittest.TestCase):
     app_router = router
     # expected route names
     expected_route_names = {
-        "fetch_package_list",
         "fetch_latest_package_versions",
         "install_packages_in_env",
         "fetch_installed_openalea_packages",

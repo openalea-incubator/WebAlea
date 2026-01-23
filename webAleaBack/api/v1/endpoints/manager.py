@@ -22,14 +22,6 @@ class InstallRequest(BaseModel):
     packages: List[PackageSpec]
     env_name: Optional[str] = None
 
-
-@router.get("/")
-def fetch_package_list():
-    """Fetch the list of all conda packages."""
-    logging.info("Fetching package list")
-    return Conda.list_packages()
-
-
 @router.get("/latest")
 def fetch_latest_package_versions():
     """Fetch the latest versions of all conda packages."""

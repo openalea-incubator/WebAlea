@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import subprocess
 import os
 
-from api.v1.endpoints.manager import fetch_package_list, install_packages_in_env
+from api.v1.endpoints.manager import install_packages_in_env
 from types import SimpleNamespace
 
 load_dotenv("tests/.env")
@@ -29,13 +29,3 @@ class TestPackageInstallationIntegration(TestCase):
             self.assertIn(self.existing_package, result["installed"])
         except subprocess.CalledProcessError as e:
             self.fail(f"Package installation failed with error: {e}")
-
-    def test_fetch_package_list(self):
-        """Test fetching the list of available packages from the openalea3 channel."""
-        try:
-            package_list = fetch_package_list()
-            self.assertIsInstance(package_list, dict)
-            self.assertNotEqual(len(package_list), 0)
-            self.assertIn(self.existing_package, package_list)
-        except subprocess.CalledProcessError as e:
-            self.fail(f"Fetching package list failed with error: {e}")
