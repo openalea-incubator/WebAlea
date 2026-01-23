@@ -25,6 +25,7 @@ import {
 } from "react-icons/fa";
 import { useFlow } from "../../workspace/providers/FlowContextDefinition.jsx";
 import { useLog } from "../../logger/providers/LogContextDefinition.jsx";
+import { getColorFromBar } from "../../workspace/utils/nodeUtils.js";
 
 /**
  * Progress Bar Component
@@ -35,15 +36,6 @@ import { useLog } from "../../logger/providers/LogContextDefinition.jsx";
  * @returns {React.ReactNode} - Progress bar element
  */
 function ProgressBar({ progress, status }) {
-    const getBarColor = () => {
-        switch (status) {
-            case 'running': return '#007bff';
-            case 'completed': return '#28a745';
-            case 'failed': return '#dc3545';
-            case 'stopped': return '#6c757d';
-            default: return '#007bff';
-        }
-    };
 
     if (status === 'idle') return null;
 
@@ -58,7 +50,7 @@ function ProgressBar({ progress, status }) {
                     role="progressbar"
                     style={{
                         width: `${progress.percent}%`,
-                        backgroundColor: getBarColor(),
+                        backgroundColor: getColorFromBar(status),
                         transition: 'width 0.3s ease'
                     }}
                 />
@@ -138,7 +130,7 @@ export default function ToolBar() {
 
     const { addLog } = useLog();
 
-    const isRunning = executionStatus === 'running';
+    const isRunning = executionStatus === NodeState.RUNNING;
 
     // =========================================================================
     // HANDLERS

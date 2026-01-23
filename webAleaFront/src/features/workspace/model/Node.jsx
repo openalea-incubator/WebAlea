@@ -53,7 +53,7 @@ export class Node {
         this.data = {
             label: label || data?.label || null,
             color: data?.color || null,
-            status: data?.status || 'ready',
+            status: data?.status || NodeState.READY,
             metadata: data?.metadata || {},
             inputs: inputs || [],
             outputs: outputs || [],
@@ -85,7 +85,7 @@ export class Node {
             data: {
                 label: data.label ?? null,
                 color: data.color ?? null,
-                status: data.status ?? 'ready',
+                status: data.status ?? NodeState.READY,
                 metadata: data.metadata ?? {},
                 inputs: data.inputs ?? [],
                 outputs: data.outputs ?? [],

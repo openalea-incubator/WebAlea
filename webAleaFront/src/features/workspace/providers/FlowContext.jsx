@@ -23,7 +23,7 @@ import StringNode from '../ui/type/StringNode.jsx';
 import BoolNode from '../ui/type/BoolNode.jsx';
 import { useLog } from '../../logger/providers/LogContextDefinition.jsx';
 import { WorkflowEngine } from '../engine/WorkflowEngine.jsx';
-import { NodeState } from '../Utils/workflowUtils.js';
+import { NodeState } from '../Utils/nodeUtils.js';
 import { buildGraphModel, WFNode } from '../model/WorkflowGraph.jsx';
 
 const FLOW_KEY_NODES = 'reactFlowCacheNodes';
@@ -159,7 +159,7 @@ export const FlowProvider = ({ children }) => {
         switch (event) {
             case "workflow-start":
                 console.log("Workflow started with", payload.totalNodes, "nodes");
-                setExecutionStatus('running');
+                setExecutionStatus(NodeState.RUNNING);
                 setExecutionProgress({
                     total: payload.totalNodes,
                     completed: 0,
@@ -172,7 +172,7 @@ export const FlowProvider = ({ children }) => {
 
             case "node-state-change": {
                 const { id, state } = payload;
-                const status = stateToStatus[state] || 'ready';
+                const status = stateToStatus[state] || NodeState.READY;
                 updateNodeStatus(id, status);
                 break;
             }
@@ -221,20 +221,20 @@ export const FlowProvider = ({ children }) => {
             case "workflow-done":
                 if (payload.success) {
                     console.log("Workflow  completed successfully");
-                    setExecutionStatus('completed');
+                    setExecutionStatus(NodeState.COMPLETED);
                     addLog("Workflow completed successfully", {
                         results: Object.keys(payload.results).length
                     });
                 } else {
                     console.log("Workflow completed with errors");
-                    setExecutionStatus('failed');
+                    setExecutionStatus(NodeState.FAILED);
                     addLog("Workflow completed with errors");
                 }
                 break;
 
             case "workflow-error":
                 console.error("Workflow failed:", payload.error);
-                setExecutionStatus('failed');
+                setExecutionStatus(NodeState.FAILED);
                 addLog("Workflow failed: " + payload.error, { error: payload.error });
                 break;
 

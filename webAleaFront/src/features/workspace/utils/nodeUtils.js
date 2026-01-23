@@ -17,6 +17,14 @@ export const NodeState = {
 };
 
 
-// =============================================================================
-// UTILITY FUNCTIONS
-// =============================================================================
+export function getColorFromBar(status) {
+    return () => {
+        switch (status) {
+            case NodeState.RUNNING : return '#007bff';
+            case NodeState.COMPLETED: return '#28a745';
+            case 'failed': return '#dc3545';
+            case 'stopped': return '#6c757d';
+            default: return '#007bff';
+        }
+    };
+}
