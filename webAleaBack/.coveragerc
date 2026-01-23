@@ -2,7 +2,7 @@
 omit =
     **/__init__.py
     **/tests/**
-    **/runner/**
+    **/runnable/**
     **/__pycache__/**
     **/htmlcov/**
     **/main.py
