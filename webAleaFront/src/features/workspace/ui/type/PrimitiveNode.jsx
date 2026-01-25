@@ -20,6 +20,7 @@ import "../../../../assets/css/custom_node.css";
 import { useFlow } from "../../providers/FlowContextDefinition";
 import { useLog } from "../../../logger/providers/LogContextDefinition.jsx";
 import CustomHandle from "../../ui/CustomHandle.jsx";
+import { NodeType, DataType, DefaultValues, INDEX } from "../../constants/workflowConstants.js";
 
 export default function PrimitiveNode({
     id,
@@ -38,15 +39,19 @@ export default function PrimitiveNode({
     const getDefaultValue = () => {
         if (defaultValue !== null) return defaultValue;
         switch (type) {
-            case 'float': return 0;
-            case 'string': return '';
-            case 'boolean': return false;
-            default: return null;
+            case NodeType.FLOAT:
+                return DefaultValues.FLOAT;
+            case NodeType.STRING:
+                return DefaultValues.STRING;
+            case NodeType.BOOLEAN:
+                return DefaultValues.BOOLEAN;
+            default:
+                return null;
         }
     };
 
-    const initialValue = data.outputs?.[0]?.value ?? getDefaultValue();
-    const initialOutputId = data.outputs?.[0]?.id ?? `out-${id}-0`;
+    const initialValue = data.outputs?.[INDEX.DEFAULT_OUTPUT]?.value ?? getDefaultValue();
+    const initialOutputId = data.outputs?.[INDEX.DEFAULT_OUTPUT]?.id ?? `out-${id}-${INDEX.DEFAULT_OUTPUT}`;
 
     const [value, setValue] = useState(initialValue);
     const [outputId] = useState(initialOutputId);
@@ -68,11 +73,26 @@ export default function PrimitiveNode({
         updateNode(id, { outputs: [{ value: validatedValue }] });
     };
 
+    // Style constants
+    const STYLE_CONSTANTS = {
+        PADDING_STRING: 6,
+        PADDING_DEFAULT: 10,
+        MIN_WIDTH_BOOLEAN: 120,
+        HANDLE_SIZE_SMALL: 10,
+        HANDLE_SIZE_DEFAULT: 12,
+        INPUT_WIDTH_FLOAT: '50%',
+        INPUT_WIDTH_DEFAULT: 80
+    };
+
+    const isStringType = type === NodeType.STRING;
+    const isBooleanType = type === NodeType.BOOLEAN;
+    const isFloatType = type === NodeType.FLOAT;
+
     // If custom input element provided, clone it with handlers
     let renderedInput;
     if (inputElement) {
         renderedInput = React.cloneElement(inputElement, {
-            value: type === 'boolean' ? (value ? 'true' : 'false') : value,
+            value: isBooleanType ? (value ? 'true' : 'false') : value,
             onChange: handleChange,
             onBlur: handleBlur
         });
@@ -80,14 +100,14 @@ export default function PrimitiveNode({
         // Default input element
         renderedInput = (
             <input
-                type={type === 'float' ? 'number' : 'text'}
-                step={type === 'float' ? '1' : undefined}
+                type={isFloatType ? 'number' : 'text'}
+                step={isFloatType ? '1' : undefined}
                 value={value}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 className="node-input"
                 style={{
-                    width: type === 'float' ? '50%' : 80,
+                    width: isFloatType ? STYLE_CONSTANTS.INPUT_WIDTH_FLOAT : STYLE_CONSTANTS.INPUT_WIDTH_DEFAULT,
                     padding: "2px 4px",
                     fontSize: 13,
                     borderRadius: 4,
@@ -103,10 +123,10 @@ export default function PrimitiveNode({
             style={{
                 background: "#f0f0f0",
                 border: `2px solid ${borderColor}`,
-                padding: type === 'string' ? 6 : type === 'boolean' ? 10 : 10,
+                padding: isStringType ? STYLE_CONSTANTS.PADDING_STRING : STYLE_CONSTANTS.PADDING_DEFAULT,
                 borderRadius: 6,
-                width: type === 'string' ? 'fit-content' : type === 'boolean' ? 'auto' : 'auto',
-                minWidth: type === 'boolean' ? 120 : 'auto',
+                width: isStringType ? 'fit-content' : 'auto',
+                minWidth: isBooleanType ? STYLE_CONSTANTS.MIN_WIDTH_BOOLEAN : 'auto',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 4,
@@ -119,8 +139,8 @@ export default function PrimitiveNode({
                 className="node-handle"
                 style={{
                     background: borderColor,
-                    width: type === 'string' ? 10 : 12,
-                    height: type === 'string' ? 10 : 12,
+                    width: isStringType ? STYLE_CONSTANTS.HANDLE_SIZE_SMALL : STYLE_CONSTANTS.HANDLE_SIZE_DEFAULT,
+                    height: isStringType ? STYLE_CONSTANTS.HANDLE_SIZE_SMALL : STYLE_CONSTANTS.HANDLE_SIZE_DEFAULT,
                     borderRadius: "50%",
                     border: "2px solid rgba(255,255,255,0.6)",
                     cursor: "pointer",

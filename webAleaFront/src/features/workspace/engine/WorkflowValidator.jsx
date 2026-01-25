@@ -2,6 +2,8 @@
 // WORKFLOW VALIDATOR
 // =============================================================================
 
+import { NodeType } from '../constants/workflowConstants.js';
+
 /**
  * Validates the workflow structure before execution
  */
@@ -54,7 +56,7 @@ export class WorkflowValidator {
 
         // 4. Warn about custom nodes without package
         graph.forEach(node => {
-            if (!node.packageName && node.type === 'custom') {
+            if (!node.packageName && node.type === NodeType.CUSTOM) {
                 warnings.push({
                     type: 'MISSING_PACKAGE',
                     nodeId: node.id,

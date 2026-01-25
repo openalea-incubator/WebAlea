@@ -10,7 +10,7 @@
  * - Exposes context values for use in the React Flow UI components.
  */
 
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import {
     useNodesState,
     useEdgesState,
@@ -25,21 +25,10 @@ import { useLog } from '../../logger/providers/LogContextDefinition.jsx';
 import { WorkflowEngine } from '../engine/WorkflowEngine.jsx';
 import { NodeState } from '../constants/nodeState.js';
 import { buildGraphModel, WFNode } from '../model/WorkflowGraph.jsx';
-
-const FLOW_KEY_NODES = 'reactFlowCacheNodes';
-const FLOW_KEY_EDGES = 'reactFlowCacheEdges';
-
-// State to status mapping
-
-const getInitialState = (key) => {
-    try {
-        const savedState = localStorage.getItem(key);
-        return savedState ? JSON.parse(savedState) : [];
-    } catch (error) {
-        console.error(`Error parsing saved state for ${key}:`, error);
-        return [];
-    }
-};
+import { StorageKeys, NodeType, DataType, PERSISTENCE_DEBOUNCE_MS } from '../constants/workflowConstants.js';
+import { useLocalStorage, loadFromLocalStorage } from '../hooks/useLocalStorage.js';
+import { createWorkflowEventHandlers } from '../handlers/workflowEventHandlers.js';
+import { areTypesCompatible } from '../utils/typeValidation.js';
 
 /**
  * FlowProvider component - provides the FlowContext to its children.
@@ -48,8 +37,8 @@ const getInitialState = (key) => {
  * @returns {React.ReactNode} - The FlowProvider component
  */
 export const FlowProvider = ({ children }) => {
-    const initialNodes = getInitialState(FLOW_KEY_NODES);
-    const initialEdges = getInitialState(FLOW_KEY_EDGES);
+    const initialNodes = loadFromLocalStorage(StorageKeys.NODES, []);
+    const initialEdges = loadFromLocalStorage(StorageKeys.EDGES, []);
 
     const { addLog } = useLog();
 
@@ -95,10 +84,12 @@ export const FlowProvider = ({ children }) => {
                 let newOutputs;
 
                 if (!Array.isArray(outputs)) {
+                    // Single value update - update first output
                     newOutputs = currentOutputs.map((output, index) =>
                         index === 0 ? { ...output, value: outputs } : output
                     );
                 } else {
+                    // Array of outputs - match by index, id, or name
                     newOutputs = currentOutputs.map((output, idx) => {
                         const matchingResult = outputs.find((r) =>
                             r.index === idx || r.id === output.id || r.name === output.name
@@ -141,118 +132,26 @@ export const FlowProvider = ({ children }) => {
     }
     const engine = engineRef.current;
 
+    // Helper to get node by ID
+    const getNodeById = useCallback((nodeId) => {
+        return nodesRef.current.find(n => n.id === nodeId);
+    }, []);
+
     /**
      * Handler for workflow engine events
      */
-    const handleEngineEvent = useCallback((event, payload) => {
-        console.log("WorkflowEngine event:", event, payload);
-
-        switch (event) {
-            case "workflow-start":
-                console.log("Workflow started with", payload.totalNodes, "nodes");
-                setExecutionStatus(NodeState.RUNNING);
-                setExecutionProgress({
-                    total: payload.totalNodes,
-                    completed: 0,
-                    failed: 0,
-                    percent: 0
-                });
-                resetAllNodesStatus(NodeState.PENDING);
-                addLog("Workflow execution started", { totalNodes: payload.totalNodes });
-                break;
-
-            case "node-state-change": {
-                const { id, state } = payload;
-                updateNodeStatus(id, state);
-                break;
-            }
-
-            case "node-start": {
-                const { id, label } = payload;
-                addLog(`Node "${label}" started`, { nodeId: id });
-                break;
-            }
-
-            case "node-result": {
-                const { id, result } = payload;
-                updateNodeOutputs(id, result);
-                setExecutionProgress(prev => ({
-                    ...prev,
-                    completed: prev.completed + 1,
-                    percent: Math.round(((prev.completed + 1) / prev.total) * 100)
-                }));
-                break;
-            }
-
-            case "node-done": {
-                const { id, label } = payload;
-                addLog(`Node "${label}" completed`, { nodeId: id });
-                break;
-            }
-
-            case "node-error": {
-                const { id, error } = payload;
-                const failedNode = nodesRef.current.find(n => n.id === id);
-                const nodeLabel = failedNode?.data?.label || id;
-                addLog(`Node "${nodeLabel}" failed: ${error}`, { nodeId: id, error });
-                setExecutionProgress(prev => ({
-                    ...prev,
-                    failed: prev.failed + 1
-                }));
-                break;
-            }
-
-            case "node-skipped": {
-                const { id, reason } = payload;
-                addLog(`Node "${id}" skipped: ${reason}`, { nodeId: id });
-                break;
-            }
-
-            case "workflow-done":
-                if (payload.success) {
-                    console.log("Workflow  completed successfully");
-                    setExecutionStatus(NodeState.COMPLETED);
-                    addLog("Workflow completed successfully", {
-                        results: Object.keys(payload.results).length
-                    });
-                } else {
-                    console.log("Workflow completed with errors");
-                    setExecutionStatus(NodeState.ERROR);
-                    addLog("Workflow completed with errors");
-                }
-                break;
-
-            case "workflow-error":
-                console.error("Workflow failed:", payload.error);
-                setExecutionStatus(NodeState.ERROR);
-                addLog("Workflow failed: " + payload.error, { error: payload.error });
-                break;
-
-            case "workflow-stopped":
-                console.log("Workflow stopped by user");
-                setExecutionStatus(NodeState.CANCELLED);
-                resetAllNodesStatus(NodeState.READY);
-                addLog("Workflow stopped by user");
-                break;
-
-            case "validation-error":
-                console.error("Validation errors:", payload.errors);
-                setExecutionStatus(NodeState.ERROR);
-                payload.errors.forEach(err => {
-                    addLog(`Validation error: ${err.message}`, err);
-                });
-                break;
-
-            case "validation-warnings":
-                payload.warnings.forEach(warn => {
-                    addLog(`Warning: ${warn.message}`, warn);
-                });
-                break;
-
-            default:
-                console.log("Unknown event:", event);
-        }
-    }, [resetAllNodesStatus, updateNodeStatus, updateNodeOutputs, addLog]);
+    const handleEngineEvent = useCallback(
+        createWorkflowEventHandlers({
+            setExecutionStatus,
+            setExecutionProgress,
+            resetAllNodesStatus,
+            updateNodeStatus,
+            updateNodeOutputs,
+            addLog,
+            getNodeById
+        }),
+        [resetAllNodesStatus, updateNodeStatus, updateNodeOutputs, addLog, getNodeById]
+    );
 
     // Register the event handler and initialize listeners
     useEffect(() => {
@@ -322,26 +221,16 @@ export const FlowProvider = ({ children }) => {
         });
     }, [engine, addLog]);
 
-    const nodesTypes = {
-        custom: CustomNode,
-        float: FloatNode,
-        string: StringNode,
-        boolean: BoolNode,
-    };
+    const nodesTypes = useMemo(() => ({
+        [NodeType.CUSTOM]: CustomNode,
+        [NodeType.FLOAT]: FloatNode,
+        [NodeType.STRING]: StringNode,
+        [NodeType.BOOLEAN]: BoolNode,
+    }), []);
 
-    /**
-     * Persist nodes and edges to localStorage on changes
-     */
-    useEffect(() => {
-        if (edges) {
-            localStorage.setItem(FLOW_KEY_EDGES, JSON.stringify(edges));
-        }
-        if (nodes && nodes.length > 0) {
-            localStorage.setItem(FLOW_KEY_NODES, JSON.stringify(nodes));
-        } else if (nodes && nodes.length === 0) {
-            localStorage.setItem(FLOW_KEY_NODES, '[]');
-        }
-    }, [nodes, edges]);
+    // Persist nodes and edges to localStorage with debounce
+    useLocalStorage(StorageKeys.NODES, nodes.length > 0 ? nodes : [], PERSISTENCE_DEBOUNCE_MS);
+    useLocalStorage(StorageKeys.EDGES, edges, PERSISTENCE_DEBOUNCE_MS);
 
     /**
      * Manages new connections between nodes, enforcing type compatibility.
@@ -361,11 +250,9 @@ export const FlowProvider = ({ children }) => {
         const output = sourceNode.data.outputs?.find(o => o.id === sourceHandle);
         const input = targetNode.data.inputs?.find(i => i.id === targetHandle);
 
-        const outputType = output?.type || 'any';
-        const inputType = input?.type || 'any';
-        const isCompatible = outputType === inputType ||
-                             outputType === 'any' ||
-                             inputType === 'any';
+        const outputType = output?.type || DataType.ANY;
+        const inputType = input?.type || DataType.ANY;
+        const isCompatible = areTypesCompatible(outputType, inputType);
 
         if (!isCompatible) {
             addLog("Type mismatch - connection refused", {
@@ -407,7 +294,6 @@ export const FlowProvider = ({ children }) => {
 
     /**
      * Updates properties of an existing node.
-     * @type {(function(*, *): void)|*}
      * @param {string} id - The ID of the node to update
      * @param {Object} updatedProperties - The properties to update
      */
@@ -417,7 +303,10 @@ export const FlowProvider = ({ children }) => {
                 n.id === id ? { ...n, data: { ...n.data, ...updatedProperties } } : n
             )
         );
-        addLog("Node updated", { id, updatedProperties });
+        // Only log if not a frequent update (like value changes)
+        if (!updatedProperties.outputs) {
+            addLog("Node updated", { id, updatedProperties });
+        }
     }, [setNodes, addLog]);
 
     /**
@@ -450,7 +339,7 @@ export const FlowProvider = ({ children }) => {
     // CONTEXT VALUE
     // =========================================================================
 
-    const contextValue = {
+    const contextValue = useMemo(() => ({
         // Graph state
         nodes,
         edges,
@@ -480,7 +369,32 @@ export const FlowProvider = ({ children }) => {
         updateNodeStatus,
         updateNodeOutputs,
         resetAllNodesStatus
-    };
+    }), [
+        nodes,
+        edges,
+        onNodesChange,
+        onEdgesChange,
+        onConnect,
+        addNode,
+        deleteNode,
+        setNodes,
+        setEdges,
+        nodesTypes,
+        updateNode,
+        setNodesAndEdges,
+        currentNode,
+        setCurrentNode,
+        onNodeClick,
+        onNodeExecute,
+        executeWorkflow,
+        stopWorkflow,
+        executionStatus,
+        executionProgress,
+        engine,
+        updateNodeStatus,
+        updateNodeOutputs,
+        resetAllNodesStatus
+    ]);
 
     return (
         <FlowContext.Provider value={contextValue}>

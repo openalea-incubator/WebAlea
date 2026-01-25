@@ -13,6 +13,7 @@
 
 import { executeNode } from "../../../api/runnerAPI.js";
 import { NodeState } from "../constants/nodeState.js";
+import { DataType } from "../constants/workflowConstants.js";
 import { WorkflowValidator } from "./WorkflowValidator.jsx";
 import { DependencyTracker } from "./DependencyTracker.jsx";
 
@@ -278,7 +279,7 @@ export class WorkflowEngine {
                     index,
                     name: output.name || `output_${index}`,
                     value: output.value,
-                    type: output.type || 'any'
+                    type: output.type || DataType.ANY
                 }));
             }
 
