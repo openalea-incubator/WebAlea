@@ -12,7 +12,7 @@
  */
 
 import { executeNode } from "../../../api/runnerAPI.js";
-import { NodeState } from "../../workspace/Utils/workflowUtils.js";
+import { NodeState } from "../constants/nodeState.js";
 import { WorkflowValidator } from "./WorkflowValidator.jsx";
 import { DependencyTracker } from "./DependencyTracker.jsx";
 

@@ -6,7 +6,7 @@
 /**
  * Tracks dependencies and input states for nodes
  */
-class DependencyTracker {
+export class DependencyTracker {
     constructor(graph, edges) {
         this.graph = graph;
         this.edges = edges;

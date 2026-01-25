@@ -6,7 +6,7 @@
  * - a position
  * - a label
  * - a color
- * - a status
+ * - a status (NodeState constant)
  * - metadata
  * - input and output ports
  *
@@ -31,6 +31,9 @@
  *  });
  *
  */
+
+import { NodeState } from '../constants/nodeState.js';
+
 export class Node {
 
     /**

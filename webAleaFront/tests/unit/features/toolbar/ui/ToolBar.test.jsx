@@ -53,9 +53,9 @@ jest.mock('../../../../../src/features/toolbar/model/ImportModal.jsx', () => {
 
 describe('ToolBar_file', () => {
     describe('ProgressBar', () => {
-        test('should render nothing when status is idle', () => {
+        test('should render nothing when status is pending', () => {
             const progress = {completed: 0, total: 10, failed: 0, percent: 0};
-            const {container} = render(<ProgressBar progress={progress} status="idle"/>);
+            const {container} = render(<ProgressBar progress={progress} status="pending"/>);
 
             expect(container.firstChild).toBeNull();
         });
@@ -131,8 +131,8 @@ describe('ToolBar_file', () => {
     });
 
     describe('StatusIndicator', () => {
-        test('should render nothing when status is idle', () => {
-            const {container} = render(<StatusIndicator status="idle"/>);
+        test('should render nothing when status is pending', () => {
+            const {container} = render(<StatusIndicator status="pending"/>);
 
             expect(container.firstChild).toBeNull();
         });
@@ -199,7 +199,7 @@ describe('ToolBar_file', () => {
             setNodesAndEdges: mockSetNodesAndEdges,
             executeWorkflow: mockExecuteWorkflow,
             stopWorkflow: mockStopWorkflow,
-            executionStatus: 'idle',
+            executionStatus: 'pending',
             executionProgress: {completed: 0, total: 0, failed: 0, percent: 0}
         };
 
@@ -310,7 +310,7 @@ describe('ToolBar_file', () => {
                 ...defaultFlowContext,
                 nodes,
                 edges,
-                executionStatus: 'idle'
+                executionStatus: 'pending'
             });
 
             render(<ToolBar/>);

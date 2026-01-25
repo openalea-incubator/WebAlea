@@ -23,7 +23,7 @@ import StringNode from '../ui/type/StringNode.jsx';
 import BoolNode from '../ui/type/BoolNode.jsx';
 import { useLog } from '../../logger/providers/LogContextDefinition.jsx';
 import { WorkflowEngine } from '../engine/WorkflowEngine.jsx';
-import { stateToStatus, NodeState } from '../Utils/nodeUtils.js';
+import { NodeState } from '../constants/nodeState.js';
 import { buildGraphModel, WFNode } from '../model/WorkflowGraph.jsx';
 
 const FLOW_KEY_NODES = 'reactFlowCacheNodes';
@@ -58,7 +58,7 @@ export const FlowProvider = ({ children }) => {
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
     // Execution state
-    const [executionStatus, setExecutionStatus] = useState('idle');
+    const [executionStatus, setExecutionStatus] = useState(NodeState.PENDING);
     const [executionProgress, setExecutionProgress] = useState({
         total: 0,
         completed: 0,
@@ -157,14 +157,13 @@ export const FlowProvider = ({ children }) => {
                     failed: 0,
                     percent: 0
                 });
-                resetAllNodesStatus("queued");
+                resetAllNodesStatus(NodeState.PENDING);
                 addLog("Workflow execution started", { totalNodes: payload.totalNodes });
                 break;
 
             case "node-state-change": {
                 const { id, state } = payload;
-                const status = stateToStatus[state] || NodeState.READY;
-                updateNodeStatus(id, status);
+                updateNodeStatus(id, state);
                 break;
             }
 
@@ -218,27 +217,27 @@ export const FlowProvider = ({ children }) => {
                     });
                 } else {
                     console.log("Workflow completed with errors");
-                    setExecutionStatus(NodeState.FAILED);
+                    setExecutionStatus(NodeState.ERROR);
                     addLog("Workflow completed with errors");
                 }
                 break;
 
             case "workflow-error":
                 console.error("Workflow failed:", payload.error);
-                setExecutionStatus(NodeState.FAILED);
+                setExecutionStatus(NodeState.ERROR);
                 addLog("Workflow failed: " + payload.error, { error: payload.error });
                 break;
 
             case "workflow-stopped":
                 console.log("Workflow stopped by user");
-                setExecutionStatus('stopped');
-                resetAllNodesStatus("ready");
+                setExecutionStatus(NodeState.CANCELLED);
+                resetAllNodesStatus(NodeState.READY);
                 addLog("Workflow stopped by user");
                 break;
 
             case "validation-error":
                 console.error("Validation errors:", payload.errors);
-                setExecutionStatus('validation-error');
+                setExecutionStatus(NodeState.ERROR);
                 payload.errors.forEach(err => {
                     addLog(`Validation error: ${err.message}`, err);
                 });

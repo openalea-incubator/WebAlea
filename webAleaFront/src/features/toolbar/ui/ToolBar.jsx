@@ -25,7 +25,7 @@ import {
 } from "react-icons/fa";
 import { useFlow } from "../../workspace/providers/FlowContextDefinition.jsx";
 import { useLog } from "../../logger/providers/LogContextDefinition.jsx";
-import { getColorFromBar, NodeState } from "../../workspace/utils/nodeUtils.js";
+import { getProgressBarColor, NodeState } from "../../workspace/constants/nodeState.js";
 
 /**
  * Progress Bar Component
@@ -37,7 +37,7 @@ import { getColorFromBar, NodeState } from "../../workspace/utils/nodeUtils.js";
  */
 function ProgressBar({ progress, status }) {
 
-    if (status === 'idle') return null;
+    if (status === NodeState.PENDING) return null;
 
     return (
         <div className="d-flex align-items-center gap-2 mx-3" style={{ minWidth: '200px' }}>
@@ -50,7 +50,7 @@ function ProgressBar({ progress, status }) {
                     role="progressbar"
                     style={{
                         width: `${progress.percent}%`,
-                        backgroundColor: getColorFromBar(status),
+                        backgroundColor: getProgressBarColor(status),
                         transition: 'width 0.3s ease'
                     }}
                 />
@@ -75,14 +75,14 @@ function ProgressBar({ progress, status }) {
 function StatusIndicator({ status }) {
     const getIcon = () => {
         switch (status) {
-            case 'running':
+            case NodeState.RUNNING:
                 return <FaSpinner className="fa-spin text-primary" />;
-            case 'completed':
+            case NodeState.COMPLETED:
                 return <FaCheckCircle className="text-success" />;
-            case 'failed':
-            case 'validation-error':
+            case NodeState.CANCELLED:
+            case NodeState.ERROR:
                 return <FaExclamationTriangle className="text-danger" />;
-            case 'stopped':
+            case NodeState.SKIPPED:
                 return <FaStop className="text-secondary" />;
             default:
                 return null;
@@ -93,14 +93,14 @@ function StatusIndicator({ status }) {
         switch (status) {
             case NodeState.RUNNING: return 'Running...';
             case NodeState.COMPLETED: return 'Completed';
-            case 'failed': return 'Error';
-            case 'validation-error': return 'Validation failed';
-            case 'stopped': return 'Stopped';
+            case NodeState.ERROR: return 'Error';
+            case NodeState.CANCELLED: return 'Validation failed';
+            case NodeState.SKIPPED: return 'Stopped';
             default: return '';
         }
     };
 
-    if (status === 'idle') return null;
+    if (status === NodeState.PENDING) return null;
 
     return (
         <div className="d-flex align-items-center gap-1 mx-2">
