@@ -1,7 +1,7 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { Alert, Snackbar } from "@mui/material";
 import { FiDownload, FiCheck, FiSearch, FiLoader, FiPackage } from "react-icons/fi";
-import { getPackagesList, installPackage } from '../../../../service/PackageService.js';
+import { getPackagesList, installPackageWithProgress } from '../../../../service/PackageService.js';
 
 /**
  * Panel for installing OpenAlea packages from conda.
@@ -30,6 +30,8 @@ import { getPackagesList, installPackage } from '../../../../service/PackageServ
  * @returns {React.ReactNode} - The PanelInstallPackage component.
  */
 export default function PanelInstallPackage({ onPackageInstalled, packages, setPackages, filteredPackages, setFilteredPackages, loading, setLoading, installing, setInstalling, installedPackages, setInstalledPackages, searchTerm, setSearchTerm, snackbar, setSnackbar }) {
+    // State for installation progress
+    const [installationProgress, setInstallationProgress] = useState({});
 
     /**
      * Use effect to fetch the packages.
@@ -72,13 +74,124 @@ export default function PanelInstallPackage({ onPackageInstalled, packages, setP
     }, [searchTerm, packages]);
 
     /**
-     * Handles package installation.
+     * Handles package installation with progress tracking.
      * NOTE: We don't pass the version to let conda auto-resolve to a Python-compatible version.
      */
     const handleInstall = useCallback(async (pkg) => {
         setInstalling(pkg.name);
+        // Initialize progress state
+        setInstallationProgress(prev => ({
+            ...prev,
+            [pkg.name]: {
+                status: 'starting',
+                message: 'Starting installation...',
+                percent: 0,
+                downloaded: null,
+                total: null
+            }
+        }));
+
         try {
-            const result = await installPackage({ name: pkg.name });
+            const result = await installPackageWithProgress(
+                { name: pkg.name },
+                (event) => {
+                    // Update progress based on event type
+                    setInstallationProgress(prev => {
+                        const current = prev[pkg.name] || {};
+                        let updated = { ...current };
+
+                        switch (event.type) {
+                            case 'status':
+                                updated = {
+                                    ...updated,
+                                    status: 'in_progress',
+                                    message: event.message || 'Installing...',
+                                    percent: updated.percent || 0
+                                };
+                                break;
+
+                            case 'download':
+                                updated = {
+                                    ...updated,
+                                    status: 'downloading',
+                                    message: event.message || `Downloading ${event.package || pkg.name}...`,
+                                    percent: event.percent || updated.percent || 0,
+                                    downloaded: event.downloaded || null,
+                                    total: event.total || null
+                                };
+                                break;
+
+                            case 'extract':
+                                updated = {
+                                    ...updated,
+                                    status: 'extracting',
+                                    message: event.message || 'Extracting package...',
+                                    percent: updated.percent || 50
+                                };
+                                break;
+
+                            case 'package_start':
+                                updated = {
+                                    ...updated,
+                                    status: 'starting',
+                                    message: `Preparing ${event.package || pkg.name}...`,
+                                    percent: 0
+                                };
+                                break;
+
+                            case 'package_complete':
+                                updated = {
+                                    ...updated,
+                                    status: 'complete',
+                                    message: `${event.package || pkg.name} installed successfully!`,
+                                    percent: 100
+                                };
+                                break;
+
+                            case 'package_error':
+                                updated = {
+                                    ...updated,
+                                    status: 'error',
+                                    message: event.error || 'Installation failed',
+                                    percent: updated.percent || 0
+                                };
+                                break;
+
+                            case 'complete':
+                                updated = {
+                                    ...updated,
+                                    status: 'complete',
+                                    message: 'Installation complete!',
+                                    percent: 100
+                                };
+                                break;
+
+                            case 'error':
+                                updated = {
+                                    ...updated,
+                                    status: 'error',
+                                    message: event.message || 'Installation failed',
+                                    percent: updated.percent || 0
+                                };
+                                break;
+
+                            default:
+                                // Keep current state but update message if provided
+                                if (event.message) {
+                                    updated = {
+                                        ...updated,
+                                        message: event.message
+                                    };
+                                }
+                        }
+
+                        return {
+                            ...prev,
+                            [pkg.name]: updated
+                        };
+                    });
+                }
+            );
 
             if (result.success) {
                 setInstalledPackages(prev => new Set([...prev, pkg.name]));
@@ -107,15 +220,31 @@ export default function PanelInstallPackage({ onPackageInstalled, packages, setP
             }
         } catch (error) {
             console.error("Error installing package:", error);
+            setInstallationProgress(prev => ({
+                ...prev,
+                [pkg.name]: {
+                    status: 'error',
+                    message: error.message || 'Installation failed',
+                    percent: 0
+                }
+            }));
             setSnackbar({
                 open: true,
                 message: `Error installing ${pkg.name}: ${error.message || 'Unknown error'}`,
                 severity: 'error'
             });
         } finally {
+            // Clear progress after a delay to show completion
+            setTimeout(() => {
+                setInstallationProgress(prev => {
+                    const newProgress = { ...prev };
+                    delete newProgress[pkg.name];
+                    return newProgress;
+                });
+            }, 2000);
             setInstalling(null);
         }
-    }, [onPackageInstalled]);
+    }, [onPackageInstalled, setInstalledPackages, setSnackbar]);
 
     const handleCloseSnackbar = () => {
         setSnackbar(prev => ({ ...prev, open: false }));
@@ -160,6 +289,7 @@ export default function PanelInstallPackage({ onPackageInstalled, packages, setP
                     {filteredPackages.map((pkg) => {
                         const isInstalling = installing === pkg.name;
                         const isInstalled = installedPackages.has(pkg.name);
+                        const progress = installationProgress[pkg.name];
 
                         return (
                             <div
@@ -169,6 +299,51 @@ export default function PanelInstallPackage({ onPackageInstalled, packages, setP
                                 <div className="package-info">
                                     <div className="package-name">{pkg.name}</div>
                                     <span className="package-version">v{pkg.version}</span>
+                                    {/* Progress information */}
+                                    {progress && isInstalling && (
+                                        <div className="package-progress" style={{ marginTop: '8px', width: '100%' }}>
+                                            <div style={{ 
+                                                fontSize: '0.75rem', 
+                                                color: '#666', 
+                                                marginBottom: '4px',
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center'
+                                            }}>
+                                                <span>{progress.message}</span>
+                                                {progress.percent !== undefined && (
+                                                    <span style={{ fontWeight: 'bold' }}>{progress.percent}%</span>
+                                                )}
+                                            </div>
+                                            {/* Progress bar */}
+                                            {progress.percent !== undefined && (
+                                                <div style={{
+                                                    width: '100%',
+                                                    height: '4px',
+                                                    backgroundColor: '#e0e0e0',
+                                                    borderRadius: '2px',
+                                                    overflow: 'hidden'
+                                                }}>
+                                                    <div style={{
+                                                        width: `${progress.percent}%`,
+                                                        height: '100%',
+                                                        backgroundColor: progress.status === 'error' ? '#f44336' : '#4caf50',
+                                                        transition: 'width 0.3s ease'
+                                                    }} />
+                                                </div>
+                                            )}
+                                            {/* Download size info */}
+                                            {progress.downloaded && progress.total && (
+                                                <div style={{ 
+                                                    fontSize: '0.7rem', 
+                                                    color: '#999', 
+                                                    marginTop: '2px' 
+                                                }}>
+                                                    {progress.downloaded} / {progress.total}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="package-action">
                                     {isInstalling ? (

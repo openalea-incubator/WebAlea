@@ -9,6 +9,7 @@
 
 import {
     installPackages,
+    installPackagesWithProgress,
     fetchLatestPackageVersions,
 } from "../api/managerAPI";
 
@@ -328,6 +329,71 @@ export async function installPackage(pkg) {
 
     } catch (error) {
         console.error("installPackage: Error installing package:", error);
+        return {
+            ...defaultResult,
+            failed: [{ package: pkg?.name || "unknown", error: error.message || "Installation failed" }]
+        };
+    }
+}
+
+/**
+ * Installs a package with real-time progress updates via Server-Sent Events.
+ *
+ * @param {Object} pkg - Package to install
+ * @param {string} pkg.name - Package name
+ * @param {string} [pkg.version] - Optional specific version
+ * @param {Function} [onProgress] - Callback function called for each progress event
+ * @returns {Promise<InstallResult>} Installation result
+ *
+ * @example
+ * const result = await installPackageWithProgress(
+ *     {name: "openalea.plantgl"},
+ *     (event) => {
+ *         console.log("Progress:", event.type, event.message);
+ *         if (event.type === "download") {
+ *             console.log(`Downloaded: ${event.percent}%`);
+ *         }
+ *     }
+ * );
+ */
+export async function installPackageWithProgress(pkg, onProgress = null) {
+    // Default result for error cases
+    const defaultResult = {
+        success: false,
+        installed: [],
+        failed: []
+    };
+
+    try {
+        if (!pkg?.name) {
+            console.warn("installPackageWithProgress: Invalid package specification", pkg);
+            return { ...defaultResult, failed: [{ package: "unknown", error: "Invalid package specification" }] };
+        }
+
+        const response = await installPackagesWithProgress(
+            [{
+                name: pkg.name,
+                version: pkg.version || null
+            }],
+            null, // envName - use default
+            onProgress
+        );
+
+        // Backend returns: {installed: [...], failed: [...]}
+        const installed = safeArray(response?.installed);
+        const failed = safeArray(response?.failed).map(f => ({
+            package: safeString(f?.package || f?.name, pkg.name),
+            error: safeString(f?.error || f?.message, "Unknown error")
+        }));
+
+        return {
+            success: installed.length > 0,
+            installed: installed.map(p => safeString(p)),
+            failed
+        };
+
+    } catch (error) {
+        console.error("installPackageWithProgress: Error installing package:", error);
         return {
             ...defaultResult,
             failed: [{ package: pkg?.name || "unknown", error: error.message || "Installation failed" }]

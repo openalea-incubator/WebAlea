@@ -1,8 +1,10 @@
 """"API endpoints for managing conda packages and environments."""
 from typing import List, Optional
 import logging
+import json
 
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from model.utils.conda_utils import Conda
@@ -58,3 +60,50 @@ def install_packages_in_env(request: InstallRequest):
     results = Conda.install_package_list(env_name, package_list)
     logging.info("Installation results: %s", results)
     return results
+
+
+@router.post("/install/stream")
+async def install_packages_with_progress(request: InstallRequest):
+    """Install packages with Server-Sent Events (SSE) for real-time progress updates.
+
+    Body format:
+    {
+      "packages": [{"name": "pkg1", "version": "1.2.3"}, {"name": "pkg2"}],
+      "env_name": "webalea_env"  # optional
+    }
+
+    Returns a Server-Sent Events stream with progress updates.
+    """
+    logging.info("Installing packages with progress: %s into environment: %s", request.packages, request.env_name)
+    env_name = request.env_name or settings.CONDA_ENV_NAME
+
+    # build package list with versions
+    package_list = [
+        pkg.name + (f"={pkg.version}" if pkg.version else "") for pkg in request.packages
+    ]
+
+    def generate():
+        """Generator function for SSE stream."""
+        try:
+            for event in Conda.install_package_list_with_progress(env_name, package_list):
+                # Format as Server-Sent Event
+                data = json.dumps(event, ensure_ascii=False)
+                yield f"data: {data}\n\n"
+        except Exception as e:
+            error_event = {
+                "type": "error",
+                "message": f"Installation failed: {str(e)}"
+            }
+            data = json.dumps(error_event, ensure_ascii=False)
+            yield f"data: {data}\n\n"
+            logging.exception("Error in installation stream")
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # Disable nginx buffering
+        }
+    )
