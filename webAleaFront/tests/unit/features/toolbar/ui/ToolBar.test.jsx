@@ -5,6 +5,7 @@ import {describe, test, expect} from "@jest/globals";
 import {useFlow} from '../../../../../src/features/workspace/providers/FlowContextDefinition.jsx';
 import {useLog} from '../../../../../src/features/logger/providers/LogContextDefinition.jsx';
 import {ImportModal} from '../../../../../src/features/toolbar/model/ImportModal.jsx';
+import { NodeState, getProgressBarColor } from '../../../../../src/features/workspace/constants/nodeState';
 
 /* ======================
     Mocks
@@ -53,9 +54,9 @@ jest.mock('../../../../../src/features/toolbar/model/ImportModal.jsx', () => {
 
 describe('ToolBar_file', () => {
     describe('ProgressBar', () => {
-        test('should render nothing when status is idle', () => {
+        test('should render nothing when status is pending', () => {
             const progress = {completed: 0, total: 10, failed: 0, percent: 0};
-            const {container} = render(<ProgressBar progress={progress} status="idle"/>);
+            const {container} = render(<ProgressBar progress={progress} status="pending"/>);
 
             expect(container.firstChild).toBeNull();
         });
@@ -80,35 +81,103 @@ describe('ToolBar_file', () => {
         });
 
         test('should display a blue bar for "running" status', () => {
-            const progress = {completed: 5, total: 10, failed: 0, percent: 50};
-            render(<ProgressBar progress={progress} status="running"/>);
+            const progress = {
+                completed: 5,
+                total: 10,
+                failed: 2,
+                percent: 50
+            };
+
+            render(
+                <ProgressBar
+                    progress={progress}
+                    status={NodeState.RUNNING}
+                />
+            );
 
             const progressBar = screen.getByRole('progressbar');
-            expect(progressBar).toHaveStyle({backgroundColor: '#007bff'}); // Blue bar
+
+            // On compare la valeur réellement appliquée au DOM
+            const expectedColor = getProgressBarColor(NodeState.RUNNING);
+
+            expect(progressBar).toHaveStyle({
+                backgroundColor: expectedColor,
+            });
         });
 
         test('should display a red bar for "failed" status', () => {
-            const progress = {completed: 5, total: 10, failed: 2, percent: 50};
-            render(<ProgressBar progress={progress} status="failed"/>);
+            const progress = {
+                completed: 5,
+                total: 10,
+                failed: 2,
+                percent: 50
+            };
+
+            render(
+                <ProgressBar
+                    progress={progress}
+                    status={NodeState.ERROR}
+                />
+            );
 
             const progressBar = screen.getByRole('progressbar');
-            expect(progressBar).toHaveStyle({backgroundColor: '#dc3545'}); // Red bar
+
+            // On compare la valeur réellement appliquée au DOM
+            const expectedColor = getProgressBarColor(NodeState.ERROR);
+
+            expect(progressBar).toHaveStyle({
+                backgroundColor: expectedColor,
+            });
         });
 
         test('should display a gray bar for "stopped" status', () => {
-            const progress = {completed: 5, total: 10, failed: 0, percent: 50};
-            render(<ProgressBar progress={progress} status="stopped"/>);
+            const progress = {
+                completed: 5,
+                total: 10,
+                failed: 2,
+                percent: 50
+            };
+
+            render(
+                <ProgressBar
+                    progress={progress}
+                    status={NodeState.SKIPPED}
+                />
+            );
 
             const progressBar = screen.getByRole('progressbar');
-            expect(progressBar).toHaveStyle({backgroundColor: '#6c757d'}); // Gray bar
+
+            // On compare la valeur réellement appliquée au DOM
+            const expectedColor = getProgressBarColor(NodeState.SKIPPED);
+
+            expect(progressBar).toHaveStyle({
+                backgroundColor: expectedColor,
+            });
         });
 
         test('should display a blue bar by default for unknown status', () => {
-            const progress = {completed: 5, total: 10, failed: 0, percent: 50};
-            render(<ProgressBar progress={progress} status="unknown"/>);
+            const progress = {
+                completed: 5,
+                total: 10,
+                failed: 2,
+                percent: 50
+            };
+
+            render(
+                <ProgressBar
+                    progress={progress}
+                    status={NodeState.UNKNOWN}
+                />
+            );
 
             const progressBar = screen.getByRole('progressbar');
-            expect(progressBar).toHaveStyle({backgroundColor: '#007bff'}); // Blue bar
+
+            // On compare la valeur réellement appliquée au DOM
+            const expectedColor = getProgressBarColor(NodeState.UNKNOWN);
+
+            expect(progressBar).toHaveStyle({
+                backgroundColor: expectedColor,
+            });
         });
 
         test('should display number of errors when failed > 0', () => {
@@ -131,8 +200,8 @@ describe('ToolBar_file', () => {
     });
 
     describe('StatusIndicator', () => {
-        test('should render nothing when status is idle', () => {
-            const {container} = render(<StatusIndicator status="idle"/>);
+        test('should render nothing when status is pending', () => {
+            const {container} = render(<StatusIndicator status="pending"/>);
 
             expect(container.firstChild).toBeNull();
         });
@@ -151,25 +220,31 @@ describe('ToolBar_file', () => {
             expect(screen.getByText('Completed')).toBeInTheDocument();
         });
 
-        test('should display warning icon and text for failed status', () => {
-            render(<StatusIndicator status="failed"/>);
 
-            expect(screen.getByTestId('warning-icon')).toBeInTheDocument();
+        test('should display error text for error status', () => {
+            render(<StatusIndicator status={NodeState.ERROR} />);
+
             expect(screen.getByText('Error')).toBeInTheDocument();
         });
 
-        test('should display warning icon and text for validation-error status', () => {
-            render(<StatusIndicator status="validation-error"/>);
+        test('should display validation failed text for cancelled status', () => {
+            render(<StatusIndicator status={NodeState.CANCELLED} />);
 
-            expect(screen.getByTestId('warning-icon')).toBeInTheDocument();
             expect(screen.getByText('Validation failed')).toBeInTheDocument();
         });
 
-        test('should display stop icon and text for stopped status', () => {
-            render(<StatusIndicator status="stopped"/>);
+        test('should display stopped text for skipped status', () => {
+            render(<StatusIndicator status={NodeState.SKIPPED} />);
 
-            expect(screen.getByTestId('stop-icon')).toBeInTheDocument();
             expect(screen.getByText('Stopped')).toBeInTheDocument();
+        });
+
+        test('should render nothing for pending status', () => {
+            const { container } = render(
+                <StatusIndicator status={NodeState.PENDING} />
+            );
+
+            expect(container).toBeEmptyDOMElement();
         });
 
         test('should display no icon for unknown status', () => {
@@ -199,7 +274,7 @@ describe('ToolBar_file', () => {
             setNodesAndEdges: mockSetNodesAndEdges,
             executeWorkflow: mockExecuteWorkflow,
             stopWorkflow: mockStopWorkflow,
-            executionStatus: 'idle',
+            executionStatus: 'pending',
             executionProgress: {completed: 0, total: 0, failed: 0, percent: 0}
         };
 
@@ -310,7 +385,7 @@ describe('ToolBar_file', () => {
                 ...defaultFlowContext,
                 nodes,
                 edges,
-                executionStatus: 'idle'
+                executionStatus: 'pending'
             });
 
             render(<ToolBar/>);

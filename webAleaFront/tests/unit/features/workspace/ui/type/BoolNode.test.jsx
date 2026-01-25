@@ -64,7 +64,7 @@ import { beforeEach, describe, test, expect } from "@jest/globals";
             expect(updateNodeMock).toHaveBeenCalledWith("node-2", {
                 outputs: [{ value: false, id: "out-2", type: "boolean" }],
             });
-            expect(addLogMock).toHaveBeenCalledWith("BoolNode node-2 updated. value = false");
+            expect(addLogMock).toHaveBeenCalledWith("BooleanNode node-2 updated. value = false");
         });
 
         test("changes value when select is changed", () => {
@@ -76,7 +76,17 @@ import { beforeEach, describe, test, expect } from "@jest/globals";
             expect(updateNodeMock).toHaveBeenLastCalledWith("node-3", {
                 outputs: [{ value: true, id: "out-3", type: "boolean" }],
             });
-            expect(addLogMock).toHaveBeenLastCalledWith("BoolNode node-3 updated. value = true");
+
+            expect(addLogMock).toHaveBeenCalledTimes(2);
+            expect(addLogMock).toHaveBeenNthCalledWith(
+            1,
+            "BooleanNode node-3 updated. value = false"
+            );
+            expect(addLogMock).toHaveBeenNthCalledWith(
+            2,
+            "BooleanNode node-3 updated. value = true"
+            );
+
 
             fireEvent.change(select, { target: { value: "false" } });
             expect(updateNodeMock).toHaveBeenLastCalledWith("node-3", {
