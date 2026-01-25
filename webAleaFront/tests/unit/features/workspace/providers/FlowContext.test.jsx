@@ -415,18 +415,43 @@ describe('FlowProvider Units Tests', () => {
 
     /* ----------------------------------------------------- */
 
-    test('nodes and edges are saved to localStorage', () => {
+
+    jest.useFakeTimers();
+
+    test('nodes and edges are saved to localStorage after debounce and update', () => {
+        const setNodes = jest.fn();
+        const setEdges = jest.fn();
+
+        useNodesState.mockReturnValueOnce([[], setNodes, jest.fn()]);
+        useEdgesState.mockReturnValueOnce([[], setEdges, jest.fn()]);
+
+        const { rerender } = render(
+            <FlowProvider>
+                <div />
+            </FlowProvider>
+        );
+
         const nodes = [{ id: 'n1' }];
         const edges = [{ source: 'n1', target: 'n2' }];
 
-        useNodesState.mockReturnValue([nodes, jest.fn(), jest.fn()]);
-        useEdgesState.mockReturnValue([edges, jest.fn(), jest.fn()]);
+        useNodesState.mockReturnValueOnce([nodes, setNodes, jest.fn()]);
+        useEdgesState.mockReturnValueOnce([edges, setEdges, jest.fn()]);
 
-        render(<FlowProvider><div /></FlowProvider>);
+        rerender(
+            <FlowProvider>
+                <div />
+            </FlowProvider>
+        );
 
-        expect(localStorage.getItem('reactFlowCacheNodes')).toBe(JSON.stringify(nodes));
-        expect(localStorage.getItem('reactFlowCacheEdges')).toBe(JSON.stringify(edges));
+        act(() => {
+            jest.runAllTimers();
+        });
+
+        expect(localStorage.getItem('reactFlowCacheNodes'))
+            .toBe(JSON.stringify(nodes));
+
+        expect(localStorage.getItem('reactFlowCacheEdges'))
+            .toBe(JSON.stringify(edges));
     });
-
 
 });

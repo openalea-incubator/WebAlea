@@ -13,11 +13,11 @@ jest.mock(
 /* ========================================================= */
 
 
-import WorkflowEngine, {
-    WorkflowValidator
-} from "../../../../../src/features/workspace/engine/WorkflowEngine";
+import WorkflowEngine from "../../../../../src/features/workspace/engine/WorkflowEngine";
 
-import { NodeState } from "../../../../../src/features/workspace/Utils/workflowUtils.js";
+import WorkflowValidator from "../../../../../src/features/workspace/engine/WorkflowValidator.jsx";
+
+import { NodeState } from "../../../../../src/features/workspace/constants/nodeState.js";
 
 import { executeNode } from "../../../../../src/api/runnerAPI.js";
 import {
