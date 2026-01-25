@@ -10,7 +10,6 @@ class TestManagerEndpoints(unittest.TestCase):
     app_router = manager.router
     # expected route names
     expected_route_names = {
-        "fetch_package_list",
         "fetch_latest_package_versions",
         "install_packages_in_env",
     }
@@ -28,16 +27,6 @@ class TestManagerEndpoints(unittest.TestCase):
                 f"Route '{route_name}' not found in manager router."
             )
 
-    @unittest.mock.patch("model.utils.conda_utils.Conda.list_packages")
-    def test_fetch_package_list(self, conda_list_packages):
-        """Test fetching the package list."""
-        conda_list_packages.return_value = open(
-            self.mock_list_packages_output_file,
-            encoding="utf-8"
-        ).read()
-        packages = manager.fetch_package_list()
-        self.assertGreater(len(packages), 0)
-        self.assertIn("openalea.astk", packages)
 
     @unittest.mock.patch("model.utils.conda_utils.Conda.list_latest_packages")
     def test_fetch_latest_package_versions(self, conda_list_latest_packages):

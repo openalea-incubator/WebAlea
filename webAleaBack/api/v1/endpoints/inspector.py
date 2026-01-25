@@ -12,7 +12,6 @@ def fetch_installed_openalea_packages():
     """Fetch the list of installed OpenAlea packages in the current conda environment."""
     logging.info("Fetching installed OpenAlea packages")
     packages = OpenAleaInspector.list_installed_openalea_packages()
-    logging.info("Installed OpenAlea packages: %s", packages)
     return {"installed_openalea_packages": packages}
 
 
@@ -25,7 +24,6 @@ def fetch_wralea_packages():
     """
     logging.info("Fetching packages with visual nodes (wralea)")
     packages = OpenAleaInspector.list_wralea_packages()
-    logging.info("Wralea packages found: %s", packages)
     return {"wralea_packages": packages}
 
 @router.get("/installed/{package_name}")

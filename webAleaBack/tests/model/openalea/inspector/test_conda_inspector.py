@@ -9,7 +9,7 @@ class TestOpenAleaInspectorMethods(TestCase):
     """Unit tests for OpenAleaInspector class"""
 
     # data for testing
-    mock_openalea_desc_file = "tests/resources/conda/openalea_package_desc.json"
+    mock_openalea_desc_file = "tests/resources/conda/openalea.astk_description.json"
 
     @unittest.mock.patch("model.openalea.inspector.openalea_inspector.subprocess")
     def test_list_installed_openalea_packages(self, mock_subprocess):
