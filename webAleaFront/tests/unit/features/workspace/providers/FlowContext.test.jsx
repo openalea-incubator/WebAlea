@@ -113,7 +113,7 @@ describe('FlowProvider Units Tests', () => {
 
         expect(result.current.nodes).toEqual([]);
         expect(result.current.edges).toEqual([]);
-        expect(result.current.executionStatus).toBe('idle');
+        expect(result.current.executionStatus).toBe('pending');
         expect(typeof result.current.addNode).toBe('function');
     });
 
