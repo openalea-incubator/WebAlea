@@ -84,7 +84,7 @@ html, body, #root {
 
 /* ========== SIDEBAR (Package Manager) ========== */
 .sidebar-column {
-  width: 240px;
+  width: 280px;
   min-width: 200px;
   max-width: 280px;
   flex-shrink: 0;
@@ -208,7 +208,7 @@ html, body, #root {
 /* ========== RESPONSIVE ========== */
 @media (max-width: 1200px) {
   .sidebar-column {
-    width: 200px;
+    width: 250px;
     min-width: 180px;
   }
 
