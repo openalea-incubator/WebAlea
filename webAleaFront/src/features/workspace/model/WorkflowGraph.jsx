@@ -3,6 +3,8 @@
  * Model and utilities for workflow graph representation.
  */
 
+import { NodeType } from '../constants/workflowConstants.js';
+
 export class WFNode {
     constructor({ id, type, inputs = [], outputs = [], next = [], packageName = null, nodeName = null, label = null }) {
         this.id = id;
@@ -30,7 +32,7 @@ export function buildGraphModel(nodesUI, edgesUI) {
 
     // Get IDs of custom nodes only
     const customNodeIds = new Set(
-        nodesUI.filter(n => n.type === 'custom').map(n => n.id)
+        nodesUI.filter(n => n.type === NodeType.CUSTOM).map(n => n.id)
     );
 
     // Filter edges to only include connections between custom nodes
@@ -39,7 +41,7 @@ export function buildGraphModel(nodesUI, edgesUI) {
     );
 
     for (const nodeUI of nodesUI) {
-        if (nodeUI.type !== 'custom') continue;
+        if (nodeUI.type !== NodeType.CUSTOM) continue;
 
         // Children = only custom nodes connected via edges
         const children = customEdges

@@ -13,11 +13,11 @@ jest.mock(
 /* ========================================================= */
 
 
-import WorkflowEngine, {
-    WorkflowValidator
-} from "../../../../../src/features/workspace/engine/WorkflowEngine";
+import WorkflowEngine from "../../../../../src/features/workspace/engine/WorkflowEngine";
 
-import { NodeState, computeTopologicalOrder } from "../../../../../src/features/workspace/Utils/workflowUtils.js";
+import WorkflowValidator from "../../../../../src/features/workspace/engine/WorkflowValidator.jsx";
+
+import { NodeState } from "../../../../../src/features/workspace/constants/nodeState.js";
 
 import { executeNode } from "../../../../../src/api/runnerAPI.js";
 import {
@@ -206,31 +206,4 @@ describe("WorkflowEngine - Units Tests", () => {
         });
     });
 
-});
-
-/* ================================================================== */
-/* computeTopologicalOrder */
-/* ================================================================== */
-
-describe("computeTopologicalOrder", () => {
-
-    test("simple order without dependencies", () => {
-        const graph = [{ id: "A" }, { id: "B" }];
-        const edges = [{ source: "A", target: "B" }];
-
-        const order = computeTopologicalOrder(graph, edges);
-
-        expect(order).toEqual(["A", "B"]);
-    });
-
-    test("detects a cycle", () => {
-        const graph = [{ id: "A" }, { id: "B" }];
-        const edges = [
-            { source: "A", target: "B" },
-            { source: "B", target: "A" }
-        ];
-
-        expect(() => computeTopologicalOrder(graph, edges))
-            .toThrow("Cycle detected in workflow");
-    });
 });

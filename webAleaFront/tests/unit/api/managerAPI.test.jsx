@@ -1,6 +1,5 @@
 import { 
     fetchLatestPackageVersions,
-    fetchPackageList,
     installPackages
 }  
 from "../../../src/api/managerAPI";
@@ -63,17 +62,6 @@ describe("managerAPI", () => {
         });
         const data = await fetchLatestPackageVersions();
         expect(fetch).toHaveBeenCalledWith(API_BASE_URL_MANAGER + "/latest", expect.any(Object));
-        expect(data).toEqual(mockResponse);
-    });
-
-    test("fetchPackageList calls the correct endpoint and returns data", async () => {
-        const mockResponse = [{ name: "packageA" }, { name: "packageB" }];
-        fetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => mockResponse,
-        });
-        const data = await fetchPackageList();
-        expect(fetch).toHaveBeenCalledWith(API_BASE_URL_MANAGER + "/", expect.any(Object));
         expect(data).toEqual(mockResponse);
     });
 

@@ -2,6 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import { useFlow } from '../providers/FlowContextDefinition.jsx';
 import "../../../assets/css/custom_node.css";
 import CustomHandle from "./CustomHandle.jsx";
+import { NodeState, getNodeStateColor } from '../constants/nodeState.js';
 
 /**
  * CustomNode.jsx
@@ -14,32 +15,22 @@ import CustomHandle from "./CustomHandle.jsx";
  * - data: An object containing:
  *   - label: The display label of the node.
  *   - color: Background color of the node.
- *   - status: Current status of the node (e.g., "queued", "running", "done", "error", "ready").
+ *   - status: Current state of the node (NodeState constant).
  *   - metadata: Additional information to display in a collapsible section.
  *   - inputs: Array of input handle definitions.
  *   - outputs: Array of output handle definitions.
  *
- * The node's border color changes based on its status, and clicking the status indicator
- * cycles through predefined statuses for demonstration purposes.
+ * The node's border color changes based on its state.
  */
 
-//TODO: Refactor status management to be more flexible and extensible => possibly via a status config object.
-const getBorderColor = (status) => {
-    switch (status) {
-        case "queued": return "#ff9800";   // Orange - waiting in queue
-        case "running": return "#8e24aa";  // Purple - currently executing
-        case "done": return "#2b8a3e";     // Green - completed successfully
-        case "error": return "#c62828";    // Red - failed
-        case "ready": return "#1976d2";    // Blue - ready/idle
-        default: return "#999";            // Gray - unknown
-    }
-};
-
-const getNextStatus = (currentStatus) => {
-    switch (currentStatus) {
-        case "ready": return "running";
-        case "running": return "error";
-        default: return "ready";
+const getNextState = (currentState) => {
+    switch (currentState) {
+        case NodeState.READY:
+            return NodeState.RUNNING;
+        case NodeState.RUNNING:
+            return NodeState.ERROR;
+        default:
+            return NodeState.READY;
     }
 };
 
@@ -51,13 +42,18 @@ export default function CustomNode(nodeProps) {
         data: { label, color, status, metadata, inputs, outputs },
     } = nodeProps;
 
-    const borderColor = useMemo(() => getBorderColor(status), [status]);
-    const nextStatus = useMemo(() => getNextStatus(status), [status]);
+    // Use NodeState directly - if status is an old string value, default to READY
+    const nodeState = status && Object.values(NodeState).includes(status) 
+        ? status 
+        : NodeState.READY;
+    
+    const borderColor = useMemo(() => getNodeStateColor(nodeState), [nodeState]);
+    const nextState = useMemo(() => getNextState(nodeState), [nodeState]);
 
     // eslint-disable-next-line no-unused-vars
     const handleStatusClick = useCallback(() => {
-        updateNode(id, { status: nextStatus });
-    }, [id, nextStatus, updateNode]);
+        updateNode(id, { status: nextState });
+    }, [id, nextState, updateNode]);
 
     // Dynamic styles based on inputs/outputs
     const dynamicNodeStyle = {
@@ -72,7 +68,7 @@ export default function CustomNode(nodeProps) {
                 <div
                     className="custom-node-status"
                     style={{ background: borderColor }}
-                    title={`status: ${status}`}
+                    title={`state: ${nodeState}`}
                 />
                 <strong style={{ fontSize: 13 }}>{label}</strong>
             </div>

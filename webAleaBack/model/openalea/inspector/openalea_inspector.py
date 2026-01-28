@@ -115,7 +115,7 @@ class OpenAleaInspector:
         # parse output
         try:
             packages = json.loads(result.stdout)
-        except (ValueError):
+        except ValueError:
             logging.error("Failed to parse wralea packages output: %s", result.stdout)
             packages = []
         return packages

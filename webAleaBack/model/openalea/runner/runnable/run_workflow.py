@@ -3,9 +3,12 @@ import json
 import sys
 import logging
 
+from openalea.core.pkgmanager import PackageManager
+
 logging.basicConfig(level=logging.INFO)
 
-def parseIfBoolean(type: str):
+def parse_if_boolean(type: str):
+    """Parse type string to standardize boolean type."""
     if type == "bool":
         return "boolean"
     return type
@@ -22,8 +25,6 @@ def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
     Returns:
         Dict with outputs: [{index, name, value, type}, ...]
     """
-    from openalea.core.pkgmanager import PackageManager
-
     logging.info("Executing node '%s' from package '%s'", node_name, package_name)
     logging.info("Inputs: %s", inputs)
 
@@ -91,7 +92,7 @@ def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
             "index": i,
             "name": output_name,
             "value": serialize_value(output_value),
-            "type": parseIfBoolean(type(output_value).__name__) if output_value is not None else "None"
+            "type": parse_if_boolean(type(output_value).__name__) if output_value is not None else "None"
         })
 
     logging.info("Outputs: %s", outputs)

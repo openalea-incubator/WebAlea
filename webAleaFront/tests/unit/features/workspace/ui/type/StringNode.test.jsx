@@ -70,9 +70,9 @@ import { beforeEach, describe, test, expect } from "@jest/globals";
             fireEvent.change(input, { target: { value: "bar" } });
             expect(input.value).toBe("bar");
 
-            fireEvent.blur(input); // déclenche handleBlur
-            expect(updateNodeMock).toHaveBeenLastCalledWith("node-3", {
-            outputs: [{ value: "bar", id: "out-3", type: "string" }],
+            fireEvent.blur(input); // handleBlur
+            expect(updateNodeMock).toHaveBeenNthCalledWith(2, "node-3", {
+                outputs: [{ id: "out-3", type: "string", value: "bar" }],
             });
         });
 
