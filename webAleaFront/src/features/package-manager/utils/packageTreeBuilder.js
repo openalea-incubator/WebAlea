@@ -125,7 +125,7 @@ function sortTreeNodes(nodes) {
  * @returns {Object} Package data without name
  */
 function extractPackageData(pkg) {
-    const { name, ...rest } = pkg;
+    const { _, ...rest } = pkg;
     return rest;
 }
 
