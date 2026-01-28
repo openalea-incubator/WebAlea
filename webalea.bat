@@ -19,20 +19,15 @@ IF "%ARG%"=="start" (
     FOR /F "tokens=*" %%i IN ('docker compose ps -q') DO (
         FOR /F "tokens=*" %%n IN ('docker inspect -f "{{.Name}}" %%i') DO (
             SET CONTAINER_NAME=%%n
+            ECHO !CONTAINER_NAME!:
         )
-        FOR /F "tokens=*" %%p IN ('docker inspect -f "{{range $p,$conf := .NetworkSettings.Ports}}{{if $conf}}{{$p}}={{(index $conf 0).HostPort}} {{end}}{{end}}" %%i') DO (
-            SET PORTS=%%p
-            IF NOT "!PORTS!"=="" (
-                ECHO !CONTAINER_NAME!:
-                FOR %%x IN (!PORTS!) DO (
-                    FOR /F "tokens=1,2 delims==" %%a IN ("%%x") DO (
-                        ECHO   %%a -^> http://localhost:%%b
-                    )
-                )
+        FOR /F "tokens=1,3 delims= " %%a IN ('docker port %%i ^| findstr "0.0.0.0"') DO (
+            FOR /F "tokens=2 delims=:" %%c IN ("%%b") DO (
+                ECHO    -^> http://localhost:%%c
             )
         )
+        ECHO.
     )
-    ECHO.
 ) ELSE IF "%ARG%"=="stop" (
     REM Stop and clean up Docker Compose services
     docker compose pause
