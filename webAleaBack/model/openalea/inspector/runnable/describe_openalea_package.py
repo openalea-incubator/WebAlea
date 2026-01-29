@@ -10,6 +10,7 @@ import sys
 from typing import Any, Dict
 
 from openalea.core.pkgmanager import PackageManager
+from openalea.core.node_factory import CompositeNodeFactory
 
 from model.openalea.inspector.runnable.constants import (
     KNOWN_INTERFACES, INTERFACE_TO_FRONTEND_TYPE_MAP
@@ -247,6 +248,9 @@ def serialize_node(node_factory) -> dict:
     Returns:
         dict: the node description
     """
+    # check for composite nodes
+    is_composite = isinstance(node_factory, CompositeNodeFactory)
+
     # serialize node factory information
     inputs = serialize_node_puts(node_factory.inputs)
     outputs = serialize_node_puts(node_factory.outputs)
@@ -256,6 +260,7 @@ def serialize_node(node_factory) -> dict:
         "inputs": inputs,
         "outputs": outputs,
         "callable": node_factory.nodeclass,
+        "is_composite": is_composite,
     }
 
 
