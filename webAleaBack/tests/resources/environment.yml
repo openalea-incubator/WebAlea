@@ -20,5 +20,6 @@ dependencies:
   - coverage
   - pytest-cov
   # openalea packages
+  - openalea.core
   - openalea.visualea
   - openalea.astk
