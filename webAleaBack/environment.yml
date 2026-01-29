@@ -12,3 +12,4 @@ dependencies:
   - aiofiles
   - packaging
   - setuptools
+  - openalea.core
