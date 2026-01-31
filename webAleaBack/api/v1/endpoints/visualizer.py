@@ -4,8 +4,9 @@ import logging
 
 from fastapi import APIRouter
 from pydantic import BaseModel
-from openalea.plantgl.all import Sphere, Cylinder, Scene
+from openalea.plantgl.all import Sphere, Cylinder, Scene, Shape, Material, Color3
 import json
+from webAleaBack.model.openalea.visualizer.plantgl import serialize_scene
 
 router = APIRouter()
 
@@ -14,13 +15,15 @@ class VisualizationRequest(BaseModel):
     node_id: str
     visualization_data: dict
 
+
 @router.post("/visualize")
-def visualize_node(data: VisualizationRequest):
+def visualize_node():
     try:
-        # Créer primitives sans viewer
-        s = Sphere(radius=1)
-        c = Cylinder(radius=0.5, height=2)
-        scene = Scene([s, c])
-        return {"success": True, "scene": scene}
+        scene = Scene()
+        shape = Shape(Sphere(1.0), Material(Color3(255, 0, 0)))
+        scene.add(shape)
+        serialized_scene = serialize_scene(scene)
+        return {"success": True, "scene": serialized_scene}
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        import traceback
+        return {"success": False, "error": str(e), "trace": traceback.format_exc()}
