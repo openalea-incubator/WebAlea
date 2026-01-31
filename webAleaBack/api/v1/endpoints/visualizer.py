@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from openalea.plantgl.all import Sphere, Cylinder, Scene, Shape, Material, Color3
 import json
-from webAleaBack.model.openalea.visualizer.plantgl import serialize_scene
+from model.openalea.visualizer.plantgl import serialize_scene
 
 router = APIRouter()
 
@@ -17,8 +17,11 @@ class VisualizationRequest(BaseModel):
 
 
 @router.post("/visualize")
-def visualize_node():
+def visualize_node(request: VisualizationRequest):
     try:
+        nodeId = request.node_id
+        data = request.visualization_data
+        # POC
         scene = Scene()
         shape = Shape(Sphere(1.0), Material(Color3(255, 0, 0)))
         scene.add(shape)

@@ -1,14 +1,16 @@
 from openalea.plantgl.all import (
     Scene, Shape, Text,
-    Tesselator, Discretizer
+    Tesselator, Discretizer,
+    Cylinder, Sphere,
+    Polyline, BezierCurve, NurbsCurve, PointSet
 )
 
-from openalea.widget import (
-    isCurve
-)
+
 
 import uuid
 
+def isCurve(geom):
+    return isinstance(geom, (Polyline, BezierCurve, NurbsCurve, PointSet))
 
 def serialize_color(color):
     return [
@@ -16,31 +18,17 @@ def serialize_color(color):
         color.green / 255.0,
         color.blue / 255.0
     ]
-
-
+    
 def mesh_from_geometry(geometry):
-    d = Discretizer() if geometry.isACurve() else Tesselator()
+    d = Discretizer() if isCurve(geometry) else Tesselator()
     geometry.apply(d)
+    if isCurve(geometry):
+        vertices = [[p.x, p.y, p.z] for p in d.result.pointList]
+        return {"type": "line", "vertices": vertices}
 
-    if geometry.isACurve():
-        points = d.result.pointList
-        vertices = [[p.x, p.y, p.z] for p in points]
-        return {
-            "type": "line",
-            "vertices": vertices
-        }
-
-    pts = d.discretization.pointList
-    indices = d.discretization.indexList
-
-    vertices = [[p.x, p.y, p.z] for p in pts]
-    faces = [list(i) for i in indices]
-
-    return {
-        "type": "mesh",
-        "vertices": vertices,
-        "indices": faces
-    }
+    vertices = [[p.x, p.y, p.z] for p in d.discretization.pointList]
+    faces = [list(i) for i in d.discretization.indexList]
+    return {"type": "mesh", "vertices": vertices, "indices": faces}
 
 
 def serialize_shape(shape: Shape):
@@ -58,13 +46,13 @@ def serialize_shape(shape: Shape):
             "color": serialize_color(color),
             "opacity": opacity
         },
+        # Transformation par défaut
         "transform": {
             "position": [0, 0, 0],
             "rotation": [0, 0, 0],
             "scale": [1, 1, 1]
         }
     }
-
 
 def serialize_scene(scene: Scene):
     objects = []
@@ -85,3 +73,4 @@ def serialize_scene(scene: Scene):
     return {
         "objects": objects
     }
+

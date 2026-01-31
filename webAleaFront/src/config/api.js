@@ -6,3 +6,6 @@ export const API_BASE_URL_INSPECTOR =
 
 export const API_BASE_URL_RUNNER =
     import.meta.env?.VITE_API_BASE_URL_RUNNER ?? "http://localhost:8000/api/v1/runner";
+
+export const API_BASE_URL_VISUALIZER =
+    import.meta.env?.VITE_API_BASE_URL_VISUALIZER ?? "http://localhost:8000/api/v1/visualizer";

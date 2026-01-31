@@ -13,3 +13,4 @@ dependencies:
   - packaging
   - setuptools
   - openalea.plantgl
+  - openalea.widgets
