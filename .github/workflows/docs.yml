@@ -1,0 +1,62 @@
+name: Documentation (versioned)
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: # optional, allows testing without a tag
+
+permissions:
+  contents: write
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the full repository
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Setup Python
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Setup Node.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Install backend Python dependencies
+      - name: Install Python deps
+        run: |
+          pip install -r docs/requirements.txt
+
+      # Install frontend Node dependencies
+      - name: Install frontend deps
+        run: |
+          cd webAleaFront
+          npm install
+
+      # If we cannot use sphinx-js on JSX
+      # Generate frontend docs in Markdown via react-docgen
+      #- name: Generate frontend docs
+      #  run: |
+      #    npx react-docgen src/**/*.jsx --pretty > ../docs/frontend.md
+
+      # Build Sphinx
+      - name: Build docs
+        run: |
+          VERSION=${GITHUB_REF_NAME}
+          sphinx-build -b html docs docs/_build/${VERSION}
+
+      # Deploy to the Doc branch
+      - name: Deploy to Doc branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/_build
+          publish_branch: Doc
+          keep_files: true
