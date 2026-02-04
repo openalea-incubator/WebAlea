@@ -47,6 +47,22 @@ jest.mock('../../../../../src/features/toolbar/model/ImportModal.jsx', () => {
         );
     };
 });
+jest.mock('../../../../../src/features/toolbar/model/ExportModal.jsx', () => {
+    return function MockExportModal({show, onClose, onExport}) {
+        if (!show) return null;
+        return (
+            <div data-testid="export-modal">
+                <button onClick={() => {
+                    onExport({ mode: "workspace" });
+                    onClose();
+                }}>
+                    Export
+                </button>
+                <button onClick={onClose}>Close</button>
+            </div>
+        );
+    };
+});
 
 /* ======================
     Tests
@@ -329,7 +345,7 @@ describe('ToolBar_file', () => {
             fireEvent.click(screen.getByText('Import'));
 
             expect(mockSetNodesAndEdges).toHaveBeenCalledWith([{id: '1'}], [{id: 'e1'}]);
-            expect(mockAddLog).toHaveBeenCalledWith('Workflow imported', {nodes: 1, edges: 1});
+            expect(mockAddLog).toHaveBeenCalledWith('Workspace imported', {nodes: 1, edges: 1});
             expect(screen.queryByTestId('import-modal')).not.toBeInTheDocument();
         });
 
@@ -362,10 +378,11 @@ describe('ToolBar_file', () => {
             render(<ToolBar />);
 
             fireEvent.click(screen.getByTitle('Export workflow'));
+            fireEvent.click(screen.getByText('Export'));
 
             expect(mockAnchor.getAttribute('download')).toBe('workflow_export.json');
             expect(mockAnchor.click).toHaveBeenCalled();
-            expect(mockAddLog).toHaveBeenCalledWith('Workflow exported', { nodes: 1, edges: 1 });
+            expect(mockAddLog).toHaveBeenCalledWith('Workspace exported', { nodes: 1, edges: 1 });
 
             createElementSpy.mockRestore();
         });
