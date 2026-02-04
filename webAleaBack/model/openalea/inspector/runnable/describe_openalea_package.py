@@ -250,6 +250,21 @@ def serialize_node(node_factory) -> dict:
     # serialize node factory information
     inputs = serialize_node_puts(node_factory.inputs)
     outputs = serialize_node_puts(node_factory.outputs)
+    
+    # Fallback to inspect node instance if no inputs/outputs found at factory level
+    if not inputs or not outputs:
+        try:
+            node_instance = node_factory.instantiate()
+            if not inputs:
+                node_inputs = getattr(node_instance, "input_desc", None)
+                if node_inputs:
+                    inputs = serialize_node_puts(node_inputs)
+            if not outputs:
+                node_outputs = getattr(node_instance, "output_desc", None)
+                if node_outputs:
+                    outputs = serialize_node_puts(node_outputs)
+        except Exception as e:
+            logging.warning("Failed to inspect node instance ports: %s", e)
 
     return {
         "description": node_factory.description,

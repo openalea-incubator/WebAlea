@@ -8,7 +8,7 @@ import React, { useState, useEffect } from "react";
  * @param {function} onChange - The function to call when the input changes.
  * @returns {React.ReactNode} - The NodeInputEnum component.
  */
-export default function NodeInputEnum({ inputName, value = "", options = [], onChange }) {
+export default function NodeInputEnum({ inputName, value = "", options = [], onChange, disabled = false }) {
     /**
      * State to store the internal value. It is used to store the value of the input.
      * @type {string}
@@ -19,6 +19,12 @@ export default function NodeInputEnum({ inputName, value = "", options = [], onC
     useEffect(() => {
         setInternalValue(value);
     }, [value]);
+
+    useEffect(() => {
+        if (!internalValue && options.length > 0) {
+            setInternalValue(options[0]);
+        }
+    }, [options, internalValue]);
 
     const handleChange = (e) => {
         const newValue = e.target.value;
@@ -31,20 +37,26 @@ export default function NodeInputEnum({ inputName, value = "", options = [], onC
     return (
         <div className="mb-3">
             <label className="form-label fw-semibold">{inputName}</label>
-            <select
-                className="form-select"
-                value={internalValue}
-                onChange={handleChange}
-            >
-                {options.length === 0 && (
-                    <option value="">-- No options --</option>
-                )}
-                {options.map((opt) => (
-                    <option key={opt} value={opt}>
-                        {opt}
+            {options.length > 0 ? (
+                <select
+                    className="form-select"
+                    value={internalValue || options[0]}
+                    onChange={handleChange}
+                    disabled={disabled}
+                >
+                    {options.map((opt) => (
+                        <option key={opt} value={opt}>
+                            {opt}
+                        </option>
+                    ))}
+                </select>
+            ) : (
+                <select className="form-select" value={internalValue} disabled>
+                    <option value={internalValue}>
+                        {internalValue || "Default"}
                     </option>
-                ))}
-            </select>
+                </select>
+            )}
         </div>
     );
 }

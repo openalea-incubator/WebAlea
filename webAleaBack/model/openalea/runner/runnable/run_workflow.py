@@ -17,6 +17,35 @@ except Exception:
 
 from openalea.core.pkgmanager import PackageManager
 
+
+def normalize_package_name(package_name: str, available_keys: list) -> str | None:
+    """Try to find the correct package name in the PackageManager.
+
+    OpenAlea PackageManager may use different naming conventions:
+    - 'openalea.widgets' (conda name) -> 'widgets' (PM name)
+    - or vice versa
+
+    Args:
+        package_name: the package name to look for
+        available_keys: list of keys from PackageManager
+
+    Returns:
+        The matching key name, or None if not found
+    """
+    if package_name in available_keys:
+        return package_name
+
+    if package_name.startswith("openalea."):
+        short_name = package_name[len("openalea."):]
+        if short_name in available_keys:
+            return short_name
+
+    prefixed_name = f"openalea.{package_name}"
+    if prefixed_name in available_keys:
+        return prefixed_name
+
+    return None
+
 logging.basicConfig(level=logging.INFO)
 
 def parse_if_boolean(type: str):
@@ -45,7 +74,12 @@ def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
     pm.init()
 
     # 2. Get package
-    pkg = pm.get(package_name)
+    available_keys = list(pm.keys())
+    resolved_name = normalize_package_name(package_name, available_keys)
+    if resolved_name is None:
+        raise ValueError(f"Package '{package_name}' not found")
+
+    pkg = pm.get(resolved_name)
     if not pkg:
         raise ValueError(f"Package '{package_name}' not found")
 

@@ -208,6 +208,7 @@ export class WorkflowEngine {
 
         try {
             const outputs = await this._executeViaBackend(node, node.inputs || []);
+            console.log(`WorkflowEngine: Manually executed ${node.id} (${node.label}) with outputs:`, outputs);
             this._emit("node-result", { id: node.id, result: outputs });
             this._emit("node-done", { id: node.id });
             return outputs;
@@ -340,17 +341,22 @@ export class WorkflowEngine {
      * Execute a node via backend API
      */
     async _executeViaBackend(node, inputs) {
+        const preparedInputs = (inputs || []).map((input) => ({
+            ...input,
+            value: input.value ?? input.default
+        }));
+
         console.log(`WorkflowEngine: Backend call for ${node.id}`, {
             package: node.packageName,
             node: node.nodeName,
-            inputs: inputs
+            inputs: preparedInputs
         });
 
         const response = await executeNode({
             nodeId: node.id,
             packageName: node.packageName,
             nodeName: node.nodeName,
-            inputs: inputs
+            inputs: preparedInputs
         });
 
         if (response.success) {

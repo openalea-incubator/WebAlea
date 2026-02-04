@@ -94,6 +94,20 @@ export default function CustomHandle({ id, style, interfaceType, onChange = null
   const linkedValue = connectedIO?.find((io) => io.id === connectedHandleId);
 
     // Effect to update parent node's input value when connection changes
+  const isDeepEqual = (a, b) => {
+    if (a === b) return true;
+    const isObjA = a && typeof a === "object";
+    const isObjB = b && typeof b === "object";
+    if (isObjA && isObjB) {
+      try {
+        return JSON.stringify(a) === JSON.stringify(b);
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  };
+
   useEffect(() => {
     if (!isInput || !parentNodeId) return;
 
@@ -107,7 +121,8 @@ export default function CustomHandle({ id, style, interfaceType, onChange = null
 
           const updatedInputs = (node.data.inputs || []).map((input) => {
             if (input.id === id) {
-              if (input.value !== newValue || !input.fromConnection) {
+              const hasChanged = !isDeepEqual(input.value, newValue);
+              if (hasChanged || !input.fromConnection) {
                 return { ...input, value: newValue, fromConnection: true };
               }
             }

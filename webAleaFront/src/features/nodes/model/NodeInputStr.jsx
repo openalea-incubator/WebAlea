@@ -7,7 +7,7 @@ import React, { useState, useEffect } from "react";
  * @param {function} onChange - The function to call when the input changes.
  * @returns {React.ReactNode} - The NodeInputString component.
  */
-export default function NodeInputString({ inputName, value = "", onChange }) {
+export default function NodeInputString({ inputName, value = "", onChange, disabled = false }) {
     /**
      * State to store the internal value. It is used to store the value of the input.
      * @type {string}
@@ -38,6 +38,7 @@ export default function NodeInputString({ inputName, value = "", onChange }) {
                 value={internalValue}
                 placeholder="Texte"
                 onChange={handleChange}
+                disabled={disabled}
             />
         </div>
     );

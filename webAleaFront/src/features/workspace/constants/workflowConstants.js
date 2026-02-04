@@ -13,7 +13,8 @@ export const NodeType = {
     FLOAT: 'float',
     STRING: 'string',
     BOOLEAN: 'boolean',
-    ARRAY: 'array'
+    ARRAY: 'array',
+    DICT: 'dict'
 };
 
 /**
@@ -50,7 +51,8 @@ export const DefaultValues = {
     FLOAT: 0,
     STRING: '',
     BOOLEAN: false,
-    ARRAY: []
+    ARRAY: [],
+    DICT: {}
 };
 
 /**

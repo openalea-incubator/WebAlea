@@ -3,6 +3,7 @@ import NodeInputFloat from "../model/NodeInputFloat";
 import NodeInputString from "../model/NodeInputStr";
 import NodeInputBoolean from "../model/NodeInputBool";
 import NodeInputEnum from "../model/NodeInputEnum";
+import NodeInputDict from "../model/NodeInputDict";
 
 /**
  * Parse input data from backend or legacy malformed OpenAlea format.
@@ -106,6 +107,8 @@ function getInputType(parsedInput) {
     // File/Path types -> string
     if (iface.includes("file") || iface.includes("path") || iface.includes("dir")) return "string";
 
+    if (iface.includes("dict")) return "object";
+
     // Default to string for "None" or unknown types
     return "string";
 }
@@ -146,6 +149,7 @@ export default function NodeInput({ inputs, onInputChange }) {
                                 key={parsed.id}
                                 inputName={parsed.name}
                                 value={parsed.value ?? 0}
+                                disabled={Boolean(input.fromConnection)}
                                 onChange={(val) => handleChange(parsed.id, val)}
                             />
                         );
@@ -155,6 +159,7 @@ export default function NodeInput({ inputs, onInputChange }) {
                                 key={parsed.id}
                                 inputName={parsed.name}
                                 value={parsed.value ?? ""}
+                                disabled={Boolean(input.fromConnection)}
                                 onChange={(val) => handleChange(parsed.id, val)}
                             />
                         );
@@ -164,6 +169,7 @@ export default function NodeInput({ inputs, onInputChange }) {
                                 key={parsed.id}
                                 inputName={parsed.name}
                                 value={parsed.value ?? false}
+                                disabled={Boolean(input.fromConnection)}
                                 onChange={(val) => handleChange(parsed.id, val)}
                             />
                         );
@@ -174,6 +180,16 @@ export default function NodeInput({ inputs, onInputChange }) {
                                 inputName={parsed.name}
                                 value={parsed.value ?? ""}
                                 options={parsed.enumOptions || []}
+                                disabled={Boolean(input.fromConnection)}
+                                onChange={(val) => handleChange(parsed.id, val)}
+                            />
+                        );
+                    case "object":
+                        return (
+                            <NodeInputDict
+                                key={parsed.id}
+                                inputName={parsed.name}
+                                value={parsed.value ?? {}}
                                 onChange={(val) => handleChange(parsed.id, val)}
                             />
                         );

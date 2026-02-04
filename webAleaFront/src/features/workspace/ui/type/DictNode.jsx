@@ -1,36 +1,39 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useUpdateNodeInternals } from "@xyflow/react";
+import React from "react";
 import "../../../../assets/css/custom_node.css";
-import { useFlow } from "../../providers/FlowContextDefinition";
-import { useLog } from "../../../logger/providers/LogContextDefinition.jsx";
 import CustomHandle from "../../ui/CustomHandle.jsx";
-import { NodeType, DefaultValues, INDEX } from "../../constants/workflowConstants.js";
+import { NodeType, INDEX, DataType } from "../../constants/workflowConstants.js";
+import { useEffect, useMemo, useState } from "react";
+import { useUpdateNodeInternals } from "@xyflow/react";
+import { useFlow } from "../../providers/FlowContextDefinition.jsx";
+import { useLog } from "../../../logger/providers/LogContextDefinition.jsx";
 
-export default function ArrayNode(nodeProps) {
-    const { id, data = {} } = nodeProps;
+export default function DictNode({ id, data = {} }) {
     const { updateNode } = useFlow();
     const { addLog } = useLog();
     const updateNodeInternals = useUpdateNodeInternals();
 
     const initialOutputId = data.outputs?.[INDEX.DEFAULT_OUTPUT]?.id ?? `out-${id}-${INDEX.DEFAULT_OUTPUT}`;
+    const [outputId] = useState(initialOutputId);
     const inputs = data.inputs || [];
 
-    const [outputId] = useState(initialOutputId);
-
-    const arrayValue = useMemo(() => {
-        if (!Array.isArray(inputs) || inputs.length === 0) return DefaultValues.ARRAY;
-        return inputs.map((input) => (input.value !== undefined ? input.value : null));
+    const dictValue = useMemo(() => {
+        if (!Array.isArray(inputs) || inputs.length === 0) return {};
+        return inputs.reduce((acc, input, idx) => {
+            const key = input.name || `key_${idx}`;
+            acc[key] = input.value !== undefined ? input.value : null;
+            return acc;
+        }, {});
     }, [inputs]);
 
     useEffect(() => {
         const existingOutput = data.outputs?.[INDEX.DEFAULT_OUTPUT];
         const existingValue = existingOutput?.value;
-        const nextValueJson = JSON.stringify(arrayValue);
-        const existingValueJson = JSON.stringify(existingValue ?? DefaultValues.ARRAY);
+        const nextValueJson = JSON.stringify(dictValue);
+        const existingValueJson = JSON.stringify(existingValue ?? {});
         const shouldUpdate =
             !existingOutput ||
             existingOutput.id !== outputId ||
-            existingOutput.type !== NodeType.ARRAY ||
+            existingOutput.type !== DataType.OBJECT ||
             existingValueJson !== nextValueJson;
 
         if (!shouldUpdate) return;
@@ -39,29 +42,14 @@ export default function ArrayNode(nodeProps) {
             outputs: [
                 {
                     ...(existingOutput || {}),
-                    value: arrayValue,
+                    value: dictValue,
                     id: outputId,
-                    type: NodeType.ARRAY
+                    type: DataType.OBJECT
                 }
             ]
         });
-        addLog(`ArrayNode ${id} updated. value = ${JSON.stringify(arrayValue)}`);
-    }, [id, arrayValue, outputId, updateNode, addLog, data.outputs]);
-
-    const dynamicNodeStyle = useMemo(() => {
-        const count = Array.isArray(inputs) && inputs.length > 0 ? inputs.length : 1;
-        return {
-            background: "#f0f0f0",
-            border: "2px solid #00838f",
-            padding: 10,
-            borderRadius: 6,
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            minWidth: 90,
-            height: 44 + 12 * count,
-        };
-    }, [inputs]);
+        addLog(`DictNode ${id} updated. value = ${JSON.stringify(dictValue)}`);
+    }, [id, dictValue, outputId, updateNode, addLog, data.outputs]);
 
     useEffect(() => {
         updateNodeInternals(id);
@@ -70,12 +58,19 @@ export default function ArrayNode(nodeProps) {
     return (
         <div
             className="custom-node"
-            style={dynamicNodeStyle}
+            style={{
+                background: "#f0f0f0",
+                border: "2px solid #4527a0",
+                padding: 10,
+                borderRadius: 6,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                height: 44 + 12 * (inputs.length || 1),
+            }}
             data-node-id={id}
         >
-            <span style={{ fontSize: 13, color: "#333", fontWeight: 500 }}>
-                Array
-            </span>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>Dict</span>
 
             {Array.isArray(inputs) &&
                 inputs.map((input, index) => {
@@ -97,7 +92,7 @@ export default function ArrayNode(nodeProps) {
                 id={outputId}
                 className="node-handle"
                 style={{
-                    background: "#00838f",
+                    background: "#4527a0",
                     width: 12,
                     height: 12,
                     borderRadius: "50%",
@@ -105,6 +100,7 @@ export default function ArrayNode(nodeProps) {
                     cursor: "pointer",
                 }}
                 dataType="output"
+                interfaceType={NodeType.DICT}
             />
         </div>
     );

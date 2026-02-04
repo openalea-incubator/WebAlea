@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { FiHash, FiType, FiToggleLeft, FiList } from 'react-icons/fi';
+import { FiHash, FiType, FiToggleLeft, FiList, FiBox } from 'react-icons/fi';
 import { Node } from '../../../workspace/model/Node.jsx';
 import TreeNode from '../../model/TreeNode.jsx';
 
@@ -62,6 +62,20 @@ const PRIMITIVE_NODES = [
             label: 'Array input',
             type: 'array',
             outputs: [{ name: 'Value', type: 'array', default: [] }]
+        })
+    },
+    {
+        id: 'dict',
+        label: 'Dict',
+        description: 'Key/Value object input',
+        type: 'dict',
+        icon: FiBox,
+        iconClass: 'object',
+        node: new Node({
+            id: 'dict',
+            label: 'Dict input',
+            type: 'dict',
+            outputs: [{ name: 'Value', type: 'object', default: {} }]
         })
     }
 ];

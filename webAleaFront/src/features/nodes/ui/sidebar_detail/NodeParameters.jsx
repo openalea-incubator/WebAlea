@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import NodeInput from "../NodeInputs.jsx";
 import NodeOutput from "../NodeOutputs.jsx";
 import { useFlow } from "../../../workspace/providers/FlowContextDefinition.jsx";
-import { DataType } from "../../../workspace/constants/workflowConstants.js";
+import { DataType, NodeType } from "../../../workspace/constants/workflowConstants.js";
 
 /**
  * NodeParameters component.
@@ -31,7 +31,8 @@ export default function NodeParameters() {
      * @type {array}
      */
     const outputs = node ? node.data.outputs : [];
-    const isArrayNode = node?.type === "array";
+    const isArrayNode = node?.type === NodeType.ARRAY;
+    const isDictNode = node?.type === NodeType.DICT;
 
     /**
      * Function to handle input value changes.
@@ -48,6 +49,7 @@ export default function NodeParameters() {
         updateNode(node.id, { inputs: updatedInputs });
     }, [node, inputs, updateNode]);
 
+
     /**
      * Function to launch the execution of the node.
      */
@@ -59,10 +61,20 @@ export default function NodeParameters() {
 
     const handleArrayInputNameChange = (inputId, newName) => {
         if (!node) return;
-        const updatedInputs = (inputs ?? []).map((input) =>
-            input.id === inputId ? { ...input, name: newName } : input
-        );
-        updateNode(node.id, { inputs: updatedInputs });
+        const nextName = newName ?? "";
+        let previousName = "";
+        const updatedInputs = (inputs ?? []).map((input) => {
+            if (input.id === inputId) {
+                previousName = input.name || "";
+                if (isDictNode && nextName.trim() === "") {
+                    return input;
+                }
+                return { ...input, name: nextName };
+            }
+            return input;
+        });
+        const updatedData = { inputs: updatedInputs };
+        updateNode(node.id, updatedData);
     };
 
     const handleArrayInputTypeChange = (inputId, newType) => {
@@ -76,19 +88,25 @@ export default function NodeParameters() {
     const handleArrayInputRemove = (inputId) => {
         if (!node) return;
         const updatedInputs = (inputs ?? []).filter((input) => input.id !== inputId);
-        updateNode(node.id, { inputs: updatedInputs });
+        const updatedData = { inputs: updatedInputs };
+        updateNode(node.id, updatedData);
     };
 
     const handleArrayInputAdd = () => {
         if (!node) return;
         const nextIndex = (inputs?.length ?? 0) + 1;
+        const defaultName = isDictNode
+            ? `Key ${nextIndex}`
+            : `Input ${nextIndex}`;
         const newInput = {
             id: `arr_in_${node.id}_${Date.now()}`,
-            name: `Input ${nextIndex}`,
+            name: defaultName,
             type: DataType.ANY,
             value: null
         };
-        updateNode(node.id, { inputs: [...(inputs ?? []), newInput] });
+        const updatedInputs = [...(inputs ?? []), newInput];
+        const updatedData = { inputs: updatedInputs };
+        updateNode(node.id, updatedData);
     };
 
     /**
@@ -131,7 +149,7 @@ export default function NodeParameters() {
                     padding: "12px",
                 }}
             >
-                {!isArrayNode && inputs.length > 0 && (
+                {!isArrayNode && !isDictNode && inputs.length > 0 && (
                     <div style={{ marginBottom: "16px" }}>
                         <h6 style={{ fontSize: "0.85rem", color: "#666", marginBottom: "8px" }}>
                             Inputs ({inputs.length})
@@ -142,6 +160,7 @@ export default function NodeParameters() {
                         />
                     </div>
                 )}
+
 
                 {outputs.length > 0 && (
                     <div style={{ marginBottom: "16px" }}>
@@ -197,6 +216,55 @@ export default function NodeParameters() {
                         </div>
                     </div>
                 )}
+
+                {isDictNode && (
+                    <div style={{ marginBottom: "16px" }}>
+                        <h6 style={{ fontSize: "0.85rem", color: "#666", marginBottom: "8px" }}>
+                            Dict Entries ({inputs.length})
+                        </h6>
+                        <div className="d-flex flex-column gap-2">
+                            {(inputs ?? []).map((input, idx) => (
+                                <div key={input.id || `dict-input-${idx}`} className="d-flex gap-2 align-items-center">
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-sm"
+                                        value={input.name || ""}
+                                        onChange={(e) => handleArrayInputNameChange(input.id, e.target.value)}
+                                        placeholder={`Key ${idx + 1}`}
+                                    />
+                                    <select
+                                        className="form-select form-select-sm"
+                                        value={input.type || DataType.ANY}
+                                        onChange={(e) => handleArrayInputTypeChange(input.id, e.target.value)}
+                                    >
+                                        <option value={DataType.ANY}>any</option>
+                                        <option value={DataType.FLOAT}>float</option>
+                                        <option value={DataType.STRING}>string</option>
+                                        <option value={DataType.BOOLEAN}>boolean</option>
+                                        <option value={DataType.ARRAY}>array</option>
+                                        <option value={DataType.ENUM}>enum</option>
+                                        <option value={DataType.OBJECT}>object</option>
+                                    </select>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-danger btn-sm"
+                                        onClick={() => handleArrayInputRemove(input.id)}
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            ))}
+                            <button
+                                type="button"
+                                className="btn btn-outline-primary btn-sm align-self-start"
+                                onClick={handleArrayInputAdd}
+                            >
+                                Add Entry
+                            </button>
+                        </div>
+                    </div>
+                )}
+
             </div>
 
             {/* --- LAUNCH BUTTON - fixed height --- */}
