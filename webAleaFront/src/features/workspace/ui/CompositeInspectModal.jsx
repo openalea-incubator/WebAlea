@@ -1,5 +1,7 @@
 import React, { useMemo } from "react";
 import { Modal, Button } from "react-bootstrap";
+import { useFlow } from "../providers/FlowContextDefinition.jsx";
+import { NodeState, getNodeStateColor, getNodeStateLabel } from "../constants/nodeState.js";
 
 const NODE_WIDTH = 160;
 const NODE_HEIGHT = 44;
@@ -41,6 +43,7 @@ function buildPreviewLayout(graph) {
 }
 
 export default function CompositeInspectModal({ show, onClose, compositeNode }) {
+    const { engine } = useFlow();
     const graph = compositeNode?.data?.graph;
     const hasGraph = Array.isArray(graph?.nodes) && graph.nodes.length > 0;
 
@@ -82,7 +85,13 @@ export default function CompositeInspectModal({ show, onClose, compositeNode }) 
                             })}
                         </svg>
                         <div style={{ position: "relative", width: layout.width, height: layout.height }}>
-                            {layout.nodes.map(node => (
+                            {layout.nodes.map(node => {
+                                const expandedId = compositeNode ? `${compositeNode.id}::${node.id}` : node.id;
+                                const runtimeState = engine?.nodeStates?.get?.(expandedId);
+                                const storedState = graph?.nodes?.find(n => n.id === node.id)?.data?.status;
+                                const state = runtimeState || storedState || NodeState.READY;
+                                const borderColor = getNodeStateColor(state);
+                                return (
                                 <div
                                     key={node.id}
                                     style={{
@@ -91,7 +100,7 @@ export default function CompositeInspectModal({ show, onClose, compositeNode }) 
                                         top: node.y,
                                         width: NODE_WIDTH,
                                         height: NODE_HEIGHT,
-                                        border: "1px solid #cfd8dc",
+                                        border: `2px solid ${borderColor}`,
                                         borderRadius: "6px",
                                         background: "#f8f9fa",
                                         display: "flex",
@@ -101,10 +110,23 @@ export default function CompositeInspectModal({ show, onClose, compositeNode }) 
                                         fontWeight: 600,
                                         color: "#37474f"
                                     }}
+                                    title={getNodeStateLabel(state)}
                                 >
+                                    <span
+                                        style={{
+                                            position: "absolute",
+                                            top: 6,
+                                            left: 6,
+                                            width: 8,
+                                            height: 8,
+                                            borderRadius: "50%",
+                                            background: borderColor
+                                        }}
+                                    />
                                     {node.label}
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}

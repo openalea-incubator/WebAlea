@@ -29,6 +29,7 @@ import { StorageKeys, NodeType, DataType, PERSISTENCE_DEBOUNCE_MS } from '../con
 import { useLocalStorage, loadFromLocalStorage } from '../hooks/useLocalStorage.js';
 import { createWorkflowEventHandlers } from '../handlers/workflowEventHandlers.js';
 import { areTypesCompatible } from '../utils/typeValidation.js';
+import { expandComposites } from '../utils/compositeExpansion.js';
 
 /**
  * FlowProvider component - provides the FlowContext to its children.
@@ -122,6 +123,24 @@ export const FlowProvider = ({ children }) => {
         );
     }, [setNodes]);
 
+
+    /**
+     * Updates properties of an existing node.
+     * @param {string} id - The ID of the node to update
+     * @param {Object} updatedProperties - The properties to update
+     */
+    const updateNode = useCallback((id, updatedProperties) => {
+        setNodes((nds) =>
+            nds.map((n) =>
+                n.id === id ? { ...n, data: { ...n.data, ...updatedProperties } } : n
+            )
+        );
+        // Only log if not a frequent update (like value changes)
+        if (!updatedProperties.outputs) {
+            addLog("Node updated", { id, updatedProperties });
+        }
+    }, [setNodes, addLog]);
+
     // =========================================================================
     // WORKFLOW ENGINE 
     // =========================================================================
@@ -153,12 +172,6 @@ export const FlowProvider = ({ children }) => {
         [resetAllNodesStatus, updateNodeStatus, updateNodeOutputs, addLog, getNodeById]
     );
 
-    // Register the event handler and initialize listeners
-    useEffect(() => {
-        engine.listeners = [];
-        engine.onUpdate(handleEngineEvent);
-    }, [handleEngineEvent, engine]);
-
     // =========================================================================
     // EXECUTION FUNCTIONS
     // =========================================================================
@@ -166,8 +179,106 @@ export const FlowProvider = ({ children }) => {
     /**
      * Execute the entire workflow
      */
+    const compositeMappingsRef = useRef([]);
+    const compositeMappingByIdRef = useRef(new Map());
+
+    const recomputeCompositeState = useCallback(() => {
+        if (!engine?.nodeStates || compositeMappingsRef.current.length === 0) return;
+
+        const expandedState = engine.nodeStates;
+        compositeMappingsRef.current.forEach(mapping => {
+            const compositeNode = nodesRef.current.find(n => n.id === mapping.compositeId);
+            if (!compositeNode) return;
+
+            const internalIds = new Set();
+            if (Array.isArray(mapping.internalIds) && mapping.internalIds.length > 0) {
+                mapping.internalIds.forEach(id => internalIds.add(id));
+            } else {
+                mapping.outputMap.forEach(m => internalIds.add(`${mapping.compositeId}::${m.nodeId}`));
+                mapping.inputMap.forEach(m => internalIds.add(`${mapping.compositeId}::${m.nodeId}`));
+            }
+
+            let states = [...internalIds].map(id => expandedState.get(id)).filter(Boolean);
+            if (states.length === 0) {
+                const prefix = `${mapping.compositeId}::`;
+                states = [...expandedState.entries()]
+                    .filter(([id]) => id.startsWith(prefix))
+                    .map(([, state]) => state)
+                    .filter(Boolean);
+            }
+            if (states.length === 0) return;
+
+            let nextState = NodeState.PENDING;
+            if (states.some(s => s === NodeState.ERROR)) {
+                nextState = NodeState.ERROR;
+            } else if (states.some(s => s === NodeState.RUNNING)) {
+                nextState = NodeState.RUNNING;
+            } else if (states.every(s => s === NodeState.COMPLETED)) {
+                nextState = NodeState.COMPLETED;
+            } else if (states.some(s => s === NodeState.SKIPPED)) {
+                nextState = NodeState.SKIPPED;
+            } else if (states.some(s => s === NodeState.CANCELLED)) {
+                nextState = NodeState.CANCELLED;
+            } else if (states.some(s => s === NodeState.READY)) {
+                nextState = NodeState.READY;
+            }
+
+            updateNodeStatus(mapping.compositeId, nextState);
+        });
+    }, [engine, updateNodeStatus]);
+
+    const updateCompositeOutputs = useCallback((results) => {
+        if (!results || compositeMappingsRef.current.length === 0) return;
+
+        const resolveOutput = (mapping, outputId, visited = new Set()) => {
+            const mapped = mapping.outputMap.get(outputId);
+            if (!mapped) return null;
+            const internalId = `${mapping.compositeId}::${mapped.nodeId}`;
+
+            const internalOutputs = results[internalId] || [];
+            const match = internalOutputs.find(o =>
+                o.id === mapped.handleId ||
+                o.name === mapped.handleId ||
+                (mapped.handleIndex !== null && mapped.handleIndex === o.index)
+            );
+            if (match) return match;
+
+            const nested = compositeMappingByIdRef.current.get(internalId);
+            if (!nested || visited.has(internalId)) return null;
+            visited.add(internalId);
+            return resolveOutput(nested, mapped.handleId, visited);
+        };
+
+        compositeMappingsRef.current.forEach(mapping => {
+            const compositeNode = nodesRef.current.find(n => n.id === mapping.compositeId);
+            if (!compositeNode) return;
+
+            const outputs = (compositeNode.data.outputs || []).map(output => {
+                const resolved = resolveOutput(mapping, output.id);
+                if (!resolved) return output;
+                return { ...output, value: resolved.value, type: resolved.type || output.type };
+            });
+
+            updateNode(mapping.compositeId, { outputs });
+        });
+    }, [updateNode]);
+
+    // Register the event handler and initialize listeners
+    useEffect(() => {
+        engine.listeners = [];
+        engine.onUpdate((event, payload) => {
+            handleEngineEvent(event, payload);
+            if (event === "node-state-change" || event === "workflow-done" || event === "node-error") {
+                recomputeCompositeState();
+            }
+        });
+    }, [handleEngineEvent, engine, recomputeCompositeState]);
+
     const executeWorkflow = useCallback(async () => {
-        const { graph, edges: customEdges } = buildGraphModel(nodes, edges);
+        const { nodes: expandedNodes, edges: expandedEdges, mappings } = expandComposites(nodes, edges, 8);
+        compositeMappingsRef.current = mappings;
+        compositeMappingByIdRef.current = new Map(mappings.map(m => [m.compositeId, m]));
+        const { graph, edges: customEdges } = buildGraphModel(expandedNodes, expandedEdges);
 
         console.log("Executing workflow with:", {
             nodes: graph.length,
@@ -181,9 +292,13 @@ export const FlowProvider = ({ children }) => {
 
         engine.bindModel(graph, customEdges);
         const result = await engine.start();
+        if (result?.results) {
+            updateCompositeOutputs(result.results);
+        }
+        recomputeCompositeState();
 
         return result;
-    }, [nodes, edges, engine, addLog]);
+    }, [nodes, edges, engine, addLog, updateCompositeOutputs, recomputeCompositeState]);
 
     /**
      * Stop the workflow execution
@@ -291,23 +406,6 @@ export const FlowProvider = ({ children }) => {
         setEdges(newEdges);
         addLog("Workflow updated", { nodes: newNodes.length, edges: newEdges.length });
     }, [setNodes, setEdges, addLog]);
-
-    /**
-     * Updates properties of an existing node.
-     * @param {string} id - The ID of the node to update
-     * @param {Object} updatedProperties - The properties to update
-     */
-    const updateNode = useCallback((id, updatedProperties) => {
-        setNodes((nds) =>
-            nds.map((n) =>
-                n.id === id ? { ...n, data: { ...n.data, ...updatedProperties } } : n
-            )
-        );
-        // Only log if not a frequent update (like value changes)
-        if (!updatedProperties.outputs) {
-            addLog("Node updated", { id, updatedProperties });
-        }
-    }, [setNodes, addLog]);
 
     /**
      * Deletes a node and its associated edges from the workflow.
