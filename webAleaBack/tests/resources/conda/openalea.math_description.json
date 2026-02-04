@@ -1,0 +1,1229 @@
+{
+  "package_name": "openalea.math",
+  "nodes": {
+    "==": {
+      "description": "Equality test",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "!=": {
+      "description": "Equality test",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    ">": {
+      "description": "Greater than test",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    ">=": {
+      "description": "greater or Equal test",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "<": {
+      "description": "Lesser than test",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "<=": {
+      "description": "Less or Equal test",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "and": {
+      "description": "Boolean And",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": "",
+          "default": true
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": "",
+          "default": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "or": {
+      "description": "Boolean Or",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": "",
+          "default": true
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": "",
+          "default": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "xor": {
+      "description": "Boolean XOR",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": "",
+          "default": true
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": "",
+          "default": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "not": {
+      "description": "Boolean Not",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": "",
+          "default": true
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "+": {
+      "description": "Addition",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "-": {
+      "description": "Soustraction",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "neg": {
+      "description": "Negative",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "*": {
+      "description": "Multiplication",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "/": {
+      "description": "Division",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "%": {
+      "description": "Modulo",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "abs": {
+      "description": "Absolute value",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "cmp": {
+      "description": "Compare 2 objects",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "**": {
+      "description": "Power",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 1
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "cos": {
+      "description": "Cosinus",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "sin": {
+      "description": "Sinus",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "tan": {
+      "description": "Tangent",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "acos": {
+      "description": "Arccosinus",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "asin": {
+      "description": "Arcsinus",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "atan": {
+      "description": "Arctangent",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "radians": {
+      "description": "Degrees to radians converter",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "degrees": {
+      "description": "Radians to degrees converter",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "round": {
+      "description": "Round value",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "floor": {
+      "description": "floor of x",
+      "inputs": [
+        {
+          "id": "port_0_x",
+          "name": "x",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_y",
+          "name": "y",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "ceil": {
+      "description": "Ceil of x",
+      "inputs": [
+        {
+          "id": "port_0_x",
+          "name": "x",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_y",
+          "name": "y",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "sqrt": {
+      "description": "Square root",
+      "inputs": [
+        {
+          "id": "port_0_x",
+          "name": "x",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_y",
+          "name": "y",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "log10": {
+      "description": "Base 10 logarithm",
+      "inputs": [
+        {
+          "id": "port_0_x",
+          "name": "x",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_y",
+          "name": "y",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "log": {
+      "description": "Logarithm",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        },
+        {
+          "id": "port_1_base",
+          "name": "base",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 2.718281828459045
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_y",
+          "name": "y",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "exp": {
+      "description": "Exponential",
+      "inputs": [
+        {
+          "id": "port_0_x",
+          "name": "x",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_y",
+          "name": "y",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "min": {
+      "description": "Minimum of a sequence",
+      "inputs": [
+        {
+          "id": "port_0_x",
+          "name": "x",
+          "interface": "ISequence",
+          "type": "array",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "max": {
+      "description": "Maximum of a sequence",
+      "inputs": [
+        {
+          "id": "port_0_x",
+          "name": "x",
+          "interface": "ISequence",
+          "type": "array",
+          "optional": false,
+          "desc": "",
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "randint": {
+      "description": "Random integer in range[a,b]",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 100
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "random": {
+      "description": "Random float [0,1)",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "IFloat",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    },
+    "randlist": {
+      "description": "List of Random integer",
+      "inputs": [
+        {
+          "id": "port_0_a",
+          "name": "a",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 0
+        },
+        {
+          "id": "port_1_b",
+          "name": "b",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 100
+        },
+        {
+          "id": "port_2_size",
+          "name": "size",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": "",
+          "default": 10
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "ISequence",
+          "type": "array",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null,
+      "node_kind": "simple",
+      "implicit_output": false
+    }
+  },
+  "has_wralea": true
+}

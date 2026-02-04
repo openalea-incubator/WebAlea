@@ -1,0 +1,602 @@
+{
+    "node": {
+        "description": "",
+        "inputs": [
+            {
+                "id": "port_0_+_a",
+                "name": "+_a",
+                "interface": "IInt",
+                "type": "float",
+                "optional": false,
+                "desc": "",
+                "default": 0,
+                "value": 7
+            },
+            {
+                "id": "port_1_+_b",
+                "name": "+_b",
+                "interface": "IInt",
+                "type": "float",
+                "optional": false,
+                "desc": "",
+                "default": 0,
+                "value": 15
+            },
+            {
+                "id": "port_2_and_a",
+                "name": "and_a",
+                "interface": "IBool",
+                "type": "boolean",
+                "optional": false,
+                "desc": "",
+                "default": true,
+                "value": false
+            },
+            {
+                "id": "port_3_and_b",
+                "name": "and_b",
+                "interface": "IBool",
+                "type": "boolean",
+                "optional": false,
+                "desc": "",
+                "default": true,
+                "value": true
+            }
+        ],
+        "outputs": [
+            {
+                "id": "port_0_or_out",
+                "name": "or_out",
+                "interface": "IBool",
+                "type": "boolean",
+                "optional": false,
+                "desc": ""
+            }
+        ],
+        "callable": null,
+        "nodekind": "composite",
+        "implicit_output": false,
+        "graph": {
+            "nodes": [
+                {
+                    "id": "n5048-float",
+                    "type": "float",
+                    "position": {
+                        "x": -230.5,
+                        "y": -76.5
+                    },
+                    "data": {
+                        "label": "Float input",
+                        "color": null,
+                        "status": "pending",
+                        "metadata": {},
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "value": 15,
+                                "id": "out-n5048-float-0",
+                                "type": "float"
+                            }
+                        ],
+                        "endpoint": null,
+                        "packageName": null,
+                        "nodeName": "Float input",
+                        "callable": null,
+                        "description": ""
+                    },
+                    "measured": {
+                        "width": 191,
+                        "height": 48
+                    },
+                    "selected": false,
+                    "dragging": false
+                },
+                {
+                    "id": "n7910-boolean",
+                    "type": "boolean",
+                    "position": {
+                        "x": -230,
+                        "y": 27.5
+                    },
+                    "data": {
+                        "label": "Boolean input",
+                        "color": null,
+                        "status": "pending",
+                        "metadata": {},
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "value": false,
+                                "id": "out-n7910-boolean-0",
+                                "type": "boolean"
+                            }
+                        ],
+                        "endpoint": null,
+                        "packageName": null,
+                        "nodeName": "Boolean input",
+                        "callable": null,
+                        "description": ""
+                    },
+                    "measured": {
+                        "width": 120,
+                        "height": 52
+                    },
+                    "selected": false,
+                    "dragging": false
+                },
+                {
+                    "id": "n3400-n7910-boolean",
+                    "type": "boolean",
+                    "position": {
+                        "x": -231.6944590547903,
+                        "y": 100.08151296088474
+                    },
+                    "data": {
+                        "label": "Boolean input",
+                        "color": null,
+                        "status": "pending",
+                        "metadata": {},
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "value": true,
+                                "id": "out-n3400-n7910-boolean-0",
+                                "type": "boolean"
+                            }
+                        ],
+                        "endpoint": null,
+                        "packageName": null,
+                        "nodeName": "Boolean input",
+                        "callable": null,
+                        "description": ""
+                    },
+                    "measured": {
+                        "width": 120,
+                        "height": 52
+                    },
+                    "selected": false,
+                    "dragging": false
+                },
+                {
+                    "id": "n4226-n5048-float",
+                    "type": "float",
+                    "position": {
+                        "x": -231.9046346760909,
+                        "y": -190.98028738031016
+                    },
+                    "data": {
+                        "label": "Float input",
+                        "color": null,
+                        "status": "pending",
+                        "metadata": {},
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "value": 7,
+                                "id": "out-n4226-n5048-float-0",
+                                "type": "float"
+                            }
+                        ],
+                        "endpoint": null,
+                        "packageName": null,
+                        "nodeName": "Float input",
+                        "callable": null,
+                        "description": ""
+                    },
+                    "measured": {
+                        "width": 191,
+                        "height": 48
+                    },
+                    "selected": false,
+                    "dragging": false
+                },
+                {
+                    "id": "n2007-openalea.math::+",
+                    "type": "custom",
+                    "position": {
+                        "x": 31.000000000000014,
+                        "y": -137.00000000000003
+                    },
+                    "data": {
+                        "label": "+",
+                        "color": null,
+                        "status": "completed",
+                        "metadata": {},
+                        "inputs": [
+                            {
+                                "id": "port_0_a",
+                                "name": "a",
+                                "interface": "IInt",
+                                "type": "float",
+                                "optional": false,
+                                "desc": "",
+                                "default": 0,
+                                "value": 7,
+                                "fromConnection": true
+                            },
+                            {
+                                "id": "port_1_b",
+                                "name": "b",
+                                "interface": "IInt",
+                                "type": "float",
+                                "optional": false,
+                                "desc": "",
+                                "default": 0,
+                                "value": 15,
+                                "fromConnection": true
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "id": "port_0_out",
+                                "name": "out",
+                                "interface": "IInt",
+                                "type": "int",
+                                "optional": false,
+                                "desc": "",
+                                "default": null,
+                                "value": 22
+                            }
+                        ],
+                        "endpoint": null,
+                        "packageName": "openalea.math",
+                        "nodeName": "+",
+                        "callable": null,
+                        "description": "Addition"
+                    },
+                    "measured": {
+                        "width": 160,
+                        "height": 68
+                    },
+                    "selected": false,
+                    "dragging": false
+                },
+                {
+                    "id": "n6074-openalea.math::and",
+                    "type": "custom",
+                    "position": {
+                        "x": -33.892914162759965,
+                        "y": 59.73228540689989
+                    },
+                    "data": {
+                        "label": "and",
+                        "color": null,
+                        "status": "completed",
+                        "metadata": {},
+                        "inputs": [
+                            {
+                                "id": "port_0_a",
+                                "name": "a",
+                                "interface": "IBool",
+                                "type": "boolean",
+                                "optional": false,
+                                "desc": "",
+                                "default": true,
+                                "value": false,
+                                "fromConnection": true
+                            },
+                            {
+                                "id": "port_1_b",
+                                "name": "b",
+                                "interface": "IBool",
+                                "type": "boolean",
+                                "optional": false,
+                                "desc": "",
+                                "default": true,
+                                "value": true,
+                                "fromConnection": true
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "id": "port_0_out",
+                                "name": "out",
+                                "interface": "IBool",
+                                "type": "boolean",
+                                "optional": false,
+                                "desc": "",
+                                "default": null,
+                                "value": false
+                            }
+                        ],
+                        "endpoint": null,
+                        "packageName": "openalea.math",
+                        "nodeName": "and",
+                        "callable": null,
+                        "description": "Boolean And"
+                    },
+                    "measured": {
+                        "width": 160,
+                        "height": 68
+                    },
+                    "selected": false,
+                    "dragging": false
+                },
+                {
+                    "id": "n148-openalea.math::not",
+                    "type": "custom",
+                    "position": {
+                        "x": 187.34816162913816,
+                        "y": 65.79515167294146
+                    },
+                    "data": {
+                        "label": "not",
+                        "color": null,
+                        "status": "completed",
+                        "metadata": {},
+                        "inputs": [
+                            {
+                                "id": "port_0_a",
+                                "name": "a",
+                                "interface": "IBool",
+                                "type": "boolean",
+                                "optional": false,
+                                "desc": "",
+                                "default": true,
+                                "value": false,
+                                "fromConnection": true
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "id": "port_0_out",
+                                "name": "out",
+                                "interface": "IBool",
+                                "type": "boolean",
+                                "optional": false,
+                                "desc": "",
+                                "default": null,
+                                "value": true
+                            }
+                        ],
+                        "endpoint": null,
+                        "packageName": "openalea.math",
+                        "nodeName": "not",
+                        "callable": null,
+                        "description": "Boolean Not"
+                    },
+                    "measured": {
+                        "width": 160,
+                        "height": 56
+                    },
+                    "selected": false,
+                    "dragging": false
+                },
+                {
+                    "id": "n8699-openalea.math::random",
+                    "type": "custom",
+                    "position": {
+                        "x": 28.00779471206659,
+                        "y": -30.017148366546486
+                    },
+                    "data": {
+                        "label": "random",
+                        "color": null,
+                        "status": "completed",
+                        "metadata": {},
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "id": "port_0_out",
+                                "name": "out",
+                                "interface": "IFloat",
+                                "type": "float",
+                                "optional": false,
+                                "desc": "",
+                                "default": null,
+                                "value": 0.4838091662512227
+                            }
+                        ],
+                        "endpoint": null,
+                        "packageName": "openalea.math",
+                        "nodeName": "random",
+                        "callable": null,
+                        "description": "Random float [0,1)"
+                    },
+                    "measured": {
+                        "width": 160,
+                        "height": 56
+                    },
+                    "selected": false,
+                    "dragging": false
+                },
+                {
+                    "id": "n664-openalea.math::<",
+                    "type": "custom",
+                    "position": {
+                        "x": 279.51458701850174,
+                        "y": -73.55717818892131
+                    },
+                    "data": {
+                        "label": "<",
+                        "color": null,
+                        "status": "completed",
+                        "metadata": {},
+                        "inputs": [
+                            {
+                                "id": "port_0_a",
+                                "name": "a",
+                                "interface": "IInt",
+                                "type": "float",
+                                "optional": false,
+                                "desc": "",
+                                "default": 0,
+                                "value": 22,
+                                "fromConnection": true
+                            },
+                            {
+                                "id": "port_1_b",
+                                "name": "b",
+                                "interface": "IInt",
+                                "type": "float",
+                                "optional": false,
+                                "desc": "",
+                                "default": 0,
+                                "value": 0.4838091662512227,
+                                "fromConnection": true
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "id": "port_0_out",
+                                "name": "out",
+                                "interface": "IBool",
+                                "type": "boolean",
+                                "optional": false,
+                                "desc": "",
+                                "default": null,
+                                "value": false
+                            }
+                        ],
+                        "endpoint": null,
+                        "packageName": "openalea.math",
+                        "nodeName": "<",
+                        "callable": null,
+                        "description": "Lesser than test"
+                    },
+                    "measured": {
+                        "width": 160,
+                        "height": 68
+                    },
+                    "selected": false,
+                    "dragging": false
+                },
+                {
+                    "id": "n5623-openalea.math::or",
+                    "type": "custom",
+                    "position": {
+                        "x": 487.4485062894653,
+                        "y": -0.19507910772893666
+                    },
+                    "data": {
+                        "label": "or",
+                        "color": null,
+                        "status": "completed",
+                        "metadata": {},
+                        "inputs": [
+                            {
+                                "id": "port_0_a",
+                                "name": "a",
+                                "interface": "IBool",
+                                "type": "boolean",
+                                "optional": false,
+                                "desc": "",
+                                "default": true,
+                                "value": false,
+                                "fromConnection": true
+                            },
+                            {
+                                "id": "port_1_b",
+                                "name": "b",
+                                "interface": "IBool",
+                                "type": "boolean",
+                                "optional": false,
+                                "desc": "",
+                                "default": true,
+                                "value": true,
+                                "fromConnection": true
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "id": "port_0_out",
+                                "name": "out",
+                                "interface": "IBool",
+                                "type": "boolean",
+                                "optional": false,
+                                "desc": "",
+                                "default": null,
+                                "value": true
+                            }
+                        ],
+                        "endpoint": null,
+                        "packageName": "openalea.math",
+                        "nodeName": "or",
+                        "callable": null,
+                        "description": "Boolean Or"
+                    },
+                    "measured": {
+                        "width": 160,
+                        "height": 68
+                    },
+                    "selected": false,
+                    "dragging": false
+                }
+            ],
+            "edges": [
+                {
+                    "type": "smoothstep",
+                    "source": "n7910-boolean",
+                    "sourceHandle": "out-n7910-boolean-0",
+                    "target": "n6074-openalea.math::and",
+                    "targetHandle": "port_0_a",
+                    "id": "xy-edge__n7910-booleanout-n7910-boolean-0-n6074-openalea.math::andport_0_a"
+                },
+                {
+                    "type": "smoothstep",
+                    "source": "n3400-n7910-boolean",
+                    "sourceHandle": "out-n3400-n7910-boolean-0",
+                    "target": "n6074-openalea.math::and",
+                    "targetHandle": "port_1_b",
+                    "id": "xy-edge__n3400-n7910-booleanout-n3400-n7910-boolean-0-n6074-openalea.math::andport_1_b"
+                },
+                {
+                    "type": "smoothstep",
+                    "source": "n6074-openalea.math::and",
+                    "sourceHandle": "port_0_out",
+                    "target": "n148-openalea.math::not",
+                    "targetHandle": "port_0_a",
+                    "id": "xy-edge__n6074-openalea.math::andport_0_out-n148-openalea.math::notport_0_a"
+                },
+                {
+                    "type": "smoothstep",
+                    "source": "n4226-n5048-float",
+                    "sourceHandle": "out-n4226-n5048-float-0",
+                    "target": "n2007-openalea.math::+",
+                    "targetHandle": "port_0_a",
+                    "id": "xy-edge__n4226-n5048-floatout-n4226-n5048-float-0-n2007-openalea.math::+port_0_a"
+                },
+                {
+                    "type": "smoothstep",
+                    "source": "n5048-float",
+                    "sourceHandle": "out-n5048-float-0",
+                    "target": "n2007-openalea.math::+",
+                    "targetHandle": "port_1_b",
+                    "id": "xy-edge__n5048-floatout-n5048-float-0-n2007-openalea.math::+port_1_b"
+                },
+                {
+                    "type": "smoothstep",
+                    "source": "n2007-openalea.math::+",
+                    "sourceHandle": "port_0_out",
+                    "target": "n664-openalea.math::<",
+                    "targetHandle": "port_0_a",
+                    "id": "xy-edge__n2007-openalea.math::+port_0_out-n664-openalea.math::<port_0_a"
+                },
+                {
+                    "type": "smoothstep",
+                    "source": "n8699-openalea.math::random",
+                    "sourceHandle": "port_0_out",
+                    "target": "n664-openalea.math::<",
+                    "targetHandle": "port_1_b",
+                    "id": "xy-edge__n8699-openalea.math::randomport_0_out-n664-openalea.math::<port_1_b"
+                },
+                {
+                    "type": "smoothstep",
+                    "source": "n664-openalea.math::<",
+                    "sourceHandle": "port_0_out",
+                    "target": "n5623-openalea.math::or",
+                    "targetHandle": "port_0_a",
+                    "id": "xy-edge__n664-openalea.math::<port_0_out-n5623-openalea.math::orport_0_a"
+                },
+                {
+                    "type": "smoothstep",
+                    "source": "n148-openalea.math::not",
+                    "sourceHandle": "port_0_out",
+                    "target": "n5623-openalea.math::or",
+                    "targetHandle": "port_1_b",
+                    "id": "xy-edge__n148-openalea.math::notport_0_out-n5623-openalea.math::orport_1_b"
+                }
+            ]
+        }
+    }
+}
