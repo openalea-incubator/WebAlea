@@ -77,6 +77,10 @@ export default function PackageManager() {
                     packageName: item.packageName,
                     nodeName: nodeName,
                     callable: item.callable,
+                    metadata: item.metadata || {},
+                    nodekind: item.nodekind ?? "atomic",
+                    graph: item.graph ?? null,
+                    implicit_output: item.implicit_output ?? false,
                 }
             });
             addNode(newNode);

@@ -2,69 +2,135 @@ import { useEffect, useCallback, useRef } from 'react';
 import { RichTreeView } from '@mui/x-tree-view';
 import { treeItemClasses } from '@mui/x-tree-view/TreeItem';
 import { FiPackage, FiLoader } from 'react-icons/fi';
+import { FaTrash, FaProjectDiagram } from 'react-icons/fa';
+import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { getVisualPackagesList, getNodesList } from '../../../../service/PackageService.js';
 import { buildPackageTree, getFullPackageName } from '../../utils/packageTreeBuilder.js';
+import { loadLocalPackages, removeLocalComposite, removeLocalPackage } from '../../utils/localPackages.js';
 
 /**
  * Panel displaying visual OpenAlea packages and their nodes.
  * Uses lazy loading - nodes are fetched when a package is expanded.
- * 
- * TODO: Refactor this component :
- * * It is a duplicate of the PanelInstallPackage component.
- * * It is not using the TreePackage component.
- * * There are too many parameters.
- * 
  */
 export default function PanelModuleNode({ onAddNode, version, treeItems, setTreeItems, loading, setLoading, loadingPackage, setLoadingPackage, loadedPackages, setLoadedPackages, expandedItems, setExpandedItems }) {
     // Ref to access current treeItems in callbacks
     const treeItemsRef = useRef(treeItems);
-    
+    const itemMetaRef = useRef(new Map());
+
     useEffect(() => {
         treeItemsRef.current = treeItems;
     }, [treeItems]);
+
+    useEffect(() => {
+        const map = new Map();
+        const visit = (items) => {
+            items.forEach(item => {
+                map.set(item.id, item);
+                if (item.children) visit(item.children);
+            });
+        };
+        if (Array.isArray(treeItems)) {
+            visit(treeItems);
+        }
+        itemMetaRef.current = map;
+    }, [treeItems]);
+
+    const buildLocalPackageItems = useCallback((localPackages) => {
+        if (!Array.isArray(localPackages) || localPackages.length === 0) return [];
+        return localPackages.map(pkg => {
+            const pkgId = `local:${pkg.name}`;
+            const nodeItems = (pkg.nodes || []).map(node => {
+                const isComposite = (node.nodekind || "atomic") === "composite";
+                const nodeId = `${pkgId}::${node.name}`;
+                return {
+                    id: nodeId,
+                    label: node.name,
+                    rawName: node.name,
+                    description: node.description || "",
+                    inputs: node.inputs || [],
+                    outputs: node.outputs || [],
+                    callable: node.callable ?? null,
+                    nodekind: node.nodekind || "atomic",
+                    graph: node.graph ?? null,
+                    packageName: null,
+                    metadata: { localPackage: pkg.name },
+                    isNode: true,
+                    isLocalNode: true,
+                    isLocalPackage: true
+                };
+            });
+
+            return {
+                id: pkgId,
+                label: pkg.name,
+                children: nodeItems,
+                isLocalPackage: true
+            };
+        });
+    }, []);
+
+    const fetchPackages = useCallback(async () => {
+        setLoading(true);
+        try {
+            const visualPackages = await getVisualPackagesList();
+
+            // Build hierarchical tree structure
+            const treeStructure = buildPackageTree(visualPackages);
+
+            const localPackages = loadLocalPackages();
+            const localItems = buildLocalPackageItems(localPackages);
+
+            // Wrap in root nodes for TreeView
+            const items = [
+                {
+                    id: 'root',
+                    label: 'OpenAlea Packages',
+                    children: treeStructure
+                },
+                {
+                    id: 'local-root',
+                    label: 'Local Packages',
+                    children: localItems
+                }
+            ];
+
+            setTreeItems(items);
+
+            // Auto-expand root and all namespace folders
+            const namespaceIds = ['root', 'local-root'];
+            treeStructure.forEach(item => {
+                if (item.isNamespace) {
+                    namespaceIds.push(item.id);
+                }
+            });
+            setExpandedItems(prev => [...new Set([...prev, ...namespaceIds])]);
+        } catch (error) {
+            console.error("Error fetching visual packages:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [buildLocalPackageItems, setExpandedItems, setLoading, setTreeItems]);
 
     /**
      * Use effect to fetch the visual packages.
      */
     useEffect(() => {
-
         if (treeItems.length > 0) {
             return;
         }
-
-        async function fetchPackages() {
-            setLoading(true);
-            try {
-                const visualPackages = await getVisualPackagesList();
-
-                // Build hierarchical tree structure
-                const treeStructure = buildPackageTree(visualPackages);
-
-                // Wrap in root node for TreeView
-                const items = [{
-                    id: 'root',
-                    label: 'OpenAlea Packages',
-                    children: treeStructure
-                }];
-
-                setTreeItems(items);
-
-                // Auto-expand root and all namespace folders
-                const namespaceIds = ['root'];
-                treeStructure.forEach(item => {
-                    if (item.isNamespace) {
-                        namespaceIds.push(item.id);
-                    }
-                });
-                setExpandedItems(prev => [...new Set([...prev, ...namespaceIds])]);
-            } catch (error) {
-                console.error("Error fetching visual packages:", error);
-            } finally {
-                setLoading(false);
-            }
-        }
         fetchPackages();
-    }, [version, setExpandedItems]);
+    }, [version, fetchPackages, treeItems.length]);
+
+    useEffect(() => {
+        const handleLocalPackagesUpdate = () => {
+            setLoadedPackages(new Set());
+            setLoadingPackage(null);
+            fetchPackages();
+        };
+
+        window.addEventListener("local-packages-updated", handleLocalPackagesUpdate);
+        return () => window.removeEventListener("local-packages-updated", handleLocalPackagesUpdate);
+    }, [fetchPackages, setLoadedPackages, setLoadingPackage]);
 
     const loadPackageNodes = useCallback(async (packageId) => {
         // Helper to find package in tree
@@ -82,6 +148,9 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
         // Get current tree items from ref
         const currentItems = treeItemsRef.current;
         const packageNode = findPackageInTree(currentItems, packageId);
+        if (packageNode?.isLocalPackage) {
+            return;
+        }
         const fullPackageName = packageNode ? getFullPackageName(packageNode) : packageId;
 
         // Check if already loaded or loading
@@ -101,6 +170,8 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
                 inputs: node.inputs || [],
                 outputs: node.outputs || [],
                 callable: node.callable,
+                nodekind: node.nodekind || "atomic",
+                graph: node.graph ?? null,
                 packageName: fullPackageName,
                 isNode: true,
             }));
@@ -155,7 +226,7 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
         }
 
         // Only load nodes for actual packages (not namespace folders)
-        if (clickedItem.children !== undefined && !clickedItem.isNode && itemId !== 'root' && !clickedItem.isNamespace) {
+        if (clickedItem.children !== undefined && !clickedItem.isNode && itemId !== 'root' && itemId !== 'local-root' && !clickedItem.isNamespace && !clickedItem.isLocalPackage) {
             const fullPackageName = getFullPackageName(clickedItem);
             if (!loadedPackages.has(fullPackageName)) {
                 await loadPackageNodes(itemId);
@@ -163,8 +234,58 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
         }
     }, [treeItems, onAddNode, loadedPackages, loadPackageNodes]);
 
+    const handleDeleteItem = useCallback((item) => {
+        if (!item) return;
+        if (item.isNode && item.metadata?.localPackage) {
+            removeLocalComposite(item.metadata.localPackage, item.rawName || item.label);
+        } else if (item.isLocalPackage && !item.isNode) {
+            removeLocalPackage(item.label);
+        }
+        window.dispatchEvent(new Event("local-packages-updated"));
+    }, []);
+
+    const CustomTreeItem = useCallback((props) => {
+        const { itemId, label, children, ...other } = props;
+        const item = itemMetaRef.current.get(itemId);
+        const isComposite = item?.nodekind === "composite";
+        const canDelete = item?.isLocalPackage && (item?.isLocalNode || !item?.isNode);
+
+        return (
+            <TreeItem
+                {...other}
+                itemId={itemId}
+                label={
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", width: "100%" }}>
+                        {isComposite && (
+                            <FaProjectDiagram style={{ fontSize: "0.85rem", color: "#5c6bc0" }} />
+                        )}
+                        <span>{label}</span>
+                        {canDelete && (
+                            <button
+                                type="button"
+                                title="Supprimer"
+                                className="btn btn-sm btn-outline-danger"
+                                style={{ marginLeft: "auto", padding: "2px 6px", lineHeight: 1 }}
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    handleDeleteItem(item);
+                                }}
+                            >
+                                <FaTrash style={{ fontSize: "0.85rem", border: "none" }} />
+                            </button>
+                        )}
+                    </div>
+                }
+            >
+                {children}
+            </TreeItem>
+        );
+    }, [handleDeleteItem]);
+
+
     const handleItemExpansionToggle = useCallback(async (_event, itemId, isExpanded) => {
-        if (isExpanded && itemId !== 'root' && !loadedPackages.has(itemId)) {
+        if (isExpanded && itemId !== 'root' && itemId !== 'local-root' && !loadedPackages.has(itemId)) {
             const findItem = (items, id) => {
                 for (const item of items) {
                     if (item.id === id) return item;
@@ -178,7 +299,7 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
 
             const item = findItem(treeItems, itemId);
             // Only load nodes for actual packages (not namespace folders or root)
-            if (item && !item.isNode && !item.isNamespace && itemId !== 'root') {
+            if (item && !item.isNode && !item.isNamespace && !item.isLocalPackage && itemId !== 'root' && itemId !== 'local-root') {
                 await loadPackageNodes(itemId);
             }
         }
@@ -209,7 +330,8 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
         });
     };
 
-    const hasPackages = treeItems.length > 0 && hasAnyPackages(treeItems[0]?.children);
+    const hasPackages = treeItems.length > 0 &&
+        (hasAnyPackages(treeItems[0]?.children) || hasAnyPackages(treeItems[1]?.children));
 
     // Empty state
     if (!hasPackages) {
@@ -245,6 +367,7 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
                         onExpandedItemsChange={(_, ids) => setExpandedItems(ids)}
                         onItemClick={handleItemClick}
                         onItemExpansionToggle={handleItemExpansionToggle}
+                        slots={{ item: CustomTreeItem }}
                         sx={{
                             // Item content styling
                             [`& .${treeItemClasses.content}`]: {
@@ -291,6 +414,7 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
                     />
                 </div>
             </div>
+
         </div>
     );
 }
