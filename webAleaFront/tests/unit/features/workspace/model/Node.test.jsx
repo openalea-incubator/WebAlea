@@ -61,6 +61,9 @@ describe("Node Class Unit Tests", () => {
                 nodeName: "Node2",
                 callable: null,
                 description: "",
+                nodekind: "atomic",
+                graph: null,
+                implicit_output: false
             },
         });
     });

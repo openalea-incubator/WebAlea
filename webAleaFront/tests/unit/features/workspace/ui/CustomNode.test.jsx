@@ -111,7 +111,7 @@ describe("CustomNode Unit Tests", () => {
         expect(node.style.height).toBe("68px");
     });
 
-    test("renders metadata section when metadata is provided", () => {
+    test("does not render metadata section even when metadata is provided", () => {
         render(
             <CustomNode
                 {...baseNodeProps}
@@ -121,13 +121,6 @@ describe("CustomNode Unit Tests", () => {
                 }}
             />
         );
-
-        expect(screen.getByText("Détails")).toBeInTheDocument();
-        expect(screen.getByText(/"foo": "bar"/)).toBeInTheDocument();
-    });
-
-    test("does not render metadata section if metadata is empty", () => {
-        render(<CustomNode {...baseNodeProps} />);
 
         expect(screen.queryByText("Détails")).not.toBeInTheDocument();
     });
@@ -168,3 +161,4 @@ describe("CustomNode Unit Tests", () => {
         expect(screen.getByText("My Node")).toBeInTheDocument();
     });
 });
+

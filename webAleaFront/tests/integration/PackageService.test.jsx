@@ -147,6 +147,8 @@ describe("PackageService Unit Tests", () => {
                 inputs: [],
                 outputs: [],
                 callable: null,
+                nodekind: "atomic",
+                graph: null
             },
             {
                 name: "Node2",
@@ -154,6 +156,8 @@ describe("PackageService Unit Tests", () => {
                 inputs: [],
                 outputs: [],
                 callable: null,
+                nodekind: "atomic",
+                graph: null
             },
         ]);
     });
@@ -202,6 +206,8 @@ describe("PackageService Unit Tests", () => {
                 inputs: [],
                 outputs: [],
                 callable: null,
+                nodekind: "atomic",
+                graph: null
             },
         ]);
     });

@@ -33,14 +33,14 @@ describe('ImportModal', () => {
     test('should render the modal when show is true', () => {
         render(<ImportModal {...defaultProps} />);
 
-        expect(screen.getByText('Import a workflow')).toBeInTheDocument();
+        expect(screen.getByText('Import a workflow or composite')).toBeInTheDocument();
         expect(screen.getByText(/Drag and drop a JSON file here/i)).toBeInTheDocument();
     });
 
     test('should not render the modal when show is false', () => {
         render(<ImportModal {...defaultProps} show={false} />);
 
-        expect(screen.queryByText('Import a workflow')).not.toBeInTheDocument();
+        expect(screen.queryByText('Import a workflow or composite')).not.toBeInTheDocument();
     });
 
     test('should display Cancel and Import buttons', () => {
