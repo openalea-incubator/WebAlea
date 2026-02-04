@@ -16,6 +16,24 @@ This document describes the backend architecture, runtime flow, and API surface 
 - `webAleaBack/model/` : OpenAlea execution and inspection logic, Conda utilities
 - `webAleaBack/tests/` : API and integration tests
 
+## File Tree Logic (Responsibilities)
+This section clarifies what logic lives where and why.
+
+- `webAleaBack/main.py`
+  - Defines the FastAPI app, lifespan, CORS policy, and mounts the API router.
+- `webAleaBack/core/config.py`
+  - Centralized configuration and logging setup via `Settings`.
+- `webAleaBack/api/v1/router.py`
+  - Aggregates endpoint groups and applies API prefixing.
+- `webAleaBack/api/v1/endpoints/`
+  - HTTP request/response layer.
+  - Converts request payloads into domain calls and returns JSON responses.
+- `webAleaBack/model/openalea/`
+  - Domain logic for OpenAlea inspection and execution.
+  - Contains both the in-process wrappers and the subprocess entrypoints.
+- `webAleaBack/model/utils/conda_utils.py`
+  - Conda integration and package installation utilities.
+
 ## Application Lifecycle
 `main.py` defines a FastAPI lifespan context:
 - Startup: prints `Application '<PROJECT_NAME>' starting up...`
@@ -132,6 +150,28 @@ Executes OpenAlea nodes.
 
 It expects JSON output, with a fallback to `ast.literal_eval` for legacy formats.
 
+## Subprocess Architecture
+### Why Subprocesses Exist
+The backend installs packages into a Conda environment at runtime via the installation endpoint. The running FastAPI process does not automatically gain access to those newly installed packages (Python import/module cache and environment isolation). As a result, any logic that requires interacting with those packages must be executed in a fresh Python process that can see the updated Conda environment.
+
+To solve this, OpenAlea-related logic that depends on newly installed packages is executed in subprocesses.
+
+### Where Subprocesses Are Used
+- OpenAlea node execution:
+  - `OpenAleaRunner.execute_node(...)` spawns `model/openalea/runner/runnable/run_workflow.py`.
+- OpenAlea package inspection:
+  - `OpenAleaInspector.list_installed_openalea_packages()` runs `model/openalea/inspector/runnable/list_installed_openalea_packages.py`.
+  - `OpenAleaInspector.list_wralea_packages()` runs `model/openalea/inspector/runnable/list_wralea_packages.py`.
+  - `OpenAleaInspector.describe_openalea_package()` runs `model/openalea/inspector/runnable/describe_openalea_package.py`.
+
+### Subprocess Data Flow (High-Level)
+1. API endpoint receives a request.
+2. Endpoint calls a model-layer wrapper (runner or inspector).
+3. Wrapper spawns a subprocess and passes minimal input (JSON or arguments).
+4. Subprocess executes OpenAlea logic in a fresh Python context.
+5. Subprocess prints JSON to stdout.
+6. Wrapper parses stdout and returns structured data to the API layer.
+
 ## Conda Integration
 `model/utils/conda_utils.py` provides:
 - `list_packages(channel)`
@@ -152,4 +192,3 @@ Location: `webAleaBack/tests`
 - The backend expects a Conda environment with OpenAlea packages installed.
 - `python3` is available and can import OpenAlea packages from the active environment.
 - Subprocess-based execution is used to isolate OpenAlea node execution.
-
