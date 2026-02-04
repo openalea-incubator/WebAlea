@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { fetchNodeScene } from "../../../../api/visualizerAPI";
+import { fetchNodeScene, fetchWeberpennScene } from "../../../../api/visualizerAPI";
 import VisualizerModal from "../../../visualizer/VisualizerModal";
 import { useFlow } from "../../../workspace/providers/FlowContextDefinition.jsx";
 
@@ -63,6 +63,31 @@ export default function NodeResultRender() {
                     disabled={isLoading}
                 >
                     {isLoading ? "Rendering..." : (sceneJSON ? "View Render" : "Launch Render")}
+                </button>
+                <button
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={async () => {
+                        setIsLoading(true);
+                        setError(null);
+                        try {
+                            const sceneData = await fetchWeberpennScene();
+                            if (!sceneData?.success) {
+                                setError(sceneData?.error || "WeberPenn test failed.");
+                                return;
+                            }
+                            const rawScene = sceneData.scene;
+                            const parsedScene = typeof rawScene === "string" ? JSON.parse(rawScene) : rawScene;
+                            setSceneJSON(parsedScene);
+                            setShowModal(true);
+                        } catch (err) {
+                            setError(err?.message || "Unexpected error while rendering.");
+                        } finally {
+                            setIsLoading(false);
+                        }
+                    }}
+                    disabled={isLoading}
+                >
+                    Test WeberPenn
                 </button>
                 <button
                     className="btn btn-outline-danger btn-sm"

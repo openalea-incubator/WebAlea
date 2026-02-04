@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import traceback
 
 from model.openalea.visualizer.visualizer_utils import json_from_result
+from model.openalea.visualizer.poc_weberpenn import build_weberpenn_scene
 
 router = APIRouter()
 
@@ -64,6 +65,21 @@ def visualize_node(request: VisualizationRequest):
             "error": "No visualizable data found in visualization_data"
         }
 
+    except Exception as e:
+        return {
+            "nodeId": request.node_id,
+            "success": False,
+            "error": str(e),
+            "trace": traceback.format_exc()
+        }
+
+
+@router.post("/visualize/weberpenn")
+def visualize_weberpenn(request: VisualizationRequest):
+    try:
+        node_id = request.node_id
+        scene = build_weberpenn_scene()
+        return {"nodeId": node_id, "success": True, "scene": scene}
     except Exception as e:
         return {
             "nodeId": request.node_id,
