@@ -1,5 +1,7 @@
 // SceneBuilder.jsx
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { buildObjectNode, applyAnimation } from "./SceneFactory";
 import { lightFromJSON } from "./factories/lightFactory";
 
@@ -27,16 +29,94 @@ export function buildSceneFromJSON(sceneJSON, mountRef) {
         1000
     );
 
-    // Renderer setup
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    // Renderer setup (performance tuned)
+    const renderer = new THREE.WebGLRenderer({
+        antialias: false,
+        powerPreference: "high-performance"
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
     mountRef.current.innerHTML = "";
     mountRef.current.appendChild(renderer.domElement);
 
+    // Controls (interactive: orbit/zoom/pan)
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = false;
+    controls.screenSpacePanning = false;
+
     // Objects creation
     const objects = [];
+    const staticMeshes = [];
+    const otherObjects = [];
 
-    sceneJSON.objects.forEach(obj => {
+    (sceneJSON.objects ?? []).forEach(obj => {
+        if (obj?.objectType === "mesh" && !obj.animation && !obj.children) {
+            staticMeshes.push(obj);
+        } else {
+            otherObjects.push(obj);
+        }
+    });
+
+    // Merge static meshes by material to reduce draw calls
+    if (staticMeshes.length > 0) {
+        const groups = new Map();
+        staticMeshes.forEach(obj => {
+            const color = obj.material?.color ?? [0.8, 0.8, 0.8];
+            const opacity = obj.material?.opacity ?? 1;
+            const key = `${color.join(",")}|${opacity}`;
+            if (!groups.has(key)) groups.set(key, { color, opacity, items: [] });
+            groups.get(key).items.push(obj);
+        });
+
+        groups.forEach(group => {
+            const geometries = [];
+            group.items.forEach(meshJSON => {
+                const geometry = new THREE.BufferGeometry();
+                const vertices = new Float32Array(meshJSON.geometry.vertices.flat());
+                geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+
+                if (meshJSON.geometry.indices) {
+                    const indices = new Uint32Array(meshJSON.geometry.indices.flat());
+                    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+                }
+
+                if (meshJSON.transform) {
+                    const t = meshJSON.transform;
+                    const position = new THREE.Vector3(...(t.position ?? [0, 0, 0]));
+                    const rotation = new THREE.Euler(...(t.rotation ?? [0, 0, 0]));
+                    const scale = new THREE.Vector3(...(t.scale ?? [1, 1, 1]));
+                    const matrix = new THREE.Matrix4();
+                    matrix.compose(
+                        position,
+                        new THREE.Quaternion().setFromEuler(rotation),
+                        scale
+                    );
+                    geometry.applyMatrix4(matrix);
+                }
+
+                geometries.push(geometry);
+            });
+
+            const mergedGeometry = mergeGeometries(geometries, false);
+            if (mergedGeometry) {
+                mergedGeometry.computeVertexNormals();
+                const material = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color(...group.color),
+                    opacity: group.opacity,
+                    transparent: group.opacity < 1
+                });
+
+                const mesh = new THREE.Mesh(mergedGeometry, material);
+                scene.add(mesh);
+                objects.push({ object3D: mesh, animation: null });
+            }
+
+            geometries.forEach(g => g.dispose());
+        });
+    }
+
+    // Create remaining objects normally
+    otherObjects.forEach(obj => {
         const object3D = buildObjectNode(obj);
         if (object3D) {
             scene.add(object3D);
@@ -48,12 +128,40 @@ export function buildSceneFromJSON(sceneJSON, mountRef) {
     });
 
     // Lights creation
-    (sceneJSON.lights ?? []).forEach(lightJSON => {
-        const light = lightFromJSON(lightJSON);
-        if (light) scene.add(light);
-    });
+    // (sceneJSON.lights ?? []).forEach(lightJSON => {
+    //     const light = lightFromJSON(lightJSON);
+    //     if (light) scene.add(light);
+    // });
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambient);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+    dir.position.set(10, 10, 10);
+    scene.add(dir);
 
-    camera.position.z = 5;
+    // Fit camera to scene bounds (adaptive framing)
+    const bounds = new THREE.Box3().setFromObject(scene);
+    if (!bounds.isEmpty()) {
+        const size = new THREE.Vector3();
+        const center = new THREE.Vector3();
+        bounds.getSize(size);
+        bounds.getCenter(center);
+
+        const maxSize = Math.max(size.x, size.y, size.z);
+        const fov = THREE.MathUtils.degToRad(camera.fov);
+        const distance = (maxSize / 2) / Math.tan(fov / 2);
+
+        // Position camera along Z with a small offset
+        camera.position.set(center.x, center.y, center.z + distance * 1.2);
+        camera.near = distance / 100;
+        camera.far = distance * 100;
+        camera.updateProjectionMatrix();
+        camera.lookAt(center);
+        controls.target.copy(center);
+        controls.update();
+    } else {
+        camera.position.z = 5;
+        controls.update();
+    }
 
     // Handle window resize
     function onResize() {
@@ -70,7 +178,13 @@ export function buildSceneFromJSON(sceneJSON, mountRef) {
     window.addEventListener("resize", onResize);
 
 
-    // --- Animation loop ---
+    const hasAnimations = objects.some(({ animation }) => Boolean(animation));
+
+    function renderOnce() {
+        renderer.render(scene, camera);
+    }
+
+    // --- Animation loop (only if needed) ---
     function animate() {
         animationId = requestAnimationFrame(animate);
 
@@ -83,8 +197,9 @@ export function buildSceneFromJSON(sceneJSON, mountRef) {
 
     // --- Cleanup function ---
     function dispose() {
-        cancelAnimationFrame(animationId);
+        if (animationId) cancelAnimationFrame(animationId);
         window.removeEventListener("resize", onResize);
+        controls.removeEventListener("change", renderOnce);
 
         objects.forEach(({ object3D }) => {
             object3D.traverse(child => {
@@ -98,6 +213,7 @@ export function buildSceneFromJSON(sceneJSON, mountRef) {
                 }
             });
         });
+        controls.dispose();
         renderer.dispose();
         // Clear the mount element
         if (renderer.domElement.parentNode) {
@@ -107,7 +223,12 @@ export function buildSceneFromJSON(sceneJSON, mountRef) {
 
 
 
-    animate();
+    if (hasAnimations) {
+        animate();
+    } else {
+        controls.addEventListener("change", renderOnce);
+        renderOnce();
+    }
 
     return { scene, camera, renderer, objects, dispose };
 }

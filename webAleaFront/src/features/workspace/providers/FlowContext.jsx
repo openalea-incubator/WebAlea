@@ -21,6 +21,7 @@ import CustomNode from '../ui/CustomNode.jsx';
 import FloatNode from '../ui/type/FloatNode.jsx';
 import StringNode from '../ui/type/StringNode.jsx';
 import BoolNode from '../ui/type/BoolNode.jsx';
+import ArrayNode from '../ui/type/ArrayNode.jsx';
 import { useLog } from '../../logger/providers/LogContextDefinition.jsx';
 import { WorkflowEngine } from '../engine/WorkflowEngine.jsx';
 import { NodeState } from '../constants/nodeState.js';
@@ -226,6 +227,7 @@ export const FlowProvider = ({ children }) => {
         [NodeType.FLOAT]: FloatNode,
         [NodeType.STRING]: StringNode,
         [NodeType.BOOLEAN]: BoolNode,
+        [NodeType.ARRAY]: ArrayNode,
     }), []);
 
     // Persist nodes and edges to localStorage with debounce

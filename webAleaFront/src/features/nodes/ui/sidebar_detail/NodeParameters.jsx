@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import NodeInput from "../NodeInputs.jsx";
 import NodeOutput from "../NodeOutputs.jsx";
 import { useFlow } from "../../../workspace/providers/FlowContextDefinition.jsx";
@@ -30,6 +30,12 @@ export default function NodeParameters() {
      * @type {array}
      */
     const outputs = node ? node.data.outputs : [];
+    const isArrayNode = node?.type === "array";
+    const arrayOutput = useMemo(() => {
+        if (!isArrayNode) return null;
+        return outputs?.[0] ?? null;
+    }, [isArrayNode, outputs]);
+    const arrayValue = Array.isArray(arrayOutput?.value) ? arrayOutput.value : [];
 
     /**
      * Function to handle input value changes.
@@ -53,6 +59,31 @@ export default function NodeParameters() {
         if (node) {
             onNodeExecute(node.id);
         }
+    };
+
+    const updateArrayValue = (nextArray) => {
+        if (!node) return;
+        const updatedOutputs = (outputs ?? []).map((out, idx) => {
+            if (idx !== 0) return out;
+            return { ...out, value: nextArray, type: out.type || "array" };
+        });
+        updateNode(node.id, { outputs: updatedOutputs });
+    };
+
+    const handleArrayItemChange = (index, newValue) => {
+        const next = [...arrayValue];
+        next[index] = newValue;
+        updateArrayValue(next);
+    };
+
+    const handleArrayItemRemove = (index) => {
+        const next = arrayValue.filter((_, i) => i !== index);
+        updateArrayValue(next);
+    };
+
+    const handleArrayItemAdd = () => {
+        const next = [...arrayValue, ""];
+        updateArrayValue(next);
     };
 
     /**
@@ -113,6 +144,40 @@ export default function NodeParameters() {
                             Outputs ({outputs.length})
                         </h6>
                         <NodeOutput outputs={outputs} />
+                    </div>
+                )}
+
+                {isArrayNode && (
+                    <div style={{ marginBottom: "16px" }}>
+                        <h6 style={{ fontSize: "0.85rem", color: "#666", marginBottom: "8px" }}>
+                            Array Items ({arrayValue.length})
+                        </h6>
+                        <div className="d-flex flex-column gap-2">
+                            {arrayValue.map((item, idx) => (
+                                <div key={`array-item-${idx}`} className="d-flex gap-2 align-items-center">
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-sm"
+                                        value={item}
+                                        onChange={(e) => handleArrayItemChange(idx, e.target.value)}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-danger btn-sm"
+                                        onClick={() => handleArrayItemRemove(idx)}
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            ))}
+                            <button
+                                type="button"
+                                className="btn btn-outline-primary btn-sm align-self-start"
+                                onClick={handleArrayItemAdd}
+                            >
+                                Add Item
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

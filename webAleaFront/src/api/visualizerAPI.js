@@ -12,9 +12,9 @@ import { API_BASE_URL_VISUALIZER } from "../config/api";
  * @returns {Promise<Object>} Serialized scene data
  **/
 
-export async function fetchNodeScene() {
+export async function fetchNodeScene({ nodeId = "123", visualizationData = {} } = {}) {
     return fetchJSON(`${API_BASE_URL_VISUALIZER}/visualize`, "POST", {
-        node_id: "123",
-        visualization_data: {}
+        node_id: nodeId,
+        visualization_data: visualizationData
     });
 }

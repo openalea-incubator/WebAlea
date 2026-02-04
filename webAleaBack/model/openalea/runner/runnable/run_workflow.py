@@ -2,6 +2,18 @@
 import json
 import sys
 import logging
+import os
+
+PLANTGL_AVAILABLE = False
+try:
+    from openalea.plantgl.all import Scene, Shape, Geometry, Material, Color3
+    ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
+    if ROOT_DIR not in sys.path:
+        sys.path.append(ROOT_DIR)
+    from model.openalea.visualizer.serialize import serialize_scene
+    PLANTGL_AVAILABLE = True
+except Exception:
+    PLANTGL_AVAILABLE = False
 
 from openalea.core.pkgmanager import PackageManager
 
@@ -103,6 +115,17 @@ def serialize_value(value):
     """Serialize a Python value to JSON-compatible format."""
     if value is None:
         return None
+    if PLANTGL_AVAILABLE:
+        if isinstance(value, Scene):
+            return {"__type__": "plantgl_scene", "scene": serialize_scene(value)}
+        if isinstance(value, Shape):
+            scene = Scene()
+            scene.add(value)
+            return {"__type__": "plantgl_scene", "scene": serialize_scene(scene)}
+        if isinstance(value, Geometry):
+            scene = Scene()
+            scene.add(Shape(value, Material(Color3(200, 200, 200))))
+            return {"__type__": "plantgl_scene", "scene": serialize_scene(scene)}
     if isinstance(value, (int, float, str, bool)):
         return value
     if isinstance(value, (list, tuple)):

@@ -12,7 +12,8 @@ export const NodeType = {
     CUSTOM: 'custom',
     FLOAT: 'float',
     STRING: 'string',
-    BOOLEAN: 'boolean'
+    BOOLEAN: 'boolean',
+    ARRAY: 'array'
 };
 
 /**
