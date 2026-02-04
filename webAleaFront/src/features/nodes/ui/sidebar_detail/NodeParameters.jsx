@@ -1,7 +1,8 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import NodeInput from "../NodeInputs.jsx";
 import NodeOutput from "../NodeOutputs.jsx";
 import { useFlow } from "../../../workspace/providers/FlowContextDefinition.jsx";
+import { DataType } from "../../../workspace/constants/workflowConstants.js";
 
 /**
  * NodeParameters component.
@@ -31,11 +32,6 @@ export default function NodeParameters() {
      */
     const outputs = node ? node.data.outputs : [];
     const isArrayNode = node?.type === "array";
-    const arrayOutput = useMemo(() => {
-        if (!isArrayNode) return null;
-        return outputs?.[0] ?? null;
-    }, [isArrayNode, outputs]);
-    const arrayValue = Array.isArray(arrayOutput?.value) ? arrayOutput.value : [];
 
     /**
      * Function to handle input value changes.
@@ -61,29 +57,38 @@ export default function NodeParameters() {
         }
     };
 
-    const updateArrayValue = (nextArray) => {
+    const handleArrayInputNameChange = (inputId, newName) => {
         if (!node) return;
-        const updatedOutputs = (outputs ?? []).map((out, idx) => {
-            if (idx !== 0) return out;
-            return { ...out, value: nextArray, type: out.type || "array" };
-        });
-        updateNode(node.id, { outputs: updatedOutputs });
+        const updatedInputs = (inputs ?? []).map((input) =>
+            input.id === inputId ? { ...input, name: newName } : input
+        );
+        updateNode(node.id, { inputs: updatedInputs });
     };
 
-    const handleArrayItemChange = (index, newValue) => {
-        const next = [...arrayValue];
-        next[index] = newValue;
-        updateArrayValue(next);
+    const handleArrayInputTypeChange = (inputId, newType) => {
+        if (!node) return;
+        const updatedInputs = (inputs ?? []).map((input) =>
+            input.id === inputId ? { ...input, type: newType } : input
+        );
+        updateNode(node.id, { inputs: updatedInputs });
     };
 
-    const handleArrayItemRemove = (index) => {
-        const next = arrayValue.filter((_, i) => i !== index);
-        updateArrayValue(next);
+    const handleArrayInputRemove = (inputId) => {
+        if (!node) return;
+        const updatedInputs = (inputs ?? []).filter((input) => input.id !== inputId);
+        updateNode(node.id, { inputs: updatedInputs });
     };
 
-    const handleArrayItemAdd = () => {
-        const next = [...arrayValue, ""];
-        updateArrayValue(next);
+    const handleArrayInputAdd = () => {
+        if (!node) return;
+        const nextIndex = (inputs?.length ?? 0) + 1;
+        const newInput = {
+            id: `arr_in_${node.id}_${Date.now()}`,
+            name: `Input ${nextIndex}`,
+            type: DataType.ANY,
+            value: null
+        };
+        updateNode(node.id, { inputs: [...(inputs ?? []), newInput] });
     };
 
     /**
@@ -126,7 +131,7 @@ export default function NodeParameters() {
                     padding: "12px",
                 }}
             >
-                {inputs.length > 0 && (
+                {!isArrayNode && inputs.length > 0 && (
                     <div style={{ marginBottom: "16px" }}>
                         <h6 style={{ fontSize: "0.85rem", color: "#666", marginBottom: "8px" }}>
                             Inputs ({inputs.length})
@@ -150,21 +155,33 @@ export default function NodeParameters() {
                 {isArrayNode && (
                     <div style={{ marginBottom: "16px" }}>
                         <h6 style={{ fontSize: "0.85rem", color: "#666", marginBottom: "8px" }}>
-                            Array Items ({arrayValue.length})
+                            Array Inputs ({inputs.length})
                         </h6>
                         <div className="d-flex flex-column gap-2">
-                            {arrayValue.map((item, idx) => (
-                                <div key={`array-item-${idx}`} className="d-flex gap-2 align-items-center">
+                            {(inputs ?? []).map((input, idx) => (
+                                <div key={input.id || `array-input-${idx}`} className="d-flex gap-2 align-items-center">
                                     <input
                                         type="text"
                                         className="form-control form-control-sm"
-                                        value={item}
-                                        onChange={(e) => handleArrayItemChange(idx, e.target.value)}
+                                        value={input.name || ""}
+                                        onChange={(e) => handleArrayInputNameChange(input.id, e.target.value)}
+                                        placeholder={`Input ${idx + 1}`}
                                     />
+                                    <select
+                                        className="form-select form-select-sm"
+                                        value={input.type || DataType.ANY}
+                                        onChange={(e) => handleArrayInputTypeChange(input.id, e.target.value)}
+                                    >
+                                        <option value={DataType.ANY}>any</option>
+                                        <option value={DataType.FLOAT}>float</option>
+                                        <option value={DataType.STRING}>string</option>
+                                        <option value={DataType.BOOLEAN}>boolean</option>
+                                        <option value={DataType.ARRAY}>array</option>
+                                    </select>
                                     <button
                                         type="button"
                                         className="btn btn-outline-danger btn-sm"
-                                        onClick={() => handleArrayItemRemove(idx)}
+                                        onClick={() => handleArrayInputRemove(input.id)}
                                     >
                                         Remove
                                     </button>
@@ -173,9 +190,9 @@ export default function NodeParameters() {
                             <button
                                 type="button"
                                 className="btn btn-outline-primary btn-sm align-self-start"
-                                onClick={handleArrayItemAdd}
+                                onClick={handleArrayInputAdd}
                             >
-                                Add Item
+                                Add Input
                             </button>
                         </div>
                     </div>
