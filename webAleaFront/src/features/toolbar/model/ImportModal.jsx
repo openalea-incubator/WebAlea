@@ -68,7 +68,7 @@ export default function ImportModal({ show, onClose, onImport }) {
     return (
     <Modal show={show} onHide={onClose} centered size="lg">
         <Modal.Header closeButton>
-        <Modal.Title>Import a workflow</Modal.Title>
+        <Modal.Title>Import a workflow or composite</Modal.Title>
         </Modal.Header>
 
         <Modal.Body>
