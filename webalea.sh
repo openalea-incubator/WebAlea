@@ -1,57 +1,56 @@
 #!/bin/bash
+# Script to manage Docker Compose services on Linux/Mac
 
-# Script to manage Docker Compose services
+ARG=$1
 
-if [ "$1" == "start" ]; then
+if [ "$ARG" == "start" ]; then
+    # Launch the backend and frontend using Docker Compose
+    docker compose build
     docker compose up -d
 
     # Give Docker a moment to settle
     sleep 1
 
-    # Show the running services and their published localhost addresses (if any)
-    ids=$(docker compose ps -q)
-    if [ -z "$ids" ]; then
-        echo "No containers found."
-    else
-        echo "Published ports:"
-        for id in $ids; do
-            svc=$(docker inspect -f '{{index .Config.Labels "com.docker.compose.service"}}' "$id" 2>/dev/null)
-            # Format: "80/tcp=0.0.0.0:8000" or "80/tcp=unmapped"
-            ports=$(docker inspect -f '{{range $p,$conf := .NetworkSettings.Ports}}{{if $conf}}{{printf "%s=%s:%s\n" $p (index $conf 0).HostIp (index $conf 0).HostPort}}{{else}}{{printf "%s=unmapped\n" $p}}{{end}}{{end}}' "$id" 2>/dev/null)
+    # Show the running services and their published localhost addresses
+    echo ""
+    echo "Running services:"
+    echo "================"
 
-            if [ -z "$ports" ]; then
-                echo "  $svc: no published ports"
-                continue
-            fi
+    for container_id in $(docker compose ps -q); do
+        container_name=$(docker inspect -f "{{.Name}}" "$container_id")
+        echo "$container_name:"
 
-            echo "  $svc:"
-            while IFS= read -r line; do
-                protoport=${line%%=*}
-                mapping=${line#*=}
-                if [ "$mapping" = "unmapped" ] || [ -z "$mapping" ]; then
-                    echo "    $protoport -> unmapped"
-                else
-                    hostip=${mapping%%:*}
-                    hostport=${mapping##*:}
-                    if [ "$hostip" = "0.0.0.0" ] || [ "$hostip" = "127.0.0.1" ] || [ -z "$hostip" ]; then
-                        echo "    $protoport -> http://localhost:$hostport"
-                    else
-                        echo "    $protoport -> http://$hostip:$hostport"
-                    fi
-                fi
-            done <<< "$ports"
+        docker port "$container_id" | grep "0.0.0.0" | while read -r line; do
+            container_port=$(echo "$line" | awk '{print $1}')
+            host_port=$(echo "$line" | awk -F ':' '{print $2}')
+            echo "  $container_port -> http://localhost:$host_port"
         done
-    fi
-elif [ "$1" == "stop" ]; then
-    # Pause the containers without removing or cleaning them
+
+        echo ""
+    done
+
+elif [ "$ARG" == "stop" ]; then
+    # Stop and clean up Docker Compose services
     docker compose pause
-elif [ "$1" == "rebuild" ]; then
-    # Rebuild and launch the backend and frontend using Docker Compose
-    docker compose up --build -d
+
+elif [ "$ARG" == "clean-volumes" ]; then
+    # Stop and clean up Docker Compose services
+    docker compose down --volumes
+
+elif [ "$ARG" == "clean-containers" ]; then
+    # Stop and clean up Docker Compose services
+    docker compose down --remove-orphans
+
+elif [ "$ARG" == "clean" ]; then
+    # Stop and clean up Docker Compose services
+    docker compose down --volumes --remove-orphans
+
 else
     # Display help section
-    echo "Usage: $0 {start|stop|rebuild}"
-    echo "start - Unpause or launch the backend and frontend using Docker Compose"
-    echo "stop  - Pauses the containers without removing or cleaning them"
-    echo "rebuild - Rebuild and launch the backend and frontend using Docker Compose"
+    echo "Usage: $0 {start|stop|clean-volumes|clean-containers|clean}"
+    echo "start - Launch the backend and frontend using Docker Compose"
+    echo "stop  - Stop and clean up Docker Compose services"
+    echo "clean-volumes - Delete volume => reset volumes env"
+    echo "clean-containers - Delete container => reset containers env"
+    echo "clean - Delete volume and container => reset docker env"
 fi

@@ -15,3 +15,4 @@ dependencies:
   - openalea.plantgl
   - openalea.widgets
   - openalea.weberpenn
+  - openalea.core
