@@ -36,23 +36,22 @@ jobs:
 
       # Install frontend Node dependencies
       - name: Install frontend deps
+        working-directory: webAleaFront
+        run: npm install
+
+      # Generate frontend documentation from JSX (Markdown)
+      - name: Generate frontend docs
+        working-directory: webAleaFront
         run: |
-          cd webAleaFront
-          npm install
+          npx react-docgen src/**/*.jsx --pretty > ../docs/frontend.md
 
-      # If we cannot use sphinx-js on JSX
-      # Generate frontend docs in Markdown via react-docgen
-      #- name: Generate frontend docs
-      #  run: |
-      #    npx react-docgen src/**/*.jsx --pretty > ../docs/frontend.md
-
-      # Build Sphinx
+      # Build Sphinx documentation
       - name: Build docs
         run: |
-          VERSION=${GITHUB_REF_NAME}
-          sphinx-build -b html docs docs/_build/${VERSION}
+          VERSION=${{ github.ref_name }}
+          python -m sphinx -b html docs docs/_build/${VERSION}
 
-      # Deploy to the Doc branch
+      # Deploy to the Doc branch (GitHub Pages)
       - name: Deploy to Doc branch
         uses: peaceiris/actions-gh-pages@v4
         with:
