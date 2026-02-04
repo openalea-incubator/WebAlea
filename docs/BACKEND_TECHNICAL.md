@@ -156,6 +156,8 @@ The backend installs packages into a Conda environment at runtime via the instal
 
 To solve this, OpenAlea-related logic that depends on newly installed packages is executed in subprocesses.
 
+![webalea_python_instance_solution](images/webalea_python_instance_solution.drawio.png)
+
 ### Where Subprocesses Are Used
 - OpenAlea node execution:
   - `OpenAleaRunner.execute_node(...)` spawns `model/openalea/runner/runnable/run_workflow.py`.
