@@ -73,15 +73,6 @@ export default function CustomNode(nodeProps) {
                 <strong style={{ fontSize: 13 }}>{label}</strong>
             </div>
 
-            {metadata && typeof metadata === "object" && Object.keys(metadata).length > 0 && (
-                <div className="custom-node-metadata">
-                    <details>
-                        <summary>Détails</summary>
-                        <pre>{JSON.stringify(metadata, null, 2)}</pre>
-                    </details>
-                </div>
-            )}
-
             {/* INPUTS */}
             {Array.isArray(inputs) &&
                 inputs.map((input, index) => {
