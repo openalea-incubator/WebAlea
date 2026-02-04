@@ -13,13 +13,8 @@ import { loadLocalPackages, removeLocalComposite, removeLocalPackage } from '../
  * Uses lazy loading - nodes are fetched when a package is expanded.
  */
 export default function PanelModuleNode({ onAddNode, version, treeItems, setTreeItems, loading, setLoading, loadingPackage, setLoadingPackage, loadedPackages, setLoadedPackages, expandedItems, setExpandedItems }) {
-    // Ref to access current treeItems in callbacks
-    const treeItemsRef = useRef(treeItems);
+    // Ref to access current tree items map in callbacks
     const itemMetaRef = useRef(new Map());
-
-    useEffect(() => {
-        treeItemsRef.current = treeItems;
-    }, [treeItems]);
 
     useEffect(() => {
         const map = new Map();
@@ -35,12 +30,26 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
         itemMetaRef.current = map;
     }, [treeItems]);
 
+    /**
+     * Resolve a tree item by its id from the current tree map.
+     * @param {string} itemId
+     * @returns {object|null}
+     */
+    const getItemById = useCallback((itemId) => {
+        return itemMetaRef.current.get(itemId) || null;
+    }, []);
+
+
+    /**
+     * Build tree items for locally stored composites.
+     * @param {Array} localPackages
+     * @returns {Array}
+     */
     const buildLocalPackageItems = useCallback((localPackages) => {
         if (!Array.isArray(localPackages) || localPackages.length === 0) return [];
         return localPackages.map(pkg => {
             const pkgId = `local:${pkg.name}`;
             const nodeItems = (pkg.nodes || []).map(node => {
-                const isComposite = (node.nodekind || "atomic") === "composite";
                 const nodeId = `${pkgId}::${node.name}`;
                 return {
                     id: nodeId,
@@ -69,6 +78,9 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
         });
     }, []);
 
+    /**
+     * Fetch visual packages and rebuild tree structure.
+     */
     const fetchPackages = useCallback(async () => {
         setLoading(true);
         try {
@@ -132,22 +144,12 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
         return () => window.removeEventListener("local-packages-updated", handleLocalPackagesUpdate);
     }, [fetchPackages, setLoadedPackages, setLoadingPackage]);
 
+    /**
+     * Lazy-load nodes for a package and inject them into the tree.
+     * @param {string} packageId
+     */
     const loadPackageNodes = useCallback(async (packageId) => {
-        // Helper to find package in tree
-        const findPackageInTree = (items, id) => {
-            for (const item of items) {
-                if (item.id === id) return item;
-                if (item.children) {
-                    const found = findPackageInTree(item.children, id);
-                    if (found) return found;
-                }
-            }
-            return null;
-        };
-
-        // Get current tree items from ref
-        const currentItems = treeItemsRef.current;
-        const packageNode = findPackageInTree(currentItems, packageId);
+        const packageNode = getItemById(packageId);
         if (packageNode?.isLocalPackage) {
             return;
         }
@@ -203,21 +205,10 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
         } finally {
             setLoadingPackage(null);
         }
-    }, [loadedPackages, loadingPackage]);
+    }, [getItemById, loadedPackages, loadingPackage, setLoadedPackages, setLoadingPackage, setTreeItems]);
 
     const handleItemClick = useCallback(async (_event, itemId) => {
-        const findItem = (items, id) => {
-            for (const item of items) {
-                if (item.id === id) return item;
-                if (item.children) {
-                    const found = findItem(item.children, id);
-                    if (found) return found;
-                }
-            }
-            return null;
-        };
-
-        const clickedItem = findItem(treeItems, itemId);
+        const clickedItem = getItemById(itemId);
         if (!clickedItem) return;
 
         if (clickedItem.isNode && onAddNode) {
@@ -232,8 +223,12 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
                 await loadPackageNodes(itemId);
             }
         }
-    }, [treeItems, onAddNode, loadedPackages, loadPackageNodes]);
+    }, [getItemById, onAddNode, loadedPackages, loadPackageNodes]);
 
+    /**
+     * Delete a local package or composite node.
+     * @param {object} item
+     */
     const handleDeleteItem = useCallback((item) => {
         if (!item) return;
         if (item.isNode && item.metadata?.localPackage) {
@@ -244,6 +239,9 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
         window.dispatchEvent(new Event("local-packages-updated"));
     }, []);
 
+    /**
+     * Custom TreeItem renderer with composite icon and delete action.
+     */
     const CustomTreeItem = useCallback((props) => {
         const { itemId, label, children, ...other } = props;
         const item = itemMetaRef.current.get(itemId);
@@ -264,6 +262,7 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
                             <button
                                 type="button"
                                 title="Supprimer"
+                                aria-label="Supprimer"
                                 className="btn btn-sm btn-outline-danger"
                                 style={{ marginLeft: "auto", padding: "2px 6px", lineHeight: 1 }}
                                 onClick={(event) => {
@@ -286,24 +285,13 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
 
     const handleItemExpansionToggle = useCallback(async (_event, itemId, isExpanded) => {
         if (isExpanded && itemId !== 'root' && itemId !== 'local-root' && !loadedPackages.has(itemId)) {
-            const findItem = (items, id) => {
-                for (const item of items) {
-                    if (item.id === id) return item;
-                    if (item.children) {
-                        const found = findItem(item.children, id);
-                        if (found) return found;
-                    }
-                }
-                return null;
-            };
-
-            const item = findItem(treeItems, itemId);
+            const item = getItemById(itemId);
             // Only load nodes for actual packages (not namespace folders or root)
             if (item && !item.isNode && !item.isNamespace && !item.isLocalPackage && itemId !== 'root' && itemId !== 'local-root') {
                 await loadPackageNodes(itemId);
             }
         }
-    }, [treeItems, loadedPackages, loadPackageNodes]);
+    }, [getItemById, loadedPackages, loadPackageNodes]);
 
     // Loading state
     if (loading) {

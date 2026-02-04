@@ -7,6 +7,11 @@ const NODE_WIDTH = 160;
 const NODE_HEIGHT = 44;
 const PADDING = 20;
 
+/**
+ * Build a lightweight layout for composite preview.
+ * @param {object} graph
+ * @returns {{nodes: Array, edges: Array, width: number, height: number}}
+ */
 function buildPreviewLayout(graph) {
     const nodes = Array.isArray(graph?.nodes) ? graph.nodes : [];
     const edges = Array.isArray(graph?.edges) ? graph.edges : [];
@@ -42,6 +47,9 @@ function buildPreviewLayout(graph) {
     };
 }
 
+/**
+ * Modal preview for composite nodes using a lightweight SVG + DOM renderer.
+ */
 export default function CompositeInspectModal({ show, onClose, compositeNode }) {
     const { engine } = useFlow();
     const graph = compositeNode?.data?.graph;

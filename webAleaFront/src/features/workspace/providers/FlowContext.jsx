@@ -30,6 +30,11 @@ import { useLocalStorage, loadFromLocalStorage } from '../hooks/useLocalStorage.
 import { createWorkflowEventHandlers } from '../handlers/workflowEventHandlers.js';
 import { areTypesCompatible } from '../utils/typeValidation.js';
 import { expandComposites } from '../utils/compositeExpansion.js';
+import {
+    collectCompositeStates,
+    computeCompositeState,
+    resolveCompositeOutput
+} from '../utils/compositeRuntime.js';
 
 /**
  * FlowProvider component - provides the FlowContext to its children.
@@ -182,79 +187,42 @@ export const FlowProvider = ({ children }) => {
     const compositeMappingsRef = useRef([]);
     const compositeMappingByIdRef = useRef(new Map());
 
+    /**
+     * Aggregate and propagate composite runtime state from internal node states.
+     */
     const recomputeCompositeState = useCallback(() => {
         if (!engine?.nodeStates || compositeMappingsRef.current.length === 0) return;
 
-        const expandedState = engine.nodeStates;
         compositeMappingsRef.current.forEach(mapping => {
             const compositeNode = nodesRef.current.find(n => n.id === mapping.compositeId);
             if (!compositeNode) return;
 
-            const internalIds = new Set();
-            if (Array.isArray(mapping.internalIds) && mapping.internalIds.length > 0) {
-                mapping.internalIds.forEach(id => internalIds.add(id));
-            } else {
-                mapping.outputMap.forEach(m => internalIds.add(`${mapping.compositeId}::${m.nodeId}`));
-                mapping.inputMap.forEach(m => internalIds.add(`${mapping.compositeId}::${m.nodeId}`));
-            }
-
-            let states = [...internalIds].map(id => expandedState.get(id)).filter(Boolean);
-            if (states.length === 0) {
-                const prefix = `${mapping.compositeId}::`;
-                states = [...expandedState.entries()]
-                    .filter(([id]) => id.startsWith(prefix))
-                    .map(([, state]) => state)
-                    .filter(Boolean);
-            }
+            const states = collectCompositeStates(engine.nodeStates, mapping);
             if (states.length === 0) return;
 
-            let nextState = NodeState.PENDING;
-            if (states.some(s => s === NodeState.ERROR)) {
-                nextState = NodeState.ERROR;
-            } else if (states.some(s => s === NodeState.RUNNING)) {
-                nextState = NodeState.RUNNING;
-            } else if (states.every(s => s === NodeState.COMPLETED)) {
-                nextState = NodeState.COMPLETED;
-            } else if (states.some(s => s === NodeState.SKIPPED)) {
-                nextState = NodeState.SKIPPED;
-            } else if (states.some(s => s === NodeState.CANCELLED)) {
-                nextState = NodeState.CANCELLED;
-            } else if (states.some(s => s === NodeState.READY)) {
-                nextState = NodeState.READY;
-            }
-
-            updateNodeStatus(mapping.compositeId, nextState);
+            updateNodeStatus(mapping.compositeId, computeCompositeState(states));
         });
     }, [engine, updateNodeStatus]);
 
+    /**
+     * Propagate composite outputs from expanded execution results.
+     * Supports nested composites via recursive resolution.
+     * @param {object} results
+     */
     const updateCompositeOutputs = useCallback((results) => {
         if (!results || compositeMappingsRef.current.length === 0) return;
-
-        const resolveOutput = (mapping, outputId, visited = new Set()) => {
-            const mapped = mapping.outputMap.get(outputId);
-            if (!mapped) return null;
-            const internalId = `${mapping.compositeId}::${mapped.nodeId}`;
-
-            const internalOutputs = results[internalId] || [];
-            const match = internalOutputs.find(o =>
-                o.id === mapped.handleId ||
-                o.name === mapped.handleId ||
-                (mapped.handleIndex !== null && mapped.handleIndex === o.index)
-            );
-            if (match) return match;
-
-            const nested = compositeMappingByIdRef.current.get(internalId);
-            if (!nested || visited.has(internalId)) return null;
-            visited.add(internalId);
-            return resolveOutput(nested, mapped.handleId, visited);
-        };
 
         compositeMappingsRef.current.forEach(mapping => {
             const compositeNode = nodesRef.current.find(n => n.id === mapping.compositeId);
             if (!compositeNode) return;
 
             const outputs = (compositeNode.data.outputs || []).map(output => {
-                const resolved = resolveOutput(mapping, output.id);
+                const resolved = resolveCompositeOutput(
+                    results,
+                    mapping,
+                    output.id,
+                    compositeMappingByIdRef.current
+                );
                 if (!resolved) return output;
                 return { ...output, value: resolved.value, type: resolved.type || output.type };
             });

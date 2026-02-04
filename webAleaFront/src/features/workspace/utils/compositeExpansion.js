@@ -5,10 +5,21 @@
  * Handles nested composites by iterating until no composite remains or maxDepth reached.
  */
 
+/**
+ * Resolve a display label for a node definition.
+ * @param {object} node
+ * @returns {string}
+ */
 function getNodeLabel(node) {
     return node?.data?.label || node?.data?.nodeName || node?.id || "node";
 }
 
+/**
+ * Detect exposed input/output ports in a composite graph.
+ * Exposed ports are those not connected internally.
+ * @param {object} graph
+ * @returns {{exposedInputs: Array, exposedOutputs: Array}}
+ */
 function buildExposedPorts(graph) {
     const nodes = Array.isArray(graph?.nodes) ? graph.nodes : [];
     const edges = Array.isArray(graph?.edges) ? graph.edges : [];
@@ -61,6 +72,12 @@ function buildExposedPorts(graph) {
     return { exposedInputs, exposedOutputs };
 }
 
+/**
+ * Map composite ports to internal graph ports by name, then by index.
+ * @param {object} compositeNode
+ * @param {object} graph
+ * @returns {{inputMap: Map, outputMap: Map}}
+ */
 function mapCompositePorts(compositeNode, graph) {
     const { exposedInputs, exposedOutputs } = buildExposedPorts(graph);
     const compositeInputs = compositeNode?.data?.inputs || [];
@@ -95,6 +112,12 @@ function mapCompositePorts(compositeNode, graph) {
     return { inputMap, outputMap };
 }
 
+/**
+ * Prefix internal node ids to avoid collisions with outer workflow.
+ * @param {object} graph
+ * @param {string} prefix
+ * @returns {{nodes: Array, edges: Array}}
+ */
 function prefixGraph(graph, prefix) {
     const nodes = (graph?.nodes || []).map(node => ({
         ...node,
@@ -111,6 +134,13 @@ function prefixGraph(graph, prefix) {
     return { nodes, edges };
 }
 
+/**
+ * Expand a single composite node into its internal graph.
+ * @param {Array} nodes
+ * @param {Array} edges
+ * @param {object} compositeNode
+ * @returns {{nodes: Array, edges: Array, expanded: boolean, mapping: object|null}}
+ */
 function expandOneComposite(nodes, edges, compositeNode) {
     const graph = compositeNode?.data?.graph;
     if (!graph || !Array.isArray(graph.nodes)) {
@@ -162,6 +192,13 @@ function expandOneComposite(nodes, edges, compositeNode) {
     };
 }
 
+/**
+ * Expand composites recursively until none remains or maxDepth is reached.
+ * @param {Array} nodes
+ * @param {Array} edges
+ * @param {number} maxDepth
+ * @returns {{nodes: Array, edges: Array, mappings: Array}}
+ */
 export function expandComposites(nodes, edges, maxDepth = 5) {
     let currentNodes = nodes;
     let currentEdges = edges;

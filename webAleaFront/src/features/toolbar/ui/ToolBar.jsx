@@ -203,6 +203,12 @@ export default function ToolBar() {
         }
     };
 
+    /**
+     * Derive exposed composite ports based on unconnected internal ports.
+     * @param {Array} graphNodes
+     * @param {Array} graphEdges
+     * @returns {{inputs: Array, outputs: Array}}
+     */
     const deriveCompositePorts = (graphNodes, graphEdges) => {
         const customNodeIds = new Set(
             graphNodes.filter(n => n?.type === "custom").map(n => n.id)
@@ -278,6 +284,11 @@ export default function ToolBar() {
         return { inputs: compositeInputs, outputs: compositeOutputs };
     };
 
+    /**
+     * Trigger a JSON file download in the browser.
+     * @param {object} data
+     * @param {string} filename
+     */
     const downloadJson = (data, filename) => {
         const dataStr = "data:text/json;charset=utf-8," +
             encodeURIComponent(JSON.stringify(data, null, 2));
@@ -289,6 +300,10 @@ export default function ToolBar() {
         downloadAnchorNode.remove();
     };
 
+    /**
+     * Export workspace or composite as JSON.
+     * @param {{mode: string, packageName?: string, nodeName?: string, description?: string}} params
+     */
     const handleExport = ({ mode, packageName, nodeName, description }) => {
         try {
             if (mode === "workspace") {
