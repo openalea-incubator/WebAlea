@@ -39,7 +39,7 @@ export default function CustomNode(nodeProps) {
 
     const {
         id,
-        data: { label, color, status, metadata, inputs, outputs },
+        data: { label, color, status, inputs, outputs },
     } = nodeProps;
 
     // Use NodeState directly - if status is an old string value, default to READY
