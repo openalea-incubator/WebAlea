@@ -1,32 +1,42 @@
-""""API endpoints for 3D visualizer."""
-from typing import List, Optional, Any
-import logging
-
 from fastapi import APIRouter
 from pydantic import BaseModel
-from openalea.plantgl.all import Sphere, Cylinder, Scene, Shape, Material, Color3
-import json
-from model.openalea.visualizer.plantgl import serialize_scene
+import traceback
+from openalea.plantgl.all import Scene, Vector3, Polyline2D
+from openalea.weberpenn.tree_client import Weber_Laws, TreeParameter, Quaking_Aspen
+from openalea.weberpenn.tree_server import TreeServer
+from openalea.weberpenn.tree_geom import GeomEngine
 
 router = APIRouter()
 
 class VisualizationRequest(BaseModel):
-    """Request model for visualizing node data."""
     node_id: str
-    visualization_data: dict
-
+    visualization_data: dict = {}
 
 @router.post("/visualize")
 def visualize_node(request: VisualizationRequest):
     try:
-        nodeId = request.node_id
-        data = request.visualization_data
-        # POC
-        scene = Scene()
-        shape = Shape(Sphere(1.0), Material(Color3(255, 0, 0)))
-        scene.add(shape)
-        serialized_scene = serialize_scene(scene)
-        return {"success": True, "scene": serialized_scene}
+        node_id = request.node_id
+
+        # Utiliser un arbre par défaut pour éviter les erreurs de déballage
+        param = Quaking_Aspen()  # WeberPenn fournit des arbres “prédéfinis”
+
+        client = Weber_Laws(param)
+        server = TreeServer(client)
+        server.run()
+
+        section = Polyline2D([Vector3(0.5,0,0),
+                              Vector3(0,0.5,0),
+                              Vector3(-0.5,0,0),
+                              Vector3(0,-0.5,0),
+                              Vector3(0.5,0,0)])
+        scene = GeomEngine(server, section, Vector3(0,0,0)).scene("axis", Scene())
+
+        return {"nodeId": node_id, "success": True, "scene": str(scene)}
+
     except Exception as e:
-        import traceback
-        return {"success": False, "error": str(e), "trace": traceback.format_exc()}
+        return {
+            "nodeId": node_id,
+            "success": False,
+            "error": str(e),
+            "trace": traceback.format_exc()
+        }

@@ -1,13 +1,18 @@
 import { useRef } from "react";
 import { fetchNodeScene } from "../../../../api/visualizerAPI";
 import { buildSceneFromJSON } from "../../../visualizer/SceneBuilder";
-import sceneData from "./../../../visualizer/POC.json";
 
 export default function NodeResultRender() {
     const mountRef = useRef(null);
     const sceneRef = useRef(null); 
 
     const handleRender = async () => {
+        const sceneData = await fetchNodeScene();
+        if (!sceneData) {
+            alert("Failed to fetch scene data.");
+            return;
+        }
+
         const { scene, camera, renderer, objects, dispose } = buildSceneFromJSON(sceneData, mountRef);
         sceneRef.current = { scene, camera, renderer, objects, dispose };
     };

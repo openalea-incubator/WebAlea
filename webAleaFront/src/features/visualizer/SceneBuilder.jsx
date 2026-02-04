@@ -5,14 +5,15 @@ import { lightFromJSON } from "./factories/lightFactory";
 
 /**
  * Builds a Three.js scene from a JSON description.
- * @param {string} sceneJSON 
+ * @param {object} sceneJSON 
  * @param {React.RefObject} mountRef 
  * @returns 
  */
 export function buildSceneFromJSON(sceneJSON, mountRef) {
-    if (!mountRef.current) return;
+    if (!mountRef.current || !sceneJSON) return;
 
     let animationId;
+    console.log("Building scene from JSON:", sceneJSON);
 
     // Scene setup
     const scene = new THREE.Scene();
