@@ -1,4 +1,0 @@
-API Python
-==========
-
-.. automodule:: main

@@ -1,7 +1,11 @@
-Frontend (React)
-================
+WebAlea's Frontend API (FastAPI) reference
+==========================================
 
-.. toctree::
-   :maxdepth: 1
-
-   api_frontend
+.. toctree
+  :maxdepth: 2
+  :hidden:
+  
+  frontend/api
+  frontend/service
+  frontend/config
+  frontend/features

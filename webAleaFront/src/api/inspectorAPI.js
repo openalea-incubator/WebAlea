@@ -1,4 +1,9 @@
-// inspectorAPI.js
+/**
+ * Inspector API
+ *
+ * Functions to query installed OpenAlea packages,
+ * wralea entry points, and available nodes.
+ */
 import { fetchJSON } from "./utils.js";
 import { API_BASE_URL_INSPECTOR } from "../config/api";
 
