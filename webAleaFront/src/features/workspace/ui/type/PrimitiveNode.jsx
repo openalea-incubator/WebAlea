@@ -45,6 +45,8 @@ export default function PrimitiveNode({
                 return DefaultValues.STRING;
             case NodeType.BOOLEAN:
                 return DefaultValues.BOOLEAN;
+            case NodeType.DICT:
+                return DefaultValues.DICT;
             default:
                 return null;
         }

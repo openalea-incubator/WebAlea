@@ -7,7 +7,7 @@ import React, { useState, useEffect } from "react";
  * @param {function} onChange - The function to call when the input changes.
  * @returns {React.ReactNode} - The NodeInputFloat component.
  */
-export default function NodeInputFloat({ inputName, value = 0, onChange }) {
+export default function NodeInputFloat({ inputName, value = 0, onChange, disabled = false }) {
     /**
      * State to store the internal value. It is used to store the value of the input.
      * @type {number}
@@ -39,6 +39,7 @@ export default function NodeInputFloat({ inputName, value = 0, onChange }) {
                 value={internalValue}
                 placeholder="0.0"
                 onChange={handleChange}
+                disabled={disabled}
             />
         </div>
     );

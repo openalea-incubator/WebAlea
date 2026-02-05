@@ -24,7 +24,10 @@ export default function NodeDescription() {
     }
     else {
         return (
-        <div className="p-3 bg-white rounded shadow-sm">
+        <div
+            className="p-3 bg-white rounded shadow-sm"
+            style={{ height: "100%", overflowY: "auto", minHeight: 0 }}
+        >
             <h5 className="mb-3">Node Details</h5>
 
             {/* Nom */}

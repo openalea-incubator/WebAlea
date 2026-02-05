@@ -7,7 +7,7 @@ import React, { useState, useEffect } from "react";
  * @param {function} onChange - The function to call when the input changes.
  * @returns {React.ReactNode} - The NodeInputBoolean component.
  */
-export default function NodeInputBoolean({ inputName, value = false, onChange }) {
+export default function NodeInputBoolean({ inputName, value = false, onChange, disabled = false }) {
     /**
      * State to store the internal value. It is used to store the value of the input.
      * @type {boolean}
@@ -37,6 +37,7 @@ export default function NodeInputBoolean({ inputName, value = false, onChange })
                 checked={internalValue}
                 id={inputName}
                 onChange={handleChange}
+                disabled={disabled}
             />
             <label className="form-check-label fw-semibold" htmlFor={inputName}>
                 {inputName}

@@ -2,10 +2,85 @@
 import json
 import sys
 import logging
+import os
+import pickle
+import uuid
+
+PLANTGL_AVAILABLE = False
+try:
+    from openalea.plantgl.all import Scene, Shape, Geometry, Material, Color3
+    ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
+    if ROOT_DIR not in sys.path:
+        sys.path.append(ROOT_DIR)
+    from model.openalea.visualizer.serialize import serialize_scene
+    PLANTGL_AVAILABLE = True
+except Exception:
+    PLANTGL_AVAILABLE = False
 
 from openalea.core.pkgmanager import PackageManager
 
+
+def normalize_package_name(package_name: str, available_keys: list) -> str | None:
+    """Try to find the correct package name in the PackageManager.
+
+    OpenAlea PackageManager may use different naming conventions:
+    - 'openalea.widgets' (conda name) -> 'widgets' (PM name)
+    - or vice versa
+
+    Args:
+        package_name: the package name to look for
+        available_keys: list of keys from PackageManager
+
+    Returns:
+        The matching key name, or None if not found
+    """
+    if package_name in available_keys:
+        return package_name
+
+    if package_name.startswith("openalea."):
+        short_name = package_name[len("openalea."):]
+        if short_name in available_keys:
+            return short_name
+
+    prefixed_name = f"openalea.{package_name}"
+    if prefixed_name in available_keys:
+        return prefixed_name
+
+    return None
+
 logging.basicConfig(level=logging.INFO)
+
+CACHE_DIR = os.getenv("OPENALEA_CACHE_DIR", "/tmp/webalea_object_cache")
+os.makedirs(CACHE_DIR, exist_ok=True)
+
+def _cache_path(ref_id: str) -> str:
+    safe_id = ref_id.replace("/", "_")
+    return os.path.join(CACHE_DIR, f"{safe_id}.pkl")
+
+def cache_store(value) -> str:
+    ref_id = uuid.uuid4().hex
+    path = _cache_path(ref_id)
+    with open(path, "wb") as f:
+        pickle.dump(value, f)
+    return ref_id
+
+def cache_load(ref_id: str):
+    path = _cache_path(ref_id)
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Cached object not found: {ref_id}")
+    with open(path, "rb") as f:
+        return pickle.load(f)
+
+def resolve_value(value):
+    if isinstance(value, dict):
+        if "__ref__" in value:
+            return cache_load(str(value["__ref__"]))
+        return {k: resolve_value(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [resolve_value(v) for v in value]
+    if isinstance(value, tuple):
+        return tuple(resolve_value(v) for v in value)
+    return value
 
 def parse_if_boolean(type: str):
     """Parse type string to standardize boolean type."""
@@ -33,7 +108,12 @@ def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
     pm.init()
 
     # 2. Get package
-    pkg = pm.get(package_name)
+    available_keys = list(pm.keys())
+    resolved_name = normalize_package_name(package_name, available_keys)
+    if resolved_name is None:
+        raise ValueError(f"Package '{package_name}' not found")
+
+    pkg = pm.get(resolved_name)
     if not pkg:
         raise ValueError(f"Package '{package_name}' not found")
 
@@ -49,6 +129,8 @@ def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
     # 5. Inject inputs
     for key, value in inputs.items():
         try:
+            value = resolve_value(value)
+            logging.info("Input '%s' resolved type=%s value=%r", key, type(value), value)
             # Try as index first if key is numeric
             if isinstance(key, int):
                 node.set_input(key, value)
@@ -72,6 +154,7 @@ def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
     outputs = []
     node_outputs = node.outputs if hasattr(node, 'outputs') else []
     logging.info("Node raw outputs: %s", node_outputs)
+    logging.info("Node raw output types: %s", [type(v).__name__ for v in node_outputs])
 
     # Get output descriptions from factory if available
     factory_outputs = []
@@ -99,21 +182,52 @@ def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
     return {"success": True, "outputs": outputs}
 
 
-def serialize_value(value):
+def _object_type_name(value):
+    try:
+        cls = value.__class__
+        module = cls.__module__ or ""
+        name = cls.__name__ or "Object"
+        return f"{module}.{name}" if module else name
+    except Exception:
+        return "Object"
+
+def serialize_value(value, depth=0, max_depth=3):
     """Serialize a Python value to JSON-compatible format."""
+    if depth > max_depth:
+        return {"__type__": "DepthLimit", "summary": "Max depth reached"}
     if value is None:
         return None
+    if PLANTGL_AVAILABLE:
+        if isinstance(value, Scene):
+            return {"__type__": "plantgl_scene", "scene": serialize_scene(value)}
+        if isinstance(value, Shape):
+            scene = Scene()
+            scene.add(value)
+            return {"__type__": "plantgl_scene", "scene": serialize_scene(scene)}
+        if isinstance(value, Geometry):
+            scene = Scene()
+            scene.add(Shape(value, Material(Color3(200, 200, 200))))
+            return {"__type__": "plantgl_scene", "scene": serialize_scene(scene)}
     if isinstance(value, (int, float, str, bool)):
         return value
     if isinstance(value, (list, tuple)):
-        return [serialize_value(v) for v in value]
+        return [serialize_value(v, depth + 1, max_depth) for v in value]
     if isinstance(value, dict):
-        return {str(k): serialize_value(v) for k, v in value.items()}
+        return {str(k): serialize_value(v, depth + 1, max_depth) for k, v in value.items()}
     # For numpy arrays or similar
     if hasattr(value, 'tolist'):
         return value.tolist()
-    # Fallback: convert to string representation
-    return str(value)
+    # Custom objects: store in cache and return opaque ref
+    try:
+        ref_id = cache_store(value)
+        return {
+            "__type__": _object_type_name(value),
+            "__ref__": ref_id,
+            "summary": str(value)
+        }
+    except Exception:
+        # Fallback: convert to string representation
+        return str(value)
 
 
 if __name__ == "__main__":

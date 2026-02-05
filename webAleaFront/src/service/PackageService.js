@@ -154,7 +154,7 @@ function parseNodePort(port, index = 0) {
             const cleanedStr = port.replace(/'/g, '"').replace(/None/g, 'null');
             const parsed = JSON.parse(cleanedStr);
             const interfaceValue = safeString(parsed.interface, "None");
-            return {
+            const result = {
                 id: safeString(parsed.id, `port_${index}_${parsed.name}`),
                 name: safeString(parsed.name, "unknown"),
                 interface: interfaceValue,
@@ -163,6 +163,10 @@ function parseNodePort(port, index = 0) {
                 desc: safeString(parsed.desc || parsed.description, ""),
                 default: parsed.default ?? null
             };
+            if (parsed.enum_options && Array.isArray(parsed.enum_options)) {
+                result.enumOptions = parsed.enum_options;
+            }
+            return result;
         } catch {
             // Failed to parse, return default with the string as name
             return { ...defaultPort, name: port };

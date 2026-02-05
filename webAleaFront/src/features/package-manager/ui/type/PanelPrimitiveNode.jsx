@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { FiHash, FiType, FiToggleLeft } from 'react-icons/fi';
+import { FiHash, FiType, FiToggleLeft, FiList, FiBox, FiTag } from 'react-icons/fi';
 import { Node } from '../../../workspace/model/Node.jsx';
 import TreeNode from '../../model/TreeNode.jsx';
 
@@ -47,6 +47,49 @@ const PRIMITIVE_NODES = [
             label: 'Boolean input',
             type: 'boolean',
             outputs: [{ name: 'Value', type: 'boolean', default: false }]
+        })
+    }
+    ,
+    {
+        id: 'array',
+        label: 'Array',
+        description: 'JSON array input',
+        type: 'array',
+        icon: FiList,
+        iconClass: 'array',
+        node: new Node({
+            id: 'array',
+            label: 'Array input',
+            type: 'array',
+            outputs: [{ name: 'Value', type: 'array', default: [] }]
+        })
+    },
+    {
+        id: 'dict',
+        label: 'Dict',
+        description: 'Key/Value object input',
+        type: 'dict',
+        icon: FiBox,
+        iconClass: 'object',
+        node: new Node({
+            id: 'dict',
+            label: 'Dict input',
+            type: 'dict',
+            outputs: [{ name: 'Value', type: 'object', default: {} }]
+        })
+    },
+    {
+        id: 'enum',
+        label: 'Enum',
+        description: 'Enum value input',
+        type: 'enum',
+        icon: FiTag,
+        iconClass: 'enum',
+        node: new Node({
+            id: 'enum',
+            label: 'Enum input',
+            type: 'enum',
+            outputs: [{ name: 'Value', type: 'enum', default: "", enumOptions: [] }]
         })
     }
 ];

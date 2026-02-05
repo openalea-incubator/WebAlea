@@ -138,7 +138,7 @@ export class DependencyTracker {
             const state = inputStates.get(input.id);
             return {
                 ...input,
-                value: state ? state.value : input.value
+                value: state ? (state.value ?? input.default) : (input.value ?? input.default)
             };
         });
     }

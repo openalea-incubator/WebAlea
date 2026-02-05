@@ -12,7 +12,10 @@ export const NodeType = {
     CUSTOM: 'custom',
     FLOAT: 'float',
     STRING: 'string',
-    BOOLEAN: 'boolean'
+    BOOLEAN: 'boolean',
+    ARRAY: 'array',
+    DICT: 'dict',
+    ENUM: 'enum'
 };
 
 /**
@@ -49,7 +52,9 @@ export const DefaultValues = {
     FLOAT: 0,
     STRING: '',
     BOOLEAN: false,
-    ARRAY: []
+    ARRAY: [],
+    DICT: {},
+    ENUM: ''
 };
 
 /**
