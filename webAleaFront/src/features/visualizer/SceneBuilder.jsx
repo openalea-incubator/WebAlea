@@ -60,10 +60,31 @@ export function buildSceneFromJSON(sceneJSON, mountRef) {
     // Merge static meshes by material to reduce draw calls
     if (staticMeshes.length > 0) {
         const groups = new Map();
+        const nonMerged = [];
+
+        const hasSimpleTransform = (meshJSON) => {
+            if (!meshJSON.transform) return true;
+            const t = meshJSON.transform;
+            const pos = t.position ?? [0, 0, 0];
+            const rot = t.rotation ?? [0, 0, 0];
+            const scale = t.scale ?? [1, 1, 1];
+            const isIdentityPos = pos[0] === 0 && pos[1] === 0 && pos[2] === 0;
+            const isIdentityRot = rot[0] === 0 && rot[1] === 0 && rot[2] === 0;
+            const isIdentityScale = scale[0] === 1 && scale[1] === 1 && scale[2] === 1;
+            return isIdentityPos && isIdentityRot && isIdentityScale;
+        };
+
         staticMeshes.forEach(obj => {
             const color = obj.material?.color ?? [0.8, 0.8, 0.8];
             const opacity = obj.material?.opacity ?? 1;
-            const key = `${color.join(",")}|${opacity}`;
+            const hasIndices = Boolean(obj.geometry?.indices);
+            const key = `${color.join(",")}|${opacity}|${hasIndices ? "idx" : "noidx"}`;
+
+            if (!hasSimpleTransform(obj)) {
+                nonMerged.push(obj);
+                return;
+            }
+
             if (!groups.has(key)) groups.set(key, { color, opacity, items: [] });
             groups.get(key).items.push(obj);
         });
@@ -78,20 +99,6 @@ export function buildSceneFromJSON(sceneJSON, mountRef) {
                 if (meshJSON.geometry.indices) {
                     const indices = new Uint32Array(meshJSON.geometry.indices.flat());
                     geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-                }
-
-                if (meshJSON.transform) {
-                    const t = meshJSON.transform;
-                    const position = new THREE.Vector3(...(t.position ?? [0, 0, 0]));
-                    const rotation = new THREE.Euler(...(t.rotation ?? [0, 0, 0]));
-                    const scale = new THREE.Vector3(...(t.scale ?? [1, 1, 1]));
-                    const matrix = new THREE.Matrix4();
-                    matrix.compose(
-                        position,
-                        new THREE.Quaternion().setFromEuler(rotation),
-                        scale
-                    );
-                    geometry.applyMatrix4(matrix);
                 }
 
                 geometries.push(geometry);
@@ -112,6 +119,15 @@ export function buildSceneFromJSON(sceneJSON, mountRef) {
             }
 
             geometries.forEach(g => g.dispose());
+        });
+
+        // Render non-merged static meshes normally
+        nonMerged.forEach(obj => {
+            const object3D = buildObjectNode(obj);
+            if (object3D) {
+                scene.add(object3D);
+                objects.push({ object3D, animation: obj.animation ?? null });
+            }
         });
     }
 

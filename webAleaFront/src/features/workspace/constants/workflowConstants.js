@@ -14,7 +14,8 @@ export const NodeType = {
     STRING: 'string',
     BOOLEAN: 'boolean',
     ARRAY: 'array',
-    DICT: 'dict'
+    DICT: 'dict',
+    ENUM: 'enum'
 };
 
 /**
@@ -52,7 +53,8 @@ export const DefaultValues = {
     STRING: '',
     BOOLEAN: false,
     ARRAY: [],
-    DICT: {}
+    DICT: {},
+    ENUM: ''
 };
 
 /**

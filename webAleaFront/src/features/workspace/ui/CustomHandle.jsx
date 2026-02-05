@@ -7,6 +7,7 @@ import {
   useNodeId,
 } from '@xyflow/react';
 import { useFlow } from '../providers/FlowContextDefinition.jsx';
+import { DataType } from '../constants/workflowConstants.js';
 
 // Mapping from types/interfaces to colors
 const typeColors = {
@@ -114,6 +115,7 @@ export default function CustomHandle({ id, style, interfaceType, onChange = null
     // First case: A connection exists - update the input value
     if (connection && linkedValue !== undefined) {
       const newValue = linkedValue?.value;
+      const linkedEnumOptions = Array.isArray(linkedValue?.enumOptions) ? linkedValue.enumOptions : null;
 
       setNodes((prevNodes) =>
         prevNodes.map((node) => {
@@ -123,7 +125,23 @@ export default function CustomHandle({ id, style, interfaceType, onChange = null
             if (input.id === id) {
               const hasChanged = !isDeepEqual(input.value, newValue);
               if (hasChanged || !input.fromConnection) {
-                return { ...input, value: newValue, fromConnection: true };
+                let nextInput = { ...input, value: newValue, fromConnection: true };
+
+                if (linkedEnumOptions) {
+                  if (!input._enumFromConnection) {
+                    nextInput._prevType = input.type;
+                    nextInput._prevEnumOptions = input.enumOptions;
+                  }
+                  nextInput.enumOptions = linkedEnumOptions;
+                  nextInput._enumFromConnection = true;
+
+                  if ((input.type === DataType.ANY || !input.type) && linkedValue?.type === DataType.ENUM) {
+                    nextInput.type = DataType.ENUM;
+                    nextInput._inferredType = true;
+                  }
+                }
+
+                return nextInput;
               }
             }
             return input;
@@ -149,10 +167,17 @@ export default function CustomHandle({ id, style, interfaceType, onChange = null
 
           const updatedInputs = (node.data.inputs || []).map((input) => {
             if (input.id === id && input.fromConnection) {
-              // Remove fromConnection flag but keep current value
+              // Remove fromConnection flag and restore default (or null)
               // eslint-disable-next-line no-unused-vars
-              const { fromConnection, ...rest } = input;
-              return rest;
+              const { fromConnection, _enumFromConnection, _prevType, _prevEnumOptions, _inferredType, ...rest } = input;
+              const restored = { ...rest };
+              restored.value = input.default !== undefined ? input.default : null;
+              if (_enumFromConnection) {
+                if (_prevType !== undefined) restored.type = _prevType;
+                if (_prevEnumOptions !== undefined) restored.enumOptions = _prevEnumOptions;
+                else if (restored.enumOptions) delete restored.enumOptions;
+              }
+              return restored;
             }
             return input;
           });

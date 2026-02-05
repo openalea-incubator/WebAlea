@@ -415,6 +415,12 @@
     border: 1px solid #e0e0e0;
 }
 
+.primitive-icon.enum {
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid #e0e0e0;
+}
+
 .primitive-list {
     display: flex;
     flex-direction: column;

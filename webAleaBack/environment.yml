@@ -12,7 +12,6 @@ dependencies:
   - aiofiles
   - packaging
   - setuptools
-  - openalea.plantgl
-  - openalea.widgets
-  - openalea.weberpenn
   - openalea.core
+  - openalea.plantgl
+  - openalea.weberpenn

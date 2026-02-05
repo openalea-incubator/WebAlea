@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import NodeInput from "../NodeInputs.jsx";
 import NodeOutput from "../NodeOutputs.jsx";
 import { useFlow } from "../../../workspace/providers/FlowContextDefinition.jsx";
@@ -33,6 +33,11 @@ export default function NodeParameters() {
     const outputs = node ? node.data.outputs : [];
     const isArrayNode = node?.type === NodeType.ARRAY;
     const isDictNode = node?.type === NodeType.DICT;
+    const isEnumNode = node?.type === NodeType.ENUM;
+    const enumOutput = outputs?.[0] ?? null;
+    const enumOptions = Array.isArray(enumOutput?.enumOptions) ? enumOutput.enumOptions : [];
+    const enumValue = enumOutput?.value ?? "";
+    const [enumOptionDraft, setEnumOptionDraft] = useState("");
 
     /**
      * Function to handle input value changes.
@@ -107,6 +112,45 @@ export default function NodeParameters() {
         const updatedInputs = [...(inputs ?? []), newInput];
         const updatedData = { inputs: updatedInputs };
         updateNode(node.id, updatedData);
+    };
+
+    const updateEnumOutput = (nextOptions, nextValue) => {
+        if (!node) return;
+        const outputId = enumOutput?.id ?? `out-${node.id}-0`;
+        const safeOptions = Array.isArray(nextOptions) ? nextOptions : [];
+        const safeValue = safeOptions.includes(nextValue) ? nextValue : (safeOptions[0] ?? "");
+        updateNode(node.id, {
+            outputs: [{
+                ...(enumOutput || {}),
+                id: outputId,
+                type: DataType.ENUM,
+                enumOptions: safeOptions,
+                value: safeValue
+            }]
+        });
+    };
+
+    const handleEnumAddOption = () => {
+        const next = enumOptionDraft.trim();
+        if (!next) return;
+        if (enumOptions.includes(next)) {
+            setEnumOptionDraft("");
+            return;
+        }
+        const nextOptions = [...enumOptions, next];
+        const nextValue = enumValue || next;
+        updateEnumOutput(nextOptions, nextValue);
+        setEnumOptionDraft("");
+    };
+
+    const handleEnumRemoveOption = (option) => {
+        const nextOptions = enumOptions.filter((opt) => opt !== option);
+        const nextValue = enumValue === option ? (nextOptions[0] ?? "") : enumValue;
+        updateEnumOutput(nextOptions, nextValue);
+    };
+
+    const handleEnumValueChange = (nextValue) => {
+        updateEnumOutput(enumOptions, nextValue);
     };
 
     /**
@@ -262,6 +306,61 @@ export default function NodeParameters() {
                                 Add Entry
                             </button>
                         </div>
+                    </div>
+                )}
+
+                {isEnumNode && (
+                    <div style={{ marginBottom: "16px" }}>
+                        <h6 style={{ fontSize: "0.85rem", color: "#666", marginBottom: "8px" }}>
+                            Enum Options ({enumOptions.length})
+                        </h6>
+
+                        <div className="d-flex gap-2 mb-2">
+                            <input
+                                type="text"
+                                className="form-control form-control-sm"
+                                placeholder="New option"
+                                value={enumOptionDraft}
+                                onChange={(e) => setEnumOptionDraft(e.target.value)}
+                            />
+                            <button
+                                type="button"
+                                className="btn btn-outline-primary btn-sm"
+                                onClick={handleEnumAddOption}
+                            >
+                                Add Option
+                            </button>
+                        </div>
+
+                        {enumOptions.length > 0 ? (
+                            <div className="d-flex flex-column gap-2">
+                                <select
+                                    className="form-select form-select-sm"
+                                    value={enumValue || enumOptions[0]}
+                                    onChange={(e) => handleEnumValueChange(e.target.value)}
+                                >
+                                    {enumOptions.map((opt) => (
+                                        <option key={opt} value={opt}>
+                                            {opt}
+                                        </option>
+                                    ))}
+                                </select>
+                                {enumOptions.map((opt) => (
+                                    <div key={`enum-opt-${opt}`} className="d-flex align-items-center gap-2">
+                                        <span className="small">{opt}</span>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-danger btn-sm"
+                                            onClick={() => handleEnumRemoveOption(opt)}
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-muted small">No options yet</div>
+                        )}
                     </div>
                 )}
 

@@ -144,7 +144,7 @@ def serialize_node_puts(puts) -> list:
 
     Args:
         puts: List of input/output descriptors from a NodeFactory
-              Can be objects with attributes or dict-like strings
+            Can be objects with attributes or dict-like strings
 
     Returns:
         list: Serialized inputs/outputs with interface and type information
@@ -250,7 +250,7 @@ def serialize_node(node_factory) -> dict:
     # serialize node factory information
     inputs = serialize_node_puts(node_factory.inputs)
     outputs = serialize_node_puts(node_factory.outputs)
-    
+
     # Fallback to inspect node instance if no inputs/outputs found at factory level
     if not inputs or not outputs:
         try:

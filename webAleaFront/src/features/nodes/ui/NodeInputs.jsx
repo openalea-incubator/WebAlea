@@ -85,6 +85,10 @@ function getInputType(parsedInput) {
         return parsedInput.type;
     }
 
+    if (Array.isArray(parsedInput.enumOptions) && parsedInput.enumOptions.length > 0) {
+        return "enum";
+    }
+
     /**
      * Fallback: parse from interface name.
      * @returns {string} - The input type.
