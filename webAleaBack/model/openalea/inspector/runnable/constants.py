@@ -1,4 +1,5 @@
 """This module contains constants used in the runnable inspector."""
+from enum import Enum
 
 # ==============================
 # describe_openalea_package.py
@@ -32,3 +33,10 @@ INTERFACE_TO_FRONTEND_TYPE_MAP = {
     'IData': 'any',
     'None': 'any',
 }
+
+class NodeKind(Enum):
+    """Enumeration of possible node kinds."""
+    SIMPLE = "simple"
+    COMPOSITE = "composite"
+    PRESET = "preset"
+    UNKNOWN = "unknown"

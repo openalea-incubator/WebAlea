@@ -10,6 +10,12 @@ import sys
 from typing import Any, Dict
 
 from openalea.core.pkgmanager import PackageManager
+from openalea.core.node import AbstractFactory
+from openalea.core.compositenode import CompositeNodeFactory, CompositeNode
+from openalea.core.node import NodeFactory
+
+from constants import NodeKind
+
 
 from model.openalea.inspector.runnable.constants import (
     KNOWN_INTERFACES, INTERFACE_TO_FRONTEND_TYPE_MAP
@@ -234,6 +240,23 @@ def serialize_node_puts(puts) -> list:
 
     return serialized
 
+def detect_node_kind(node_factory: AbstractFactory) -> str:
+    """Detects the kind of node from its factory.
+
+    Args:
+        node_factory: the node factory
+
+    Returns:
+        str: the node kind ("composite" or "simple")
+    """
+    if node_factory.is_composite_node(): # composite node
+        return NodeKind.COMPOSITE.value
+    if not node_factory.inputs and not node_factory.outputs:
+        # if no inputs and no outputs, consider it as a preset node
+        return NodeKind.PRESET.value
+    if not node_factory.is_composite_node(): # simple node
+        return NodeKind.SIMPLE.value
+    return NodeKind.UNKNOWN.value
 
 def serialize_node(node_factory) -> dict:
     """describes a node from its factory
@@ -247,6 +270,11 @@ def serialize_node(node_factory) -> dict:
     Returns:
         dict: the node description
     """
+    node_kind = detect_node_kind(node_factory)
+
+    # only presets has implicit output
+    implicit_output = node_kind == NodeKind.PRESET.value
+
     # serialize node factory information
     inputs = serialize_node_puts(node_factory.inputs)
     outputs = serialize_node_puts(node_factory.outputs)
@@ -267,10 +295,12 @@ def serialize_node(node_factory) -> dict:
             logging.warning("Failed to inspect node instance ports: %s", e)
 
     return {
-        "description": node_factory.description,
-        "inputs": inputs,
-        "outputs": outputs,
-        "callable": node_factory.nodeclass,
+        "description": node_factory.description, # node description
+        "inputs": inputs, # node inputs
+        "outputs": outputs, # node outputs
+        "callable": node_factory.nodeclass, # node callable
+        "node_kind": node_kind,
+        "implicit_output": implicit_output,
     }
 
 
