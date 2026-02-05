@@ -67,6 +67,9 @@ export class Node {
             nodeName: data?.nodeName || label || null,
             callable: data?.callable || null,
             description: data?.description || '',
+            nodekind: data?.nodekind || "atomic",
+            graph: data?.graph || null,
+            implicit_output: data?.implicit_output ?? false,
         };
     }
 
@@ -99,6 +102,9 @@ export class Node {
                 nodeName: data.nodeName ?? null,
                 callable: data.callable ?? null,
                 description: data.description ?? '',
+                nodekind: data.nodekind ?? "atomic",
+                graph: data.graph ?? null,
+                implicit_output: data.implicit_output ?? false,
             },
         };
     }

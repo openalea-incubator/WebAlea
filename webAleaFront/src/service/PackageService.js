@@ -59,6 +59,8 @@ import {
  * @property {NodePort[]} inputs - Input ports
  * @property {NodePort[]} outputs - Output ports
  * @property {string|null} callable - Callable class path
+ * @property {string} [nodekind] - "atomic" | "composite"
+ * @property {Object|null} [graph] - Composite graph (if nodekind is composite)
  */
 
 // ============================================================================
@@ -397,7 +399,9 @@ export async function getNodesList(pkg) {
                 description: safeString(nodeData?.description),
                 inputs,
                 outputs,
-                callable: nodeData?.callable ?? null
+                callable: nodeData?.callable ?? null,
+                nodekind: safeString(nodeData?.nodekind, "atomic"),
+                graph: nodeData?.graph ?? null
             };
         });
 
