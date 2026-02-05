@@ -14,4 +14,3 @@ dependencies:
   - setuptools
   - openalea.core
   - openalea.plantgl
-  - openalea.weberpenn

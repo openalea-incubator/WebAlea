@@ -19,9 +19,3 @@ export async function fetchNodeScene({ nodeId = "123", visualizationData = {} } 
     });
 }
 
-export async function fetchWeberpennScene({ nodeId = "weberpenn-test" } = {}) {
-    return fetchJSON(`${API_BASE_URL_VISUALIZER}/visualize/weberpenn`, "POST", {
-        node_id: nodeId,
-        visualization_data: {}
-    });
-}

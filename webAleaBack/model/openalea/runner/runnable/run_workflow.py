@@ -127,24 +127,6 @@ def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
     logging.info("Node instantiated: %s", node)
 
     # 5. Inject inputs
-    if package_name == "weberpenn" and node_name == "weber and penn":
-        if "position" in inputs:
-            pos = inputs.get("position")
-            if pos is None:
-                inputs["position"] = [0.0, 0.0, 0.0]
-            elif isinstance(pos, (list, tuple)) and len(pos) == 3:
-                try:
-                    inputs["position"] = [float(pos[0]), float(pos[1]), float(pos[2])]
-                except Exception:
-                    inputs["position"] = [0.0, 0.0, 0.0]
-            else:
-                inputs["position"] = [0.0, 0.0, 0.0]
-
-        if "seed" in inputs:
-            seed = inputs.get("seed")
-            if not isinstance(seed, (int, float)):
-                inputs["seed"] = 42
-
     for key, value in inputs.items():
         try:
             value = resolve_value(value)

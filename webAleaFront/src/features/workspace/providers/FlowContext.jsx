@@ -189,6 +189,38 @@ export const FlowProvider = ({ children }) => {
      */
     const compositeMappingsRef = useRef([]);
     const compositeMappingByIdRef = useRef(new Map());
+    const applyInputFallbacks = useCallback((nodesToProcess) => {
+        return (nodesToProcess || []).map(node => {
+            if (!Array.isArray(node?.data?.inputs)) return node;
+            let changed = false;
+            const nextInputs = node.data.inputs.map(input => {
+                const hasValue = input.value !== undefined && input.value !== null;
+                if (hasValue) return input;
+
+                if (input.default !== undefined && input.default !== null) {
+                    changed = true;
+                    return { ...input, value: input.default };
+                }
+
+                const type = (input.type || "").toLowerCase();
+                let fallback;
+                if (type === "float" || type === "int") fallback = 0;
+                else if (type === "boolean") fallback = false;
+                else if (type === "string") fallback = "";
+                else if (type === "array") fallback = [];
+                else if (type === "object" || type === "dict") fallback = {};
+                else if (type === "enum") fallback = input.enumOptions?.[0] ?? "";
+                else if (type === "any") fallback = "";
+                else fallback = null;
+
+                if (fallback === null) return input;
+                changed = true;
+                return { ...input, value: fallback, _autoFallbackApplied: true };
+            });
+            if (!changed) return node;
+            return { ...node, data: { ...node.data, inputs: nextInputs } };
+        });
+    }, []);
 
     /**
      * Aggregate and propagate composite runtime state from internal node states.
@@ -249,7 +281,8 @@ export const FlowProvider = ({ children }) => {
         const { nodes: expandedNodes, edges: expandedEdges, mappings } = expandComposites(nodes, edges, 8);
         compositeMappingsRef.current = mappings;
         compositeMappingByIdRef.current = new Map(mappings.map(m => [m.compositeId, m]));
-        const { graph, edges: customEdges } = buildGraphModel(expandedNodes, expandedEdges);
+        const preparedNodes = applyInputFallbacks(expandedNodes);
+        const { graph, edges: customEdges } = buildGraphModel(preparedNodes, expandedEdges);
 
         console.log("Executing workflow with:", {
             nodes: graph.length,
@@ -269,7 +302,7 @@ export const FlowProvider = ({ children }) => {
         recomputeCompositeState();
 
         return result;
-    }, [nodes, edges, engine, addLog, updateCompositeOutputs, recomputeCompositeState]);
+    }, [nodes, edges, engine, addLog, updateCompositeOutputs, recomputeCompositeState, applyInputFallbacks]);
 
     /**
      * Stop the workflow execution
@@ -281,11 +314,168 @@ export const FlowProvider = ({ children }) => {
     /**
      * Execute a single node manually
      */
+    const executeCompositeNode = useCallback(async (compositeNode) => {
+        if (!compositeNode?.data?.graph) {
+            addLog("Composite execution failed: missing internal graph", { id: compositeNode?.id });
+            updateNodeStatus(compositeNode?.id, NodeState.ERROR);
+            return;
+        }
+
+        updateNodeStatus(compositeNode.id, NodeState.RUNNING);
+        updateNode(compositeNode.id, { missingInputs: [] });
+        addLog("Composite execution started", { id: compositeNode.id });
+
+        try {
+            // Expand the composite into its internal graph (supports nested composites)
+            const { nodes: expandedNodes, edges: expandedEdges, mappings } =
+                expandComposites([compositeNode], [], 8);
+
+            const topMapping = mappings.find(m => m.compositeId === compositeNode.id);
+            if (!topMapping) {
+                throw new Error("Composite expansion failed (no mapping found).");
+            }
+
+            // Inject composite input values into internal nodes
+            const compositeInputs = compositeNode.data.inputs || [];
+            const inputValueById = new Map(
+                compositeInputs.map(input => [input.id, input.value ?? input.default])
+            );
+
+            const internalInputValues = new Map();
+            topMapping.inputMap?.forEach((mapped, compositeInputId) => {
+                const value = inputValueById.get(compositeInputId);
+                if (value === undefined) return;
+                const internalId = `${compositeNode.id}::${mapped.nodeId}`;
+                if (!internalInputValues.has(internalId)) {
+                    internalInputValues.set(internalId, new Map());
+                }
+                internalInputValues.get(internalId).set(mapped.handleId, value);
+            });
+
+            const injectedNodes = expandedNodes.map(node => {
+                const updates = internalInputValues.get(node.id);
+                if (!updates || !Array.isArray(node?.data?.inputs)) return node;
+
+                const nextInputs = node.data.inputs.map(input => {
+                    if (!updates.has(input.id)) return input;
+                    return { ...input, value: updates.get(input.id) };
+                });
+
+                return {
+                    ...node,
+                    data: { ...node.data, inputs: nextInputs }
+                };
+            });
+
+            // Propagate primitive values to custom node inputs (simulate CustomHandle behavior)
+            const nodeById = new Map(injectedNodes.map(n => [n.id, n]));
+            const withPrimitiveValues = injectedNodes.map(node => {
+                if (node.type !== NodeType.CUSTOM || !Array.isArray(node?.data?.inputs)) return node;
+
+                const incomingEdges = expandedEdges.filter(e => e.target === node.id);
+                if (incomingEdges.length === 0) return node;
+
+                let inputsChanged = false;
+                const nextInputs = node.data.inputs.map(input => {
+                    const edge = incomingEdges.find(e => e.targetHandle === input.id);
+                    if (!edge) return input;
+
+                    const sourceNode = nodeById.get(edge.source);
+                    if (!sourceNode || sourceNode.type === NodeType.CUSTOM) return input;
+
+                    const sourceOutputs = sourceNode.data?.outputs || [];
+                    const sourceOutput =
+                        sourceOutputs.find(o => o.id === edge.sourceHandle) ||
+                        sourceOutputs[0];
+                    const sourceValue = sourceOutput?.value;
+
+                    if (sourceValue === undefined || sourceValue === null) return input;
+                    if (input.value !== undefined && input.value !== null) return input;
+
+                    inputsChanged = true;
+                    return { ...input, value: sourceValue };
+                });
+
+                if (!inputsChanged) return node;
+                return { ...node, data: { ...node.data, inputs: nextInputs } };
+            });
+
+            // Fill missing inputs with defaults or type-based fallbacks
+            const withDefaultInputs = applyInputFallbacks(withPrimitiveValues);
+
+            const { graph, edges: customEdges } = buildGraphModel(withDefaultInputs, expandedEdges);
+
+            const compositeEngine = new WorkflowEngine();
+            compositeEngine.bindModel(graph, customEdges);
+            const result = await compositeEngine.start();
+
+            if (result?.results) {
+                const mappingById = new Map(mappings.map(m => [m.compositeId, m]));
+                const outputs = (compositeNode.data.outputs || []).map(output => {
+                    const resolved = resolveCompositeOutput(
+                        result.results,
+                        topMapping,
+                        output.id,
+                        mappingById
+                    );
+                    if (!resolved) return output;
+                    return { ...output, value: resolved.value, type: resolved.type || output.type };
+                });
+
+                updateNode(compositeNode.id, { outputs });
+            }
+
+            if (!result?.success) {
+                const missing = Array.isArray(result?.errors)
+                    ? result.errors.filter(e => e?.type === "UNCONNECTED_INPUT")
+                    : [];
+
+                if (missing.length > 0) {
+                    updateNode(compositeNode.id, { missingInputs: missing });
+                    console.warn("Composite missing inputs:", missing);
+                    addLog("Composite missing inputs", {
+                        id: compositeNode.id,
+                        count: missing.length,
+                        inputs: missing.map(m => m.message)
+                    });
+                }
+
+                addLog("Composite execution failed", {
+                    id: compositeNode.id,
+                    error: result?.error,
+                    errors: result?.errors,
+                    warnings: result?.warnings
+                });
+                console.warn("Composite execution failed:", {
+                    id: compositeNode.id,
+                    error: result?.error,
+                    errors: result?.errors,
+                    warnings: result?.warnings
+                });
+            }
+
+            updateNodeStatus(compositeNode.id, result?.success ? NodeState.COMPLETED : NodeState.ERROR);
+            addLog("Composite execution completed", {
+                id: compositeNode.id,
+                success: result?.success ?? false
+            });
+        } catch (error) {
+            console.error("Composite execution error:", error);
+            updateNodeStatus(compositeNode.id, NodeState.ERROR);
+            addLog("Composite execution error", { id: compositeNode.id, error: error?.message });
+        }
+    }, [addLog, updateNode, updateNodeStatus]);
+
     const onNodeExecute = useCallback((nodeId) => {
         const currentNodes = nodesRef.current;
         const curNode = currentNodes.find(n => n.id === nodeId);
         if (!curNode) {
             console.warn("Node not found for execution:", nodeId);
+            return;
+        }
+
+        if (curNode?.data?.nodekind === "composite") {
+            executeCompositeNode(curNode);
             return;
         }
 
@@ -305,7 +495,7 @@ export const FlowProvider = ({ children }) => {
             packageName: formNode.packageName,
             nodeName: formNode.nodeName
         });
-    }, [engine, addLog]);
+    }, [engine, addLog, executeCompositeNode]);
 
     const nodesTypes = useMemo(() => ({
         [NodeType.CUSTOM]: CustomNode,
