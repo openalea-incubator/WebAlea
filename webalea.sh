@@ -8,8 +8,21 @@ if [ "$ARG" == "start" ]; then
     docker compose build
     docker compose up -d
 
-    # Give Docker a moment to settle
-    sleep 1
+    # Wait until backend is ready to accept API calls
+    MAX_RETRIES=180
+    RETRY=0
+    echo ""
+    echo "Waiting for backend readiness on http://localhost:8000/health ..."
+    until curl -fsS --max-time 2 http://localhost:8000/health >/dev/null; do
+        RETRY=$((RETRY + 1))
+        if [ "$RETRY" -ge "$MAX_RETRIES" ]; then
+            echo "Backend did not become ready in time."
+            echo "You can inspect logs with: docker logs webalea-backend-1"
+            exit 1
+        fi
+        sleep 2
+    done
+    echo "Backend is ready."
 
     # Show the running services and their published localhost addresses
     echo ""

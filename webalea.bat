@@ -9,8 +9,11 @@ IF "%ARG%"=="start" (
     docker compose build
     docker compose up -d
 
-    REM Give Docker a moment to settle
-    timeout /t 1 >nul
+    REM Wait until backend is ready to accept API calls
+    call :wait_backend
+    if errorlevel 1 (
+        EXIT /B 1
+    )
 
     REM Show the running services and their published localhost addresses
     ECHO.
@@ -51,3 +54,27 @@ IF "%ARG%"=="start" (
 )
 
 ENDLOCAL
+goto :eof
+
+:wait_backend
+SET MAX_RETRIES=180
+SET RETRY=0
+ECHO.
+ECHO Waiting for backend readiness on http://localhost:8000/health ...
+
+:WAIT_BACKEND_LOOP
+powershell -NoProfile -Command "try { $r=Invoke-WebRequest -Uri 'http://localhost:8000/health' -UseBasicParsing -TimeoutSec 2; if ($r.StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }"
+IF !ERRORLEVEL! EQU 0 (
+    ECHO Backend is ready.
+    exit /b 0
+)
+
+SET /A RETRY+=1
+IF !RETRY! GEQ !MAX_RETRIES! (
+    ECHO Backend did not become ready in time.
+    ECHO You can inspect logs with: docker logs webalea-backend-1
+    exit /b 1
+)
+
+timeout /t 2 >nul
+GOTO WAIT_BACKEND_LOOP

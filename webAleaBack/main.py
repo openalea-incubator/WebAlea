@@ -54,3 +54,9 @@ def read_root():
         "message": f"Welcome to {settings.PROJECT_NAME}!",
         "available_routes": routes
     }
+
+
+@webAleaBack.get("/health")
+def health():
+    """Lightweight health endpoint for startup/readiness checks."""
+    return {"status": "ok"}
