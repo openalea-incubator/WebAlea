@@ -24,8 +24,21 @@ export default function NodeInputFloat({ inputName, value = 0, onChange, disable
     const handleChange = (e) => {
         const newValue = e.target.value;
         setInternalValue(newValue);
-        if (onChange) {
-            onChange(parseFloat(newValue) || 0);
+        if (!onChange) return;
+        if (newValue === "" || newValue === "-" || newValue === "." || newValue === "-.") {
+            return;
+        }
+        const parsed = Number(newValue);
+        if (!Number.isNaN(parsed)) {
+            onChange(parsed);
+        }
+    };
+
+    const handleBlur = () => {
+        if (!onChange) return;
+        if (internalValue === "" || internalValue === "-" || internalValue === "." || internalValue === "-.") {
+            setInternalValue(0);
+            onChange(0);
         }
     };
 
@@ -39,6 +52,7 @@ export default function NodeInputFloat({ inputName, value = 0, onChange, disable
                 value={internalValue}
                 placeholder="0.0"
                 onChange={handleChange}
+                onBlur={handleBlur}
                 disabled={disabled}
             />
         </div>

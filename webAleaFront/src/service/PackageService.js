@@ -30,7 +30,11 @@ import {
 
 /**
  * @typedef {Object} VisualPackage
- * @property {string} name - Package name
+ * @property {string} name - Canonical package name (used for backward compatibility)
+ * @property {string} packageName - Canonical package name for node inspection
+ * @property {string} installName - Distribution/conda package name for installation
+ * @property {string} entryName - wralea entry-point name
+ * @property {string} distName - Python distribution name if available
  * @property {string} module - Module path for wralea entry point
  */
 
@@ -239,11 +243,23 @@ export async function getVisualPackagesList() {
         const wraleaPackages = safeArray(response?.wralea_packages);
 
         return wraleaPackages
-            .map(pkg => ({
-                name: safeString(pkg?.name),
-                module: safeString(pkg?.module)
-            }))
-            .filter(pkg => pkg.name); // Remove entries with empty names
+            .map(pkg => {
+                const row = typeof pkg === "string" ? { name: pkg } : (pkg || {});
+                const packageName = safeString(row.package_name || row.name);
+                const installName = safeString(row.install_name || row.dist_name || packageName);
+                const entryName = safeString(row.entry_name || row.name || packageName);
+
+                return {
+                    // Keep "name" for compatibility with existing tree builder.
+                    name: packageName,
+                    packageName,
+                    installName,
+                    entryName,
+                    distName: safeString(row.dist_name),
+                    module: safeString(row.module)
+                };
+            })
+            .filter(pkg => pkg.packageName); // Remove entries with empty names
 
     } catch (error) {
         console.error("getVisualPackagesList: Error fetching visual packages:", error);
@@ -361,19 +377,39 @@ export async function getNodesList(pkg) {
             return [];
         }
 
-        // Check if package is installed, install if needed
-        const isInstalled = await isInstalledPackage(pkg.name);
-        if (!isInstalled) {
-            console.log(`getNodesList: Package "${pkg.name}" not installed. Installing...`);
-            const installResult = await installPackage(pkg);
-            if (!installResult.success) {
-                console.error(`getNodesList: Failed to install package "${pkg.name}"`, installResult.failed);
-                return [];
-            }
-        }
+        const packageName = safeString(pkg.packageName || pkg.name);
+        const installName = safeString(pkg.installName || packageName);
+        let response = null;
 
-        // Fetch nodes from backend
-        const response = await fetchPackageNodes(pkg.name);
+        // Try to fetch nodes first; many packages are already installed under an alias.
+        try {
+            response = await fetchPackageNodes(packageName);
+        } catch (fetchError) {
+            // Install as fallback only if package is effectively absent.
+            const isInstalled = await isInstalledPackage(packageName);
+            if (!isInstalled) {
+                console.log(
+                    `getNodesList: Package "${packageName}" not installed. Installing "${installName}"...`
+                );
+                const installResult = await installPackage({
+                    name: installName,
+                    version: pkg.version || null
+                });
+                if (!installResult.success) {
+                    console.error(
+                        `getNodesList: Failed to install package "${installName}"`,
+                        installResult.failed
+                    );
+                    return [];
+                }
+            } else {
+                console.warn(
+                    `getNodesList: Package "${packageName}" seems installed but node fetch failed once. Retrying...`
+                );
+            }
+
+            response = await fetchPackageNodes(packageName);
+        }
 
         // Backend returns: {package_name: "...", nodes: {nodeName: {...}}, has_wralea: bool}
         if (!response || typeof response !== "object") {

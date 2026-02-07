@@ -154,6 +154,7 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
             return;
         }
         const fullPackageName = packageNode ? getFullPackageName(packageNode) : packageId;
+        const installName = packageNode?.installName || packageNode?.distName || fullPackageName;
 
         // Check if already loaded or loading
         if (loadedPackages.has(fullPackageName) || loadingPackage === fullPackageName) {
@@ -163,7 +164,11 @@ export default function PanelModuleNode({ onAddNode, version, treeItems, setTree
         setLoadingPackage(fullPackageName);
 
         try {
-            const packageNodes = await getNodesList({ name: fullPackageName });
+            const packageNodes = await getNodesList({
+                name: fullPackageName,
+                packageName: fullPackageName,
+                installName,
+            });
 
             const nodeItems = packageNodes.map(node => ({
                 id: `${fullPackageName}::${node.name}`,

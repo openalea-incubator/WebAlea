@@ -5,6 +5,34 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { buildObjectNode, applyAnimation } from "./SceneFactory";
 import { lightFromJSON } from "./factories/lightFactory";
 
+function buildFloat32Array(points) {
+    const count = points.length * 3;
+    const array = new Float32Array(count);
+    let offset = 0;
+    for (let i = 0; i < points.length; i += 1) {
+        const p = points[i];
+        array[offset] = p[0];
+        array[offset + 1] = p[1];
+        array[offset + 2] = p[2];
+        offset += 3;
+    }
+    return array;
+}
+
+function buildUint32Array(indices) {
+    const count = indices.length * 3;
+    const array = new Uint32Array(count);
+    let offset = 0;
+    for (let i = 0; i < indices.length; i += 1) {
+        const tri = indices[i];
+        array[offset] = tri[0];
+        array[offset + 1] = tri[1];
+        array[offset + 2] = tri[2];
+        offset += 3;
+    }
+    return array;
+}
+
 /**
  * Builds a Three.js scene from a JSON description.
  * @param {object} sceneJSON 
@@ -93,11 +121,11 @@ export function buildSceneFromJSON(sceneJSON, mountRef) {
             const geometries = [];
             group.items.forEach(meshJSON => {
                 const geometry = new THREE.BufferGeometry();
-                const vertices = new Float32Array(meshJSON.geometry.vertices.flat());
+                const vertices = buildFloat32Array(meshJSON.geometry.vertices || []);
                 geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 
                 if (meshJSON.geometry.indices) {
-                    const indices = new Uint32Array(meshJSON.geometry.indices.flat());
+                    const indices = buildUint32Array(meshJSON.geometry.indices || []);
                     geometry.setIndex(new THREE.BufferAttribute(indices, 1));
                 }
 

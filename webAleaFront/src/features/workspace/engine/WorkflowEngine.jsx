@@ -32,6 +32,7 @@ export class WorkflowEngine {
         this.graph = [];
         this.edges = [];
         this.dependencyTracker = null;
+        this.currentRunId = 0;
 
         // Execution state
         this.running = false;
@@ -110,6 +111,8 @@ export class WorkflowEngine {
         // Initialize execution state
         this.running = true;
         this.abortController = new AbortController();
+        this.currentRunId += 1;
+        const runId = this.currentRunId;
         this.reset();
         this.dependencyTracker = new DependencyTracker(this.graph, this.edges);
 
@@ -135,10 +138,15 @@ export class WorkflowEngine {
             }
 
             // Execute initial ready nodes in parallel
-            await this._executeReadyNodes(initialReady);
+            await this._executeReadyNodes(initialReady, runId);
 
             // Wait for all nodes to complete
             await this._waitForAllNodes();
+
+            // Stop requested: do not emit workflow-done
+            if (!this.running || this.abortController?.signal?.aborted || runId !== this.currentRunId) {
+                return { success: false, cancelled: true, error: "Workflow stopped" };
+            }
 
             // Check for unfinished nodes (cycles or skipped)
             const unfinished = [...this.nodeStates.entries()]
@@ -161,6 +169,9 @@ export class WorkflowEngine {
             return { success: !hasErrors, results: this.results };
 
         } catch (error) {
+            if (this._isAbortError(error) || !this.running) {
+                return { success: false, cancelled: true, error: "Workflow stopped" };
+            }
             console.error("WorkflowEngine: Workflow failed:", error);
             this._emit("workflow-error", { error: error.message });
             return { success: false, error: error.message };
@@ -204,15 +215,35 @@ export class WorkflowEngine {
      * Execute one node manually
      */
     async executeNodeManual(node) {
+        this._setNodeState(node.id, NodeState.RUNNING);
         this._emit("node-start", { id: node.id, label: node.label });
 
         try {
-            const outputs = await this._executeViaBackend(node, node.inputs || []);
+            let outputs;
+            if (node.packageName && node.nodeName) {
+                outputs = await this._executeViaBackend(node, node.inputs || []);
+            } else {
+                // Primitive/local node: return current outputs as execution result
+                outputs = (node.outputs || []).map((output, index) => ({
+                    index,
+                    name: output.name || `output_${index}`,
+                    value: output.value,
+                    type: output.type || DataType.ANY
+                }));
+            }
+
+            this.results[node.id] = outputs;
+            this._setNodeState(node.id, NodeState.COMPLETED);
             console.log(`WorkflowEngine: Manually executed ${node.id} (${node.label}) with outputs:`, outputs);
             this._emit("node-result", { id: node.id, result: outputs });
-            this._emit("node-done", { id: node.id });
+            this._emit("node-done", { id: node.id, label: node.label });
             return outputs;
         } catch (error) {
+            if (this._isAbortError(error)) {
+                this._setNodeState(node.id, NodeState.CANCELLED);
+            } else {
+                this._setNodeState(node.id, NodeState.ERROR);
+            }
             this._emit("node-error", { id: node.id, error: error.message });
             throw error;
         }
@@ -226,8 +257,8 @@ export class WorkflowEngine {
      * Execute all ready nodes in parallel
      * @param {Array} readyNodeIds - List of node IDs ready to execute
      */
-    async _executeReadyNodes(readyNodeIds) {
-        const executions = readyNodeIds.map(nodeId => this._executeNode(nodeId));
+    async _executeReadyNodes(readyNodeIds, runId = this.currentRunId) {
+        const executions = readyNodeIds.map(nodeId => this._executeNode(nodeId, runId));
         await Promise.allSettled(executions);
     }
 
@@ -243,7 +274,7 @@ export class WorkflowEngine {
      * Executes a single node
      * @param {string} nodeId - ID of the node to execute
      */
-    async _executeNode(nodeId) {
+    async _executeNode(nodeId, runId = this.currentRunId) {
         // Create a promise for this node's execution : will be resolved/rejected later
         const nodePromise = new Promise((resolve, reject) => {
             this.nodeResolvers.set(nodeId, { resolve, reject });
@@ -251,7 +282,7 @@ export class WorkflowEngine {
         this.executionPromises.set(nodeId, nodePromise);
 
         try {
-            if (!this.running) {
+            if (!this.running || runId !== this.currentRunId || this.abortController?.signal?.aborted) {
                 throw new Error("Workflow stopped");
             }
 
@@ -284,6 +315,11 @@ export class WorkflowEngine {
                 }));
             }
 
+            // Ignore late backend responses after stop/restart
+            if (!this.running || runId !== this.currentRunId || this.abortController?.signal?.aborted) {
+                throw new Error("Workflow stopped");
+            }
+
             this.results[nodeId] = outputs;
 
             // Mark as completed
@@ -301,12 +337,21 @@ export class WorkflowEngine {
             if (newlyReady.length > 0 && this.running) {
                 console.log(`WorkflowEngine: Nodes now ready after ${nodeId}:`, newlyReady);
                 // Execute newly ready nodes in parallel.
-                await this._executeReadyNodes(newlyReady);
+                await this._executeReadyNodes(newlyReady, runId);
             }
 
             return outputs;
 
         } catch (error) {
+            if (this._isAbortError(error) || !this.running || runId !== this.currentRunId) {
+                if (this.nodeStates.get(nodeId) !== NodeState.CANCELLED) {
+                    this._setNodeState(nodeId, NodeState.CANCELLED);
+                }
+                const resolver = this.nodeResolvers.get(nodeId);
+                if (resolver) resolver.resolve(null);
+                return null;
+            }
+
             console.error(`WorkflowEngine: Node ${nodeId} failed:`, error);
 
             // Mark as error
@@ -356,7 +401,8 @@ export class WorkflowEngine {
             nodeId: node.id,
             packageName: node.packageName,
             nodeName: node.nodeName,
-            inputs: preparedInputs
+            inputs: preparedInputs,
+            signal: this.abortController?.signal
         });
 
         if (response.success) {
@@ -364,6 +410,13 @@ export class WorkflowEngine {
         } else {
             throw new Error(response.error || `Execution failed for ${node.id}`);
         }
+    }
+
+    _isAbortError(error) {
+        return (
+            error?.name === "AbortError" ||
+            error?.message === "Workflow stopped"
+        );
     }
 
     /**

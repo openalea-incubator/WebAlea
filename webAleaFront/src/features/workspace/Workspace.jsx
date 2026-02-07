@@ -66,7 +66,6 @@ export default function WorkSpace() {
         onNodeContextMenu={handleNodeContextMenu}
         onPaneClick={handlePaneClick}
       >
-        <MiniMap />
         <Controls />
         <Background gap={12} color="#aaa" />
       </ReactFlow>

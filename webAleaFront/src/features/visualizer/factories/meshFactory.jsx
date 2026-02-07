@@ -9,11 +9,29 @@ import * as THREE from "three";
  */
 export function meshFromJSON(meshJSON) {
     const geometry = new THREE.BufferGeometry();
-    const vertices = new Float32Array(meshJSON.geometry.vertices.flat());
+    const points = meshJSON.geometry.vertices || [];
+    const vertices = new Float32Array(points.length * 3);
+    let offset = 0;
+    for (let i = 0; i < points.length; i += 1) {
+        const p = points[i];
+        vertices[offset] = p[0];
+        vertices[offset + 1] = p[1];
+        vertices[offset + 2] = p[2];
+        offset += 3;
+    }
     geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 
     if (meshJSON.geometry.indices) {
-        const indices = new Uint32Array(meshJSON.geometry.indices.flat());
+        const faces = meshJSON.geometry.indices || [];
+        const indices = new Uint32Array(faces.length * 3);
+        offset = 0;
+        for (let i = 0; i < faces.length; i += 1) {
+            const tri = faces[i];
+            indices[offset] = tri[0];
+            indices[offset + 1] = tri[1];
+            indices[offset + 2] = tri[2];
+            offset += 3;
+        }
         geometry.setIndex(new THREE.BufferAttribute(indices, 1));
     }
 

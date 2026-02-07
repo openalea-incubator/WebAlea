@@ -10,7 +10,8 @@ import { useFlow } from './features/workspace/providers/FlowContextDefinition.js
 
 /**
  * App - The main application component that structures the WebAlea interface.
- * It includes the header, main workspace area, sidebar, node detail section, and footer.
+ * It includes a unified top bar (title + toolbar), main workspace area,
+ * sidebar, node detail section, and footer.
  * The component manages the state of the node detail section visibility based on the selected node.
  */
 export default function App() {
@@ -28,16 +29,16 @@ export default function App() {
 
     return (
         <div className="app-container">
-            {/* HEADER */}
-            <header className="app-header">
-                <h1>WebAlea</h1>
-            </header>
-
             {/* MAIN */}
             <main className="app-main">
-                {/* Toolbar */}
-                <div className="toolbar-row">
-                    <ToolBar />
+                {/* Unified Top Bar */}
+                <div className="app-topbar">
+                    <div className="app-brand">
+                        <h1>WebAlea</h1>
+                    </div>
+                    <div className="app-toolbar-container">
+                        <ToolBar compact />
+                    </div>
                 </div>
 
                 {/* Content */}
@@ -85,7 +86,7 @@ export default function App() {
 
             {/* FOOTER */}
             <footer className="app-footer">
-                © 2026 WebAlea — All rights reserved.
+                (c) 2026 WebAlea - All rights reserved.
             </footer>
         </div>
     );

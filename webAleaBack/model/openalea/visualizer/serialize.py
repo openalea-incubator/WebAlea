@@ -7,6 +7,7 @@ from openalea.plantgl.all import (
 )
 from model.openalea.visualizer.plantgl import mesh_from_geometry
 import uuid
+import logging
 
 
 def serialize_color(color):
@@ -42,8 +43,10 @@ def serialize_shape(shape: Shape):
 
 def serialize_scene(scene: Scene):
     objects = []
+    shape_count = 0
 
     for shape in scene:
+        shape_count += 1
         if isinstance(shape.geometry, Text):
             pos = shape.geometry.position
             objects.append({
@@ -56,6 +59,7 @@ def serialize_scene(scene: Scene):
 
         objects.append(serialize_shape(shape))
 
+    logging.info("serialize_scene done shape_count=%s object_count=%s", shape_count, len(objects))
     return {
         "objects": objects
     }
