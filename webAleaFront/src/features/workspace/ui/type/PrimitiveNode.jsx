@@ -72,7 +72,6 @@ export default function PrimitiveNode({
     const handleBlur = () => {
         const validatedValue = validateValue(value);
         setValue(validatedValue);
-        updateNode(id, { outputs: [{ value: validatedValue }] });
     };
 
     // Style constants

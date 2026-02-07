@@ -41,7 +41,8 @@ export class WorkflowValidator {
                     e.target === node.id && e.targetHandle === input.id
                 );
                 const hasValue = input.value !== undefined && input.value !== null;
-                const isOptional = input.optional === true;
+                const hasDefault = Object.prototype.hasOwnProperty.call(input, "default");
+                const isOptional = input.optional === true || hasDefault;
 
                 if (!isConnected && !hasValue && !isOptional) {
                     errors.push({

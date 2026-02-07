@@ -19,7 +19,7 @@ import { getPackagesList, installPackage } from '../../../../service/PackageServ
  * @param {function} setFilteredPackages - The function to set the filtered packages.
  * @param {boolean} loading - The loading state.
  * @param {function} setLoading - The function to set the loading state.
- * @param {string} installing - The package that is being installed.
+ * @param {Set<string>} installing - The packages currently being installed.
  * @param {function} setInstalling - The function to set the installing state.
  * @param {Set} installedPackages - The installed packages.
  * @param {function} setInstalledPackages - The function to set the installed packages.
@@ -30,12 +30,10 @@ import { getPackagesList, installPackage } from '../../../../service/PackageServ
  * @returns {React.ReactNode} - The PanelInstallPackage component.
  */
 export default function PanelInstallPackage({ onPackageInstalled, packages, setPackages, filteredPackages, setFilteredPackages, loading, setLoading, installing, setInstalling, installedPackages, setInstalledPackages, searchTerm, setSearchTerm, snackbar, setSnackbar }) {
-
     /**
      * Use effect to fetch the packages.
      */
     useEffect(() => {
-
         if (packages.length > 0) {
             setLoading(false);
             return;
@@ -55,7 +53,7 @@ export default function PanelInstallPackage({ onPackageInstalled, packages, setP
             }
         }
         fetchPackages();
-    }, []);
+    }, [packages, setLoading, setPackages, setFilteredPackages, setSnackbar]);
 
     /**
      * Use effect to filter the packages.
@@ -69,19 +67,20 @@ export default function PanelInstallPackage({ onPackageInstalled, packages, setP
             );
             setFilteredPackages(filtered);
         }
-    }, [searchTerm, packages]);
+    }, [searchTerm, packages, setFilteredPackages]);
 
     /**
      * Handles package installation.
      * NOTE: We don't pass the version to let conda auto-resolve to a Python-compatible version.
      */
     const handleInstall = useCallback(async (pkg) => {
-        setInstalling(pkg.name);
+        const packageKey = pkg.name.toLowerCase();
+        setInstalling(prev => new Set([...prev, packageKey]));
         try {
             const result = await installPackage({ name: pkg.name });
 
             if (result.success) {
-                setInstalledPackages(prev => new Set([...prev, pkg.name]));
+                setInstalledPackages(prev => new Set([...prev, pkg.name.toLowerCase()]));
                 setSnackbar({
                     open: true,
                     message: `${pkg.name} installed successfully!`,
@@ -113,9 +112,13 @@ export default function PanelInstallPackage({ onPackageInstalled, packages, setP
                 severity: 'error'
             });
         } finally {
-            setInstalling(null);
+            setInstalling(prev => {
+                const next = new Set(prev);
+                next.delete(packageKey);
+                return next;
+            });
         }
-    }, [onPackageInstalled]);
+    }, [onPackageInstalled, setInstalling, setInstalledPackages, setSnackbar]);
 
     const handleCloseSnackbar = () => {
         setSnackbar(prev => ({ ...prev, open: false }));
@@ -158,8 +161,9 @@ export default function PanelInstallPackage({ onPackageInstalled, packages, setP
             <div className="panel-scrollable">
                 <div className="package-list">
                     {filteredPackages.map((pkg) => {
-                        const isInstalling = installing === pkg.name;
-                        const isInstalled = installedPackages.has(pkg.name);
+                        const packageKey = pkg.name.toLowerCase();
+                        const isInstalling = installing.has(packageKey);
+                        const isInstalled = installedPackages.has(packageKey);
 
                         return (
                             <div

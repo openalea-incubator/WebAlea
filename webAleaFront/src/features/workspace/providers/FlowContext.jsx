@@ -197,7 +197,7 @@ export const FlowProvider = ({ children }) => {
                 const hasValue = input.value !== undefined && input.value !== null;
                 if (hasValue) return input;
 
-                if (input.default !== undefined && input.default !== null) {
+                if (Object.prototype.hasOwnProperty.call(input, "default")) {
                     changed = true;
                     return { ...input, value: input.default };
                 }

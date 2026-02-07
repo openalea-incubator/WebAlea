@@ -118,7 +118,7 @@ function StatusIndicator({ status }) {
  *
  * @returns {React.ReactNode} - The ToolBar component.
  */
-export default function ToolBar() {
+export default function ToolBar({ compact = false }) {
     const [showImportModal, setShowImportModal] = useState(false);
     const [showExportModal, setShowExportModal] = useState(false);
     const {
@@ -415,9 +415,13 @@ export default function ToolBar() {
     // RENDER
     // =========================================================================
 
+    const toolbarLayoutClass = compact
+        ? "row m-0 gx-2 align-items-center toolbar-row-compact"
+        : "row mb-4 px-4 align-items-center";
+
     return (
         <>
-            <div className="row mb-4 px-4 align-items-center">
+            <div className={toolbarLayoutClass}>
                 {/* Left Button : Export/Import/Info */}
                 <div className="col-md-4 d-flex gap-2 mb-2 mb-md-0">
                     <ButtonToolBar

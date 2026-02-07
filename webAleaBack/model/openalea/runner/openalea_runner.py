@@ -53,12 +53,40 @@ class OpenAleaRunner:
             # Log stderr if any (for debugging)
             if result.stderr:
                 logging.warning("Subprocess stderr: %s", result.stderr)
+            if result.stdout:
+                logging.info("Subprocess stdout length: %d", len(result.stdout))
 
             # Parse stdout as JSON
             if result.stdout:
                 try:
                     response = json.loads(result.stdout)
-                    logging.info("OpenAleaRunner: Execution result: %s", response)
+                    outputs = response.get("outputs", [])
+                    output_summary = [
+                        {
+                            "index": out.get("index"),
+                            "name": out.get("name"),
+                            "type": out.get("type"),
+                            "sceneRef": (
+                                out.get("value", {}).get("__ref__")
+                                if isinstance(out.get("value"), dict)
+                                and out.get("value", {}).get("__type__") in {"plantgl_scene_ref", "plantgl_scene_json_ref"}
+                                else None
+                            ),
+                            "sceneShapeCount": (
+                                out.get("value", {}).get("__meta__", {}).get("shape_count")
+                                if isinstance(out.get("value"), dict)
+                                and out.get("value", {}).get("__type__") in {"plantgl_scene_ref", "plantgl_scene_json_ref"}
+                                else None
+                            )
+                        }
+                        for out in outputs
+                    ] if isinstance(outputs, list) else []
+                    logging.info(
+                        "OpenAleaRunner: Execution result success=%s outputs=%s error=%s",
+                        response.get("success"),
+                        output_summary,
+                        response.get("error")
+                    )
                     return response
                 except json.JSONDecodeError as e:
                     logging.error("Failed to decode JSON response: %s", e)

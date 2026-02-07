@@ -19,7 +19,7 @@ function parseInput(input, index) {
     let parsedInterface = input.interface || "None";
     let parsedType = input.type || null;
     let parsedValue = input.value ?? input.default;
-    let enumOptions = input.enumOptions || null;
+    let enumOptions = input.enumOptions || input.enum_options || null;
 
     // Fallback: Check if name contains a dict-like string (legacy/cached data)
     if (input.name && typeof input.name === 'string' && input.name.startsWith("{")) {

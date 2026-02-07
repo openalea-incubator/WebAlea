@@ -67,10 +67,8 @@ export default function NodeParameters() {
     const handleArrayInputNameChange = (inputId, newName) => {
         if (!node) return;
         const nextName = newName ?? "";
-        let previousName = "";
         const updatedInputs = (inputs ?? []).map((input) => {
             if (input.id === inputId) {
-                previousName = input.name || "";
                 if (isDictNode && nextName.trim() === "") {
                     return input;
                 }
@@ -184,7 +182,6 @@ export default function NodeParameters() {
                 </h6>
             </div>
 
-            {/* --- PARAMETERS with scrollbox --- */}
             <div
                 style={{
                     flex: 1,

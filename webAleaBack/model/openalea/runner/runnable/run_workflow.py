@@ -3,16 +3,21 @@ import json
 import sys
 import logging
 import os
-import pickle
-import uuid
+
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
+if ROOT_DIR not in sys.path:
+    sys.path.append(ROOT_DIR)
+
+from model.openalea.cache.object_cache import (
+    cache_store,
+    cache_load,
+    cache_load_scene_json,
+    cache_store_scene_json_new,
+)
 
 PLANTGL_AVAILABLE = False
 try:
     from openalea.plantgl.all import Scene, Shape, Geometry, Material, Color3
-    ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
-    if ROOT_DIR not in sys.path:
-        sys.path.append(ROOT_DIR)
-    from model.openalea.visualizer.serialize import serialize_scene
     PLANTGL_AVAILABLE = True
 except Exception:
     PLANTGL_AVAILABLE = False
@@ -50,31 +55,17 @@ def normalize_package_name(package_name: str, available_keys: list) -> str | Non
 
 logging.basicConfig(level=logging.INFO)
 
-CACHE_DIR = os.getenv("OPENALEA_CACHE_DIR", "/tmp/webalea_object_cache")
-os.makedirs(CACHE_DIR, exist_ok=True)
-
-def _cache_path(ref_id: str) -> str:
-    safe_id = ref_id.replace("/", "_")
-    return os.path.join(CACHE_DIR, f"{safe_id}.pkl")
-
-def cache_store(value) -> str:
-    ref_id = uuid.uuid4().hex
-    path = _cache_path(ref_id)
-    with open(path, "wb") as f:
-        pickle.dump(value, f)
-    return ref_id
-
-def cache_load(ref_id: str):
-    path = _cache_path(ref_id)
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Cached object not found: {ref_id}")
-    with open(path, "rb") as f:
-        return pickle.load(f)
-
 def resolve_value(value):
     if isinstance(value, dict):
         if "__ref__" in value:
-            return cache_load(str(value["__ref__"]))
+            ref_id = str(value["__ref__"])
+            logging.info("Resolving cached input ref=%s", ref_id)
+            if value.get("__type__") == "plantgl_scene_json_ref":
+                scene_json = cache_load_scene_json(ref_id)
+                if scene_json is None:
+                    raise FileNotFoundError(f"Cached scene JSON not found: {ref_id}")
+                return scene_json
+            return cache_load(ref_id)
         return {k: resolve_value(v) for k, v in value.items()}
     if isinstance(value, list):
         return [resolve_value(v) for v in value]
@@ -87,6 +78,49 @@ def parse_if_boolean(type: str):
     if type == "bool":
         return "boolean"
     return type
+
+
+def _serialize_plantgl_scene(scene):
+    try:
+        shape_count = len(scene)
+    except Exception:
+        shape_count = -1
+    logging.info("Preparing PlantGL scene for cache shape_count=%s", shape_count)
+    try:
+        from model.openalea.visualizer.serialize import serialize_scene
+        scene_json = serialize_scene(scene)
+        object_count = len(scene_json.get("objects", [])) if isinstance(scene_json, dict) else -1
+        ref_id = cache_store_scene_json_new(scene_json)
+        logging.info(
+            "Serialized PlantGL scene to JSON cache ref=%s shape_count=%s object_count=%s",
+            ref_id,
+            shape_count,
+            object_count
+        )
+        return {
+            "__type__": "plantgl_scene_json_ref",
+            "__ref__": ref_id,
+            "__meta__": {
+                "shape_count": shape_count,
+                "object_count": object_count
+            }
+        }
+    except Exception:
+        logging.exception("Failed to build/cache scene JSON, falling back to object cache")
+        try:
+            ref_id = cache_store(scene)
+            logging.info("Serialized PlantGL scene as object ref=%s", ref_id)
+            return {
+                "__type__": "plantgl_scene_ref",
+                "__ref__": ref_id,
+                "__meta__": {
+                    "shape_count": shape_count
+                }
+            }
+        except Exception:
+            logging.exception("Failed to cache PlantGL scene object, falling back to inline scene serialization")
+            from model.openalea.visualizer.serialize import serialize_scene
+            return {"__type__": "plantgl_scene", "scene": serialize_scene(scene)}
 
 def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
     """
@@ -130,18 +164,18 @@ def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
     for key, value in inputs.items():
         try:
             value = resolve_value(value)
-            logging.info("Input '%s' resolved type=%s value=%r", key, type(value), value)
+            logging.info("Input '%s' resolved type=%s", key, type(value).__name__)
             # Try as index first if key is numeric
             if isinstance(key, int):
                 node.set_input(key, value)
-                logging.info("Set input[%d] = %s", key, value)
+                logging.info("Set input[%d]", key)
             elif str(key).isdigit():
                 node.set_input(int(key), value)
-                logging.info("Set input[%s] = %s", key, value)
+                logging.info("Set input[%s]", key)
             else:
                 # Try by name
                 node.set_input(key, value)
-                logging.info("Set input['%s'] = %s", key, value)
+                logging.info("Set input['%s']", key)
         except Exception as e:
             logging.warning("Failed to set input '%s': %s", key, e)
 
@@ -153,7 +187,7 @@ def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
     # 7. Serialize outputs
     outputs = []
     node_outputs = node.outputs if hasattr(node, 'outputs') else []
-    logging.info("Node raw outputs: %s", node_outputs)
+    logging.info("Node produced %d outputs", len(node_outputs))
     logging.info("Node raw output types: %s", [type(v).__name__ for v in node_outputs])
 
     # Get output descriptions from factory if available
@@ -178,7 +212,10 @@ def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
             "type": parse_if_boolean(type(output_value).__name__) if output_value is not None else "None"
         })
 
-    logging.info("Outputs: %s", outputs)
+    logging.info("Serialized outputs summary: %s", [
+        {"index": out["index"], "name": out["name"], "type": out["type"]}
+        for out in outputs
+    ])
     return {"success": True, "outputs": outputs}
 
 
@@ -199,15 +236,15 @@ def serialize_value(value, depth=0, max_depth=3):
         return None
     if PLANTGL_AVAILABLE:
         if isinstance(value, Scene):
-            return {"__type__": "plantgl_scene", "scene": serialize_scene(value)}
+            return _serialize_plantgl_scene(value)
         if isinstance(value, Shape):
             scene = Scene()
             scene.add(value)
-            return {"__type__": "plantgl_scene", "scene": serialize_scene(scene)}
+            return _serialize_plantgl_scene(scene)
         if isinstance(value, Geometry):
             scene = Scene()
             scene.add(Shape(value, Material(Color3(200, 200, 200))))
-            return {"__type__": "plantgl_scene", "scene": serialize_scene(scene)}
+            return _serialize_plantgl_scene(scene)
     if isinstance(value, (int, float, str, bool)):
         return value
     if isinstance(value, (list, tuple)):
