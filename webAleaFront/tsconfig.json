@@ -1,9 +1,12 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "checkJs": false
+    "checkJs": false,
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["react"]
   },
-  "files": ["src/index.js"],
   "include": ["src/**/*"]
 }
 
