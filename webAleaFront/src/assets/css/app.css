@@ -15,46 +15,40 @@ html, body, #root {
   background-color: #f0f2f5;
 }
 
-/* ========== HEADER ========== */
-.app-header {
+/* ========== TOP BAR ========== */
+.app-topbar {
   flex-shrink: 0;
-  height: 50px;
-  background-color: #1a1a2e;
-  color: white;
+  min-height: 58px;
+  background: white;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.app-header h1 {
-  font-size: 1.25rem;
+.app-brand {
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+
+.app-brand h1 {
+  font-size: 1.1rem;
   font-weight: 600;
   margin: 0;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  color: #1a1a2e;
+  white-space: nowrap;
 }
 
-.app-header nav ul {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 8px;
+.app-toolbar-container {
+  flex: 1;
+  min-width: 0;
 }
 
-.app-header nav a {
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  font-size: 0.85rem;
-  padding: 6px 12px;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.app-header nav a:hover {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.1);
+.toolbar-row-compact {
+  width: 100%;
 }
 
 /* ========== MAIN CONTENT ========== */
@@ -68,11 +62,6 @@ html, body, #root {
   overflow: hidden;
 }
 
-/* ========== TOOLBAR ========== */
-.toolbar-row {
-  flex-shrink: 0;
-}
-
 /* ========== CONTENT LAYOUT ========== */
 .content-row {
   flex: 1;
@@ -84,7 +73,7 @@ html, body, #root {
 
 /* ========== SIDEBAR (Package Manager) ========== */
 .sidebar-column {
-  width: 240px;
+  width: 280px;
   min-width: 200px;
   max-width: 280px;
   flex-shrink: 0;
@@ -152,9 +141,9 @@ html, body, #root {
 /* ========== CONSOLE ROW ========== */
 .console-row {
   flex-shrink: 0;
-  height: 150px;
-  min-height: 100px;
-  max-height: 200px;
+  height: 210px;
+  min-height: 140px;
+  max-height: 320px;
 }
 
 .console-log-container {
@@ -208,7 +197,7 @@ html, body, #root {
 /* ========== RESPONSIVE ========== */
 @media (max-width: 1200px) {
   .sidebar-column {
-    width: 200px;
+    width: 250px;
     min-width: 180px;
   }
 
@@ -248,17 +237,20 @@ html, body, #root {
 }
 
 @media (max-width: 768px) {
-  .app-header {
-    height: 45px;
-    padding: 0 12px;
+  .app-topbar {
+    min-height: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 8px;
   }
 
-  .app-header h1 {
+  .app-brand h1 {
     font-size: 1.1rem;
   }
 
-  .app-header nav {
-    display: none;
+  .app-toolbar-container {
+    width: 100%;
   }
 
   .app-main {
@@ -272,7 +264,7 @@ html, body, #root {
   }
 
   .console-row {
-    height: 120px;
+    height: 160px;
   }
 
   .app-footer {

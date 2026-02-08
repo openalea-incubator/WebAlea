@@ -127,7 +127,11 @@ describe('PanelModuleNode', () => {
         fireEvent.click(screen.getByText('pkgA'));
 
         await waitFor(() => {
-            expect(getNodesList).toHaveBeenCalledWith({ name: 'pkgA' });
+            expect(getNodesList).toHaveBeenCalledWith({
+                name: 'pkgA',
+                packageName: 'pkgA',
+                installName: 'pkgA',
+            });
         });
     });
 

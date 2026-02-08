@@ -20,12 +20,29 @@ async def lifespan(app: FastAPI):
     print(f"Application '{settings.PROJECT_NAME}' shutting down...")
     app.state.shutdown_message = "Application has been shut down."
 
+# OpenAPI tag metadata
+openapi_tags = [
+    {
+        "name": "manager",
+        "description": "Conda package management for OpenAlea dependencies.",
+    },
+    {
+        "name": "runner",
+        "description": "Execute OpenAlea nodes and workflows.",
+    },
+    {
+        "name": "inspector",
+        "description": "Inspect installed OpenAlea packages and node metadata.",
+    },
+]
+
 # Initialize the main FastAPI application instance
 webAleaBack = FastAPI(
     title=settings.PROJECT_NAME,
     version="1.0.0",
     description="",
-    lifespan=lifespan
+    lifespan=lifespan,
+    openapi_tags=openapi_tags,
 )
 
 webAleaBack.add_middleware(
@@ -54,3 +71,9 @@ def read_root():
         "message": f"Welcome to {settings.PROJECT_NAME}!",
         "available_routes": routes
     }
+
+
+@webAleaBack.get("/health")
+def health():
+    """Lightweight health endpoint for startup/readiness checks."""
+    return {"status": "ok"}

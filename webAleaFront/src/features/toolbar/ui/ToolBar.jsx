@@ -13,6 +13,7 @@
 import { useState } from "react";
 import ButtonToolBar from "./ButtonToolBar.jsx";
 import ImportModal from "../model/ImportModal.jsx";
+import ExportModal from "../model/ExportModal.jsx";
 import {
     FaUpload,
     FaDownload,
@@ -25,6 +26,8 @@ import {
 } from "react-icons/fa";
 import { useFlow } from "../../workspace/providers/FlowContextDefinition.jsx";
 import { useLog } from "../../logger/providers/LogContextDefinition.jsx";
+import { getProgressBarColor, NodeState } from "../../workspace/constants/nodeState.js";
+import { saveLocalPackage } from "../../package-manager/utils/localPackages.js";
 
 /**
  * Progress Bar Component
@@ -35,17 +38,8 @@ import { useLog } from "../../logger/providers/LogContextDefinition.jsx";
  * @returns {React.ReactNode} - Progress bar element
  */
 function ProgressBar({ progress, status }) {
-    const getBarColor = () => {
-        switch (status) {
-            case 'running': return '#007bff';
-            case 'completed': return '#28a745';
-            case 'failed': return '#dc3545';
-            case 'stopped': return '#6c757d';
-            default: return '#007bff';
-        }
-    };
 
-    if (status === 'idle') return null;
+    if (status === NodeState.PENDING) return null;
 
     return (
         <div className="d-flex align-items-center gap-2 mx-3" style={{ minWidth: '200px' }}>
@@ -58,7 +52,7 @@ function ProgressBar({ progress, status }) {
                     role="progressbar"
                     style={{
                         width: `${progress.percent}%`,
-                        backgroundColor: getBarColor(),
+                        backgroundColor: getProgressBarColor(status),
                         transition: 'width 0.3s ease'
                     }}
                 />
@@ -83,14 +77,14 @@ function ProgressBar({ progress, status }) {
 function StatusIndicator({ status }) {
     const getIcon = () => {
         switch (status) {
-            case 'running':
+            case NodeState.RUNNING:
                 return <FaSpinner className="fa-spin text-primary" />;
-            case 'completed':
+            case NodeState.COMPLETED:
                 return <FaCheckCircle className="text-success" />;
-            case 'failed':
-            case 'validation-error':
+            case NodeState.CANCELLED:
+            case NodeState.ERROR:
                 return <FaExclamationTriangle className="text-danger" />;
-            case 'stopped':
+            case NodeState.SKIPPED:
                 return <FaStop className="text-secondary" />;
             default:
                 return null;
@@ -99,16 +93,16 @@ function StatusIndicator({ status }) {
 
     const getText = () => {
         switch (status) {
-            case 'running': return 'Running...';
-            case 'completed': return 'Completed';
-            case 'failed': return 'Error';
-            case 'validation-error': return 'Validation failed';
-            case 'stopped': return 'Stopped';
+            case NodeState.RUNNING: return 'Running...';
+            case NodeState.COMPLETED: return 'Completed';
+            case NodeState.ERROR: return 'Error';
+            case NodeState.CANCELLED: return 'Validation failed';
+            case NodeState.SKIPPED: return 'Stopped';
             default: return '';
         }
     };
 
-    if (status === 'idle') return null;
+    if (status === NodeState.PENDING) return null;
 
     return (
         <div className="d-flex align-items-center gap-1 mx-2">
@@ -124,8 +118,9 @@ function StatusIndicator({ status }) {
  *
  * @returns {React.ReactNode} - The ToolBar component.
  */
-export default function ToolBar() {
+export default function ToolBar({ compact = false }) {
     const [showImportModal, setShowImportModal] = useState(false);
+    const [showExportModal, setShowExportModal] = useState(false);
     const {
         setNodesAndEdges,
         nodes,
@@ -138,7 +133,7 @@ export default function ToolBar() {
 
     const { addLog } = useLog();
 
-    const isRunning = executionStatus === 'running';
+    const isRunning = executionStatus === NodeState.RUNNING;
 
     // =========================================================================
     // HANDLERS
@@ -146,38 +141,204 @@ export default function ToolBar() {
 
     const handleImportClick = () => setShowImportModal(true);
     const handleImportClose = () => setShowImportModal(false);
+    const handleExportClick = () => setShowExportModal(true);
+    const handleExportClose = () => setShowExportModal(false);
 
     const handleImportData = (data) => {
         try {
-            if (!data.nodes || !data.edges) {
-                throw new Error("Invalid workflow data: missing nodes or edges");
+            const isWorkspaceExport =
+                data?.export_type === "workspace" ||
+                (Array.isArray(data?.nodes) && Array.isArray(data?.edges));
+
+            const isCompositeExport =
+                data?.export_type === "composite" ||
+                (data?.package_name && data?.nodes && !Array.isArray(data?.nodes));
+
+            if (isWorkspaceExport) {
+                if (!data.nodes || !data.edges) {
+                    throw new Error("Invalid workspace data: missing nodes or edges");
+                }
+                setNodesAndEdges(data.nodes || [], data.edges || []);
+                setShowImportModal(false);
+                addLog("Workspace imported", {
+                    nodes: data.nodes.length,
+                    edges: data.edges.length
+                });
+                return;
             }
-            setNodesAndEdges(data.nodes || [], data.edges || []);
-            setShowImportModal(false);
-            addLog("Workflow imported", {
-                nodes: data.nodes.length,
-                edges: data.edges.length
-            });
+
+            if (isCompositeExport) {
+                const packageName = data.package_name || "local_packages";
+                const nodesObj = data.nodes || {};
+
+                const compositeNodes = Object.entries(nodesObj).map(([nodeName, nodeData]) => ({
+                    name: nodeName,
+                    description: nodeData?.description || "",
+                    inputs: nodeData?.inputs || [],
+                    outputs: nodeData?.outputs || [],
+                    callable: nodeData?.callable ?? null,
+                    nodekind: nodeData?.nodekind || "composite",
+                    graph: nodeData?.graph ?? null,
+                    implicit_output: nodeData?.implicit_output ?? false
+                }));
+
+                saveLocalPackage({
+                    name: packageName,
+                    nodes: compositeNodes
+                });
+
+                window.dispatchEvent(new Event("local-packages-updated"));
+
+                setShowImportModal(false);
+                addLog("Composite imported to Local Packages", {
+                    package: packageName,
+                    nodes: compositeNodes.length
+                });
+                return;
+            }
+
+            throw new Error("Unrecognized import format");
         } catch (error) {
             alert("Error importing workflow: " + error.message);
         }
     };
 
     /**
-     * Handle Export. Exports the current workflow as a JSON file.
+     * Derive exposed composite ports based on unconnected internal ports.
+     * @param {Array} graphNodes
+     * @param {Array} graphEdges
+     * @returns {{inputs: Array, outputs: Array}}
      */
-    const handleExport = () => {
-        const data = { nodes, edges };
+    const deriveCompositePorts = (graphNodes, graphEdges) => {
+        const customNodeIds = new Set(
+            graphNodes.filter(n => n?.type === "custom").map(n => n.id)
+        );
+
+        const filteredEdges = graphEdges.filter(edge =>
+            customNodeIds.has(edge.source) && customNodeIds.has(edge.target)
+        );
+
+        const targetHandles = new Set();
+        const sourceHandles = new Set();
+
+        filteredEdges.forEach(edge => {
+            if (edge?.target && edge?.targetHandle) {
+                targetHandles.add(`${edge.target}::${edge.targetHandle}`);
+            }
+            if (edge?.source && edge?.sourceHandle) {
+                sourceHandles.add(`${edge.source}::${edge.sourceHandle}`);
+            }
+        });
+
+        const compositeInputs = [];
+        const compositeOutputs = [];
+        const seenInputNames = new Set();
+        const seenOutputNames = new Set();
+
+        graphNodes.forEach(node => {
+            if (node?.type !== "custom") return;
+            const nodeLabel = node?.data?.label || node?.id || "node";
+            const inputs = node?.data?.inputs || [];
+            const outputs = node?.data?.outputs || [];
+
+            inputs.forEach((input, index) => {
+                const inputId = input?.id || `port_${index}_${input?.name || "in"}`;
+                const key = `${node.id}::${inputId}`;
+                if (!targetHandles.has(key)) {
+                    const portName = `${nodeLabel}_${input?.name || `in_${index}`}`;
+                    if (!seenInputNames.has(portName)) {
+                        compositeInputs.push({
+                            id: `port_${compositeInputs.length}_${portName}`,
+                            name: portName,
+                            interface: input?.interface || "None",
+                            type: input?.type || "any",
+                            optional: Boolean(input?.optional),
+                            desc: input?.desc || "",
+                            default: input?.default ?? undefined
+                        });
+                        seenInputNames.add(portName);
+                    }
+                }
+            });
+
+            outputs.forEach((output, index) => {
+                const outputId = output?.id || `port_${index}_${output?.name || "out"}`;
+                const key = `${node.id}::${outputId}`;
+                if (!sourceHandles.has(key)) {
+                    const portName = `${nodeLabel}_${output?.name || `out_${index}`}`;
+                    if (!seenOutputNames.has(portName)) {
+                        compositeOutputs.push({
+                            id: `port_${compositeOutputs.length}_${portName}`,
+                            name: portName,
+                            interface: output?.interface || "None",
+                            type: output?.type || "any",
+                            optional: Boolean(output?.optional),
+                            desc: output?.desc || "",
+                        });
+                        seenOutputNames.add(portName);
+                    }
+                }
+            });
+        });
+
+        return { inputs: compositeInputs, outputs: compositeOutputs };
+    };
+
+    /**
+     * Trigger a JSON file download in the browser.
+     * @param {object} data
+     * @param {string} filename
+     */
+    const downloadJson = (data, filename) => {
+        const dataStr = "data:text/json;charset=utf-8," +
+            encodeURIComponent(JSON.stringify(data, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", filename);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
+
+    /**
+     * Export workspace or composite as JSON.
+     * @param {{mode: string, packageName?: string, nodeName?: string, description?: string}} params
+     */
+    const handleExport = ({ mode, packageName, nodeName, description }) => {
         try {
-            const dataStr = "data:text/json;charset=utf-8," +
-                encodeURIComponent(JSON.stringify(data, null, 2));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "workflow_export.json");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
-            addLog("Workflow exported", { nodes: nodes.length, edges: edges.length });
+            if (mode === "workspace") {
+                const data = { export_type: "workspace", nodes, edges };
+                downloadJson(data, "workflow_export.json");
+                addLog("Workspace exported", { nodes: nodes.length, edges: edges.length });
+                return;
+            }
+
+            const { inputs, outputs } = deriveCompositePorts(nodes, edges);
+            const compositeData = {
+                export_type: "composite",
+                package_name: packageName,
+                nodes: {
+                    [nodeName]: {
+                        description: description || "",
+                        inputs,
+                        outputs,
+                        callable: null,
+                        nodekind: "composite",
+                        implicit_output: false,
+                        graph: { nodes, edges }
+                    }
+                },
+                has_wralea: true,
+                version: 1
+            };
+
+            downloadJson(compositeData, `${packageName}__${nodeName}.json`);
+            addLog("Composite exported", {
+                package: packageName,
+                node: nodeName,
+                nodes: nodes.length,
+                edges: edges.length
+            });
         } catch (error) {
             alert("Error exporting workflow: " + error.message);
         }
@@ -254,14 +415,18 @@ export default function ToolBar() {
     // RENDER
     // =========================================================================
 
+    const toolbarLayoutClass = compact
+        ? "row m-0 gx-2 align-items-center toolbar-row-compact"
+        : "row mb-4 px-4 align-items-center";
+
     return (
         <>
-            <div className="row mb-4 px-4 align-items-center">
+            <div className={toolbarLayoutClass}>
                 {/* Left Button : Export/Import/Info */}
                 <div className="col-md-4 d-flex gap-2 mb-2 mb-md-0">
                     <ButtonToolBar
                         icon={FaUpload}
-                        onClick={handleExport}
+                        onClick={handleExportClick}
                         disabled={isRunning}
                         title="Export workflow"
                     />
@@ -311,6 +476,12 @@ export default function ToolBar() {
                 show={showImportModal}
                 onClose={handleImportClose}
                 onImport={handleImportData}
+            />
+
+            <ExportModal
+                show={showExportModal}
+                onClose={handleExportClose}
+                onExport={handleExport}
             />
         </>
     );

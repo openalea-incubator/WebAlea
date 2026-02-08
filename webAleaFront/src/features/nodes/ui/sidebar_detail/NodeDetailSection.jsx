@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import NodeParameters from "./NodeParameters";
 import NodeDescription from "./NodeDescription";
+import NodeResultRender from "./NodeResultRender";
 
 /**
  * NodeDetailSection component.
@@ -26,11 +27,7 @@ export default function NodeDetailSection() {
             case "desc":
                 return <NodeDescription />;
             case "view":
-                return (
-                    <div style={{ padding: "12px" }}>
-                        <p>Preview...</p>
-                    </div>
-                );
+                return <NodeResultRender />;
             default:
                 return null;
         }

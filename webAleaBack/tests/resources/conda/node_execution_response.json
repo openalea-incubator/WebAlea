@@ -1,0 +1,11 @@
+{
+    "success": true,
+    "outputs": [
+        {
+            "index": 0,
+            "name": "out",
+            "value": true,
+            "type": "boolean"
+        }
+    ]
+}

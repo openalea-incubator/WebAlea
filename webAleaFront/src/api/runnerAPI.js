@@ -15,7 +15,7 @@ import { API_BASE_URL_RUNNER } from "../config/api";
  * @returns {Promise<Object>} Execution result
  */
 export async function executeNode(nodeData) {
-    const { nodeId, packageName, nodeName, inputs } = nodeData;
+    const { nodeId, packageName, nodeName, inputs, signal } = nodeData;
 
     return fetchJSON(`${API_BASE_URL_RUNNER}/execute`, "POST", {
         node_id: nodeId,
@@ -27,5 +27,5 @@ export async function executeNode(nodeData) {
             type: input.type,
             value: input.value
         }))
-    });
+    }, { signal });
 }

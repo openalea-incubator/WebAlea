@@ -1,8 +1,15 @@
 """Run OpenAlea node execution via subprocess."""
 import subprocess
-import json
 import logging
 import os
+from unittest import result
+
+from model.openalea.runner.utils.openalea_runner_helpers import (
+    build_node_info,
+    log_subprocess_output,
+    parse_subprocess_response,
+    run_node_subprocess,
+)
 
 class OpenAleaRunner:
     """Execute OpenAlea nodes in isolated subprocess."""
@@ -16,18 +23,15 @@ class OpenAleaRunner:
 
     @staticmethod
     def execute_node(package_name: str, node_name: str, inputs: dict, timeout: int = 60) -> dict:
-        """
-        Execute a single OpenAlea node.
+        """Execute a single OpenAlea node in a subprocess.
 
         Args:
-            package_name: OpenAlea package name (e.g., "openalea.math")
-            node_name: Node name within the package (e.g., "addition")
-            inputs: Dict of input values {name: value} or {index: value}
-            timeout: Execution timeout in seconds
-
+            package_name (str): OpenAlea package name (e.g., "openalea.math").
+            node_name (str): Node name within the package (e.g., "addition").
+            inputs (dict): Input values {name: value} or {index: value}.
+            timeout (int): Execution timeout in seconds.
         Returns:
-            Dict with: {success: bool, outputs: [{index, name, value, type}, ...]}
-            Or: {success: False, error: str}
+            response (dict): Execution response with success flag and outputs or error.
         """
         logging.info(
             "OpenAleaRunner: Executing '%s.%s' with inputs: %s",
@@ -35,43 +39,20 @@ class OpenAleaRunner:
         )
 
         # Build node info for subprocess
-        node_info = {
-            "package_name": package_name,
-            "node_name": node_name,
-            "inputs": inputs
-        }
+        node_info = build_node_info(package_name, node_name, inputs)
 
         try:
-            result = subprocess.run(
-                ["python3", OpenAleaRunner.SCRIPT_PATH, json.dumps(node_info)],
-                capture_output=True,
-                text=True,
-                timeout=timeout,
-                check=False
-            )
-
-            # Log stderr if any (for debugging)
+            result = run_node_subprocess(OpenAleaRunner.SCRIPT_PATH, node_info, timeout)
             if result.stderr:
                 logging.warning("Subprocess stderr: %s", result.stderr)
-
-            # Parse stdout as JSON
             if result.stdout:
-                try:
-                    response = json.loads(result.stdout)
-                    logging.info("OpenAleaRunner: Execution result: %s", response)
-                    return response
-                except json.JSONDecodeError as e:
-                    logging.error("Failed to decode JSON response: %s", e)
-                    return {
-                        "success": False,
-                        "error": f"Invalid JSON response: {result.stdout[:200]}"
-                    }
+                logging.info("Subprocess stdout length: %d", len(result.stdout))
 
-            # No output
-            return {
-                "success": False,
-                "error": "No output from subprocess"
-            }
+            response = parse_subprocess_response(result.stdout)
+            if response is not None:
+                return response
+
+            return {"success": False, "error": "No output from subprocess"}
 
         except subprocess.TimeoutExpired:
             logging.error("Node execution timed out after %d seconds", timeout)

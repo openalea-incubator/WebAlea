@@ -7,7 +7,7 @@ import React, { useState, useEffect } from "react";
  * @param {function} onChange - The function to call when the input changes.
  * @returns {React.ReactNode} - The NodeInputFloat component.
  */
-export default function NodeInputFloat({ inputName, value = 0, onChange }) {
+export default function NodeInputFloat({ inputName, value = 0, onChange, disabled = false }) {
     /**
      * State to store the internal value. It is used to store the value of the input.
      * @type {number}
@@ -24,8 +24,21 @@ export default function NodeInputFloat({ inputName, value = 0, onChange }) {
     const handleChange = (e) => {
         const newValue = e.target.value;
         setInternalValue(newValue);
-        if (onChange) {
-            onChange(parseFloat(newValue) || 0);
+        if (!onChange) return;
+        if (newValue === "" || newValue === "-" || newValue === "." || newValue === "-.") {
+            return;
+        }
+        const parsed = Number(newValue);
+        if (!Number.isNaN(parsed)) {
+            onChange(parsed);
+        }
+    };
+
+    const handleBlur = () => {
+        if (!onChange) return;
+        if (internalValue === "" || internalValue === "-" || internalValue === "." || internalValue === "-.") {
+            setInternalValue(0);
+            onChange(0);
         }
     };
 
@@ -39,6 +52,8 @@ export default function NodeInputFloat({ inputName, value = 0, onChange }) {
                 value={internalValue}
                 placeholder="0.0"
                 onChange={handleChange}
+                onBlur={handleBlur}
+                disabled={disabled}
             />
         </div>
     );

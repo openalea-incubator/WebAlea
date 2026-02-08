@@ -1,4 +1,4 @@
-import { WorkflowValidator } from "../../../../../src/features/workspace/engine/WorkflowEngine";
+import { WorkflowValidator } from "../../../../../src/features/workspace/engine/WorkflowValidator.jsx";
 import { baseNode } from "../../../../__helpers__/WorkflowUtils.js";
 import { 
     jest, beforeEach, test, expect, describe

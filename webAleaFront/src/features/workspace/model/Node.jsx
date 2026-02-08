@@ -6,7 +6,7 @@
  * - a position
  * - a label
  * - a color
- * - a status
+ * - a status (NodeState constant)
  * - metadata
  * - input and output ports
  *
@@ -31,6 +31,9 @@
  *  });
  *
  */
+
+import { NodeState } from '../constants/nodeState.js';
+
 export class Node {
 
     /**
@@ -53,7 +56,7 @@ export class Node {
         this.data = {
             label: label || data?.label || null,
             color: data?.color || null,
-            status: data?.status || 'ready',
+            status: data?.status || NodeState.READY,
             metadata: data?.metadata || {},
             inputs: inputs || [],
             outputs: outputs || [],
@@ -64,6 +67,9 @@ export class Node {
             nodeName: data?.nodeName || label || null,
             callable: data?.callable || null,
             description: data?.description || '',
+            nodekind: data?.nodekind || "atomic",
+            graph: data?.graph || null,
+            implicit_output: data?.implicit_output ?? false,
         };
     }
 
@@ -85,7 +91,7 @@ export class Node {
             data: {
                 label: data.label ?? null,
                 color: data.color ?? null,
-                status: data.status ?? 'ready',
+                status: data.status ?? NodeState.READY,
                 metadata: data.metadata ?? {},
                 inputs: data.inputs ?? [],
                 outputs: data.outputs ?? [],
@@ -96,6 +102,9 @@ export class Node {
                 nodeName: data.nodeName ?? null,
                 callable: data.callable ?? null,
                 description: data.description ?? '',
+                nodekind: data.nodekind ?? "atomic",
+                graph: data.graph ?? null,
+                implicit_output: data.implicit_output ?? false,
             },
         };
     }

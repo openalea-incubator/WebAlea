@@ -5,13 +5,6 @@ import { fetchJSON } from "./utils.js";
 // ==============================
 // PACKAGE LIST
 // ==============================
-/**
- * Fetch the list of all conda packages.
- * @returns {Promise<Object>}
- */
-export async function fetchPackageList() {
-    return fetchJSON(`${API_BASE_URL_MANAGER}/`);
-}
 
 /**
  * Fetch the latest versions of all conda packages.

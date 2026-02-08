@@ -1,5 +1,74 @@
 import React from "react";
 
+function formatPrimitiveValue(value) {
+    if (value === null || value === undefined) return "";
+    return String(value);
+}
+
+function isPlainObject(value) {
+    return value && typeof value === "object" && !Array.isArray(value);
+}
+
+function renderObjectValue(value) {
+    try {
+        return JSON.stringify(value, null, 2);
+    } catch {
+        return String(value);
+    }
+}
+
+function NodeOutputValue({ value }) {
+    if (isPlainObject(value) && typeof value.__type__ === "string") {
+        const typeName = value.__type__;
+        const data = value.data !== undefined ? value.data : value;
+        return (
+            <div>
+                <div className="small text-muted mb-1">
+                    Type: <code>{typeName}</code>
+                </div>
+                <textarea
+                    className="form-control bg-light"
+                    value={renderObjectValue(data)}
+                    rows={4}
+                    readOnly
+                />
+            </div>
+        );
+    }
+
+    if (Array.isArray(value)) {
+        return (
+            <textarea
+                className="form-control bg-light"
+                value={renderObjectValue(value)}
+                rows={4}
+                readOnly
+            />
+        );
+    }
+
+    if (isPlainObject(value)) {
+        return (
+            <textarea
+                className="form-control bg-light"
+                value={renderObjectValue(value)}
+                rows={4}
+                readOnly
+            />
+        );
+    }
+
+    return (
+        <input
+            type="text"
+            className="form-control bg-light"
+            value={formatPrimitiveValue(value)}
+            placeholder="--"
+            readOnly
+        />
+    );
+}
+
 /**
  * Parse output name in case it contains a dict-like string
  */
@@ -34,18 +103,11 @@ export default function NodeOutput({ outputs }) {
         <div className="node-outputs">
             {outputs.map((output, index) => {
                 const name = parseOutputName(output);
-                const value = output.value !== undefined ? String(output.value) : "";
 
                 return (
                     <div key={output.id || `output_${index}`} className="mb-3">
                         <label className="form-label fw-semibold">{name}</label>
-                        <input
-                            type="text"
-                            className="form-control bg-light"
-                            value={value}
-                            placeholder="--"
-                            readOnly
-                        />
+                        <NodeOutputValue value={output.value} />
                     </div>
                 );
             })}

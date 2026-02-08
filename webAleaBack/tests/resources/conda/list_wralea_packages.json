@@ -1,0 +1,12 @@
+{
+    "wralea_packages" : [
+            {
+                "name" : "openalea.flow-control",
+                "module": "openalea.core.system"
+            },
+            {
+                "name" : "astk",
+                "module": "openalea.astk_wralea"
+            }
+        ]
+}

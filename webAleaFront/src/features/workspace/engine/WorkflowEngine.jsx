@@ -12,297 +12,11 @@
  */
 
 import { executeNode } from "../../../api/runnerAPI.js";
-import { NodeState } from "../../workspace/Utils/workflowUtils.js";
+import { NodeState } from "../constants/nodeState.js";
+import { DataType } from "../constants/workflowConstants.js";
+import { WorkflowValidator } from "./WorkflowValidator.jsx";
+import { DependencyTracker } from "./DependencyTracker.jsx";
 
-// =============================================================================
-// WORKFLOW VALIDATOR
-// =============================================================================
-
-/**
- * Validates the workflow structure before execution
- */
-export class WorkflowValidator {
-    /**
-     * Validates the workflow
-     * @param {Array} graph - Workflow graph nodes
-     * @param {Array} edges - Workflow graph edges
-     * @returns {{ valid: boolean, errors: Array, warnings: Array }}
-     */
-    static validate(graph, edges) {
-        const errors = [];
-        const warnings = [];
-
-        // 1. Check for empty workflow
-        if (!graph || graph.length === 0) {
-            errors.push({ type: 'EMPTY_WORKFLOW', message: 'The workflow is empty' });
-            return { valid: false, errors, warnings };
-        }
-
-        // 2. Detect cycles
-        const cycleResult = this.detectCycle(graph, edges);
-        if (cycleResult.hasCycle) {
-            errors.push({
-                type: 'CYCLE_DETECTED',
-                message: 'Cycle detected in the workflow',
-                nodes: cycleResult.cycleNodes
-            });
-        }
-
-        // 3. Check for unconnected mandatory inputs
-        graph.forEach(node => {
-            (node.inputs || []).forEach(input => {
-                const isConnected = edges.some(e =>
-                    e.target === node.id && e.targetHandle === input.id
-                );
-                const hasValue = input.value !== undefined && input.value !== null;
-                const isOptional = input.optional === true;
-
-                if (!isConnected && !hasValue && !isOptional) {
-                    errors.push({
-                        type: 'UNCONNECTED_INPUT',
-                        nodeId: node.id,
-                        inputId: input.id,
-                        message: `Node "${node.label}" has unconnected mandatory input "${input.name}"`
-                    });
-                }
-            });
-        });
-
-        // 4. Warn about custom nodes without package
-        graph.forEach(node => {
-            if (!node.packageName && node.type === 'custom') {
-                warnings.push({
-                    type: 'MISSING_PACKAGE',
-                    nodeId: node.id,
-                    message: `Custom node "${node.label}" is missing package information`
-                });
-            }
-        });
-
-        return {
-            valid: errors.length === 0,
-            errors,
-            warnings
-        };
-    }
-
-    /**
-     * Detects cycles in the workflow graph using DFS
-     */
-    static detectCycle(graph, edges) {
-        const visited = new Set();
-        const recursionStack = new Set();
-        // eslint-disable-next-line no-unused-vars
-        const cycleNodes = [];
-
-        // Build adjacency list from edges : nodeId -> [neighborNodeIds]
-        const adjacency = new Map();
-        graph.forEach(node => adjacency.set(node.id, []));
-        edges.forEach(edge => {
-            if (adjacency.has(edge.source)) {
-                adjacency.get(edge.source).push(edge.target);
-            }
-        });
-
-        const dfs = (nodeId, path = []) => {
-            visited.add(nodeId);
-            recursionStack.add(nodeId);
-            path.push(nodeId);
-
-            const neighbors = adjacency.get(nodeId) || [];
-            for (const neighbor of neighbors) {
-                if (!visited.has(neighbor)) {
-                    const result = dfs(neighbor, [...path]);
-                    if (result) return result;
-                } else if (recursionStack.has(neighbor)) {
-                    // Cycle detected
-                    const cycleStart = path.indexOf(neighbor);
-                    return path.slice(cycleStart);
-                }
-            }
-
-            recursionStack.delete(nodeId);
-            return null;
-        };
-
-        for (const node of graph) {
-            if (!visited.has(node.id)) {
-                const cycle = dfs(node.id);
-                if (cycle) {
-                    return { hasCycle: true, cycleNodes: cycle };
-                }
-            }
-        }
-
-        return { hasCycle: false, cycleNodes: [] };
-    }
-}
-
-// =============================================================================
-// DEPENDENCY TRACKER
-// =============================================================================
-
-/**
- * Tracks dependencies and input states for nodes
- */
-class DependencyTracker {
-    constructor(graph, edges) {
-        this.graph = graph;
-        this.edges = edges;
-
-        // Map: nodeId -> Set of pending dependency nodeIds
-        this.pendingDependencies = new Map();
-
-        // Map: nodeId -> Map(inputId -> { received: boolean, value: any })
-        this.inputStates = new Map();
-
-        this._initialize();
-    }
-
-    _initialize() {
-        // Initialize dependency and input state maps
-        for (const node of this.graph) {
-            const dependencies = new Set();
-            const inputStateMap = new Map();
-
-            // Initialize input states with default values
-            for (const input of (node.inputs || [])) {
-                inputStateMap.set(input.id, {
-                    received: false,
-                    value: input.value,
-                    sourceNodeId: null,
-                    sourceOutputId: null
-                });
-            }
-
-            // Find incoming edges to determine dependencies
-            const incomingEdges = this.edges.filter(e => e.target === node.id);
-            for (const edge of incomingEdges) {
-                dependencies.add(edge.source);
-
-                // Link input state to source node/output
-                const inputState = inputStateMap.get(edge.targetHandle);
-                if (inputState) {
-                    inputState.sourceNodeId = edge.source;
-                    inputState.sourceOutputId = edge.sourceHandle;
-                    // Mark as not received yet (since it's from another node)
-                }
-            }
-
-            this.pendingDependencies.set(node.id, dependencies);
-            this.inputStates.set(node.id, inputStateMap);
-        }
-    }
-
-    /**
-     * Checks if a node is ready to execute (all dependencies resolved)
-     */
-    isReady(nodeId) {
-        const pending = this.pendingDependencies.get(nodeId);
-        return pending && pending.size === 0;
-    }
-
-    /**
-     * Gets all nodes that are currently ready to execute
-     */
-    getReadyNodes() {
-        const ready = [];
-        for (const node of this.graph) {
-            if (this.isReady(node.id)) {
-                ready.push(node.id);
-            }
-        }
-        return ready;
-    }
-
-    /**
-     * Marks a node as completed and propagates outputs to dependent nodes
-     *
-     * @param {string} nodeId - ID of the completed node
-     * @param {Array} outputs - Outputs produced by the completed node
-     * @returns {Array} - List of newly ready node IDs
-     */
-    markCompleted(nodeId, outputs) {
-        const newlyReady = [];
-
-        // Find all outgoing edges from this node
-        const outgoingEdges = this.edges.filter(e => e.source === nodeId);
-
-        for (const edge of outgoingEdges) {
-            const targetNodeId = edge.target;
-
-            // Remove this node from the pending dependencies of the target node
-            // - If no more pending dependencies, the target node becomes ready
-            const pending = this.pendingDependencies.get(targetNodeId);
-            if (pending) {
-                pending.delete(nodeId);
-            }
-
-            // Update the input state of the target node
-            const inputStates = this.inputStates.get(targetNodeId);
-            if (inputStates) {
-                const inputState = inputStates.get(edge.targetHandle);
-                if (inputState) {
-                    // Parse output index from sourceHandle (e.g., "output_0" -> 0)
-                    const outputIndex = parseInt(edge.sourceHandle.match(/output_(\d+)/)?.[1] || 0, 10);
-                    const outputValue = outputs[outputIndex]?.value;
-
-                    inputState.received = true;
-                    inputState.value = outputValue;
-                }
-            }
-
-            if (this.isReady(targetNodeId)) {
-                newlyReady.push(targetNodeId);
-            }
-        }
-
-        return newlyReady;
-    }
-
-    /**
-     * Gets the resolved inputs for a node, combining received values and defaults.
-     * An input is considered resolved if it has either received a value from a dependency
-     * @param {string} nodeId - ID of the node
-     * @returns {Array} - List of inputs with resolved values
-     */
-    getResolvedInputs(nodeId) {
-        const node = this.graph.find(n => n.id === nodeId);
-        if (!node) return [];
-
-        const inputStates = this.inputStates.get(nodeId);
-        if (!inputStates) return node.inputs || [];
-
-        return (node.inputs || []).map(input => {
-            const state = inputStates.get(input.id);
-            return {
-                ...input,
-                value: state ? state.value : input.value
-            };
-        });
-    }
-
-    /**
-     * Recursively gets all successor nodes of a given node
-     * @param {string} nodeId - ID of the node
-     * @param {Set} visited - Set of already visited nodes to avoid cycles
-     * @returns {Array} - List of successor node IDs
-     */
-    getSuccessors(nodeId, visited = new Set()) {
-        if (visited.has(nodeId)) return [];
-        visited.add(nodeId);
-
-        const successors = [];
-        const outgoingEdges = this.edges.filter(e => e.source === nodeId);
-
-        for (const edge of outgoingEdges) {
-            successors.push(edge.target);
-            successors.push(...this.getSuccessors(edge.target, visited));
-        }
-
-        return [...new Set(successors)];
-    }
-}
 
 // =============================================================================
 // WORKFLOW ENGINE 
@@ -318,6 +32,7 @@ export class WorkflowEngine {
         this.graph = [];
         this.edges = [];
         this.dependencyTracker = null;
+        this.currentRunId = 0;
 
         // Execution state
         this.running = false;
@@ -396,6 +111,8 @@ export class WorkflowEngine {
         // Initialize execution state
         this.running = true;
         this.abortController = new AbortController();
+        this.currentRunId += 1;
+        const runId = this.currentRunId;
         this.reset();
         this.dependencyTracker = new DependencyTracker(this.graph, this.edges);
 
@@ -421,10 +138,15 @@ export class WorkflowEngine {
             }
 
             // Execute initial ready nodes in parallel
-            await this._executeReadyNodes(initialReady);
+            await this._executeReadyNodes(initialReady, runId);
 
             // Wait for all nodes to complete
             await this._waitForAllNodes();
+
+            // Stop requested: do not emit workflow-done
+            if (!this.running || this.abortController?.signal?.aborted || runId !== this.currentRunId) {
+                return { success: false, cancelled: true, error: "Workflow stopped" };
+            }
 
             // Check for unfinished nodes (cycles or skipped)
             const unfinished = [...this.nodeStates.entries()]
@@ -447,6 +169,9 @@ export class WorkflowEngine {
             return { success: !hasErrors, results: this.results };
 
         } catch (error) {
+            if (this._isAbortError(error) || !this.running) {
+                return { success: false, cancelled: true, error: "Workflow stopped" };
+            }
             console.error("WorkflowEngine: Workflow failed:", error);
             this._emit("workflow-error", { error: error.message });
             return { success: false, error: error.message };
@@ -490,14 +215,35 @@ export class WorkflowEngine {
      * Execute one node manually
      */
     async executeNodeManual(node) {
+        this._setNodeState(node.id, NodeState.RUNNING);
         this._emit("node-start", { id: node.id, label: node.label });
 
         try {
-            const outputs = await this._executeViaBackend(node, node.inputs || []);
+            let outputs;
+            if (node.packageName && node.nodeName) {
+                outputs = await this._executeViaBackend(node, node.inputs || []);
+            } else {
+                // Primitive/local node: return current outputs as execution result
+                outputs = (node.outputs || []).map((output, index) => ({
+                    index,
+                    name: output.name || `output_${index}`,
+                    value: output.value,
+                    type: output.type || DataType.ANY
+                }));
+            }
+
+            this.results[node.id] = outputs;
+            this._setNodeState(node.id, NodeState.COMPLETED);
+            console.log(`WorkflowEngine: Manually executed ${node.id} (${node.label}) with outputs:`, outputs);
             this._emit("node-result", { id: node.id, result: outputs });
-            this._emit("node-done", { id: node.id });
+            this._emit("node-done", { id: node.id, label: node.label });
             return outputs;
         } catch (error) {
+            if (this._isAbortError(error)) {
+                this._setNodeState(node.id, NodeState.CANCELLED);
+            } else {
+                this._setNodeState(node.id, NodeState.ERROR);
+            }
             this._emit("node-error", { id: node.id, error: error.message });
             throw error;
         }
@@ -511,8 +257,8 @@ export class WorkflowEngine {
      * Execute all ready nodes in parallel
      * @param {Array} readyNodeIds - List of node IDs ready to execute
      */
-    async _executeReadyNodes(readyNodeIds) {
-        const executions = readyNodeIds.map(nodeId => this._executeNode(nodeId));
+    async _executeReadyNodes(readyNodeIds, runId = this.currentRunId) {
+        const executions = readyNodeIds.map(nodeId => this._executeNode(nodeId, runId));
         await Promise.allSettled(executions);
     }
 
@@ -528,7 +274,7 @@ export class WorkflowEngine {
      * Executes a single node
      * @param {string} nodeId - ID of the node to execute
      */
-    async _executeNode(nodeId) {
+    async _executeNode(nodeId, runId = this.currentRunId) {
         // Create a promise for this node's execution : will be resolved/rejected later
         const nodePromise = new Promise((resolve, reject) => {
             this.nodeResolvers.set(nodeId, { resolve, reject });
@@ -536,7 +282,7 @@ export class WorkflowEngine {
         this.executionPromises.set(nodeId, nodePromise);
 
         try {
-            if (!this.running) {
+            if (!this.running || runId !== this.currentRunId || this.abortController?.signal?.aborted) {
                 throw new Error("Workflow stopped");
             }
 
@@ -565,8 +311,13 @@ export class WorkflowEngine {
                     index,
                     name: output.name || `output_${index}`,
                     value: output.value,
-                    type: output.type || 'any'
+                    type: output.type || DataType.ANY
                 }));
+            }
+
+            // Ignore late backend responses after stop/restart
+            if (!this.running || runId !== this.currentRunId || this.abortController?.signal?.aborted) {
+                throw new Error("Workflow stopped");
             }
 
             this.results[nodeId] = outputs;
@@ -586,12 +337,21 @@ export class WorkflowEngine {
             if (newlyReady.length > 0 && this.running) {
                 console.log(`WorkflowEngine: Nodes now ready after ${nodeId}:`, newlyReady);
                 // Execute newly ready nodes in parallel.
-                await this._executeReadyNodes(newlyReady);
+                await this._executeReadyNodes(newlyReady, runId);
             }
 
             return outputs;
 
         } catch (error) {
+            if (this._isAbortError(error) || !this.running || runId !== this.currentRunId) {
+                if (this.nodeStates.get(nodeId) !== NodeState.CANCELLED) {
+                    this._setNodeState(nodeId, NodeState.CANCELLED);
+                }
+                const resolver = this.nodeResolvers.get(nodeId);
+                if (resolver) resolver.resolve(null);
+                return null;
+            }
+
             console.error(`WorkflowEngine: Node ${nodeId} failed:`, error);
 
             // Mark as error
@@ -626,17 +386,23 @@ export class WorkflowEngine {
      * Execute a node via backend API
      */
     async _executeViaBackend(node, inputs) {
+        const preparedInputs = (inputs || []).map((input) => ({
+            ...input,
+            value: input.value ?? input.default
+        }));
+
         console.log(`WorkflowEngine: Backend call for ${node.id}`, {
             package: node.packageName,
             node: node.nodeName,
-            inputs: inputs
+            inputs: preparedInputs
         });
 
         const response = await executeNode({
             nodeId: node.id,
             packageName: node.packageName,
             nodeName: node.nodeName,
-            inputs: inputs
+            inputs: preparedInputs,
+            signal: this.abortController?.signal
         });
 
         if (response.success) {
@@ -644,6 +410,13 @@ export class WorkflowEngine {
         } else {
             throw new Error(response.error || `Execution failed for ${node.id}`);
         }
+    }
+
+    _isAbortError(error) {
+        return (
+            error?.name === "AbortError" ||
+            error?.message === "Workflow stopped"
+        );
     }
 
     /**

@@ -1,0 +1,465 @@
+{
+  "package_name": "openalea.astk",
+  "nodes": {
+    "iter with delays": {
+      "description": "Iteration ",
+      "inputs": [
+        {
+          "id": "port_0_generator",
+          "name": "generator",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_1_delay generator",
+          "name": "delay generator",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_value",
+          "name": "value",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_1_delay",
+          "name": "delay",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_2_trigger",
+          "name": "trigger",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null
+    },
+    "time_control": {
+      "description": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "port_0_values",
+          "name": "values",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_1_delays",
+          "name": "delays",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null
+    },
+    "rain filter": {
+      "description": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "port_0_time_sequence",
+          "name": "time_sequence",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_1_filter",
+          "name": "filter",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_2_weather",
+          "name": "weather",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null
+    },
+    "time filter": {
+      "description": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "port_0_time_sequence",
+          "name": "time_sequence",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_1_filter",
+          "name": "filter",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null
+    },
+    "date filter": {
+      "description": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "port_0_time_sequence",
+          "name": "time_sequence",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_1_filter",
+          "name": "filter",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_2_time_data",
+          "name": "time_data",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null
+    },
+    "thermal_time filter": {
+      "description": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "port_0_time_sequence",
+          "name": "time_sequence",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_1_filter",
+          "name": "filter",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_2_weather",
+          "name": "weather",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_3_model",
+          "name": "model",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null
+    },
+    "Weather": {
+      "description": "",
+      "inputs": [
+        {
+          "id": "port_0_data_file",
+          "name": "data_file",
+          "interface": "IFileStr",
+          "type": "string",
+          "optional": false,
+          "desc": "Path to the meteo data file"
+        }
+      ],
+      "outputs": [],
+      "callable": null
+    },
+    "Weather check": {
+      "description": "",
+      "inputs": [
+        {
+          "id": "port_0_Weather",
+          "name": "Weather",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_1_Variables",
+          "name": "Variables",
+          "interface": "ISequence",
+          "type": "array",
+          "optional": false,
+          "desc": "",
+          "default": [
+            "temperature_air",
+            "PPFD",
+            "relative_humidity",
+            "wind_speed",
+            "rain",
+            "global_radiation",
+            "vapor_pressure"
+          ]
+        },
+        {
+          "id": "port_2_Models",
+          "name": "Models",
+          "interface": "IDict",
+          "type": "object",
+          "optional": false,
+          "desc": "",
+          "default": {}
+        }
+      ],
+      "outputs": [],
+      "callable": null
+    },
+    "Weather data": {
+      "description": "",
+      "inputs": [],
+      "outputs": [],
+      "callable": null
+    },
+    "Weather at start": {
+      "description": "",
+      "inputs": [],
+      "outputs": [],
+      "callable": null
+    },
+    "date_range": {
+      "description": "Time sequence creation",
+      "inputs": [
+        {
+          "id": "port_0_start",
+          "name": "start",
+          "interface": "IDateTime",
+          "type": "string",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_1_end",
+          "name": "end",
+          "interface": "IDateTime",
+          "type": "string",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_2_periods",
+          "name": "periods",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_3_freq",
+          "name": "freq",
+          "interface": "IStr",
+          "type": "string",
+          "optional": false,
+          "desc": "",
+          "default": "H"
+        },
+        {
+          "id": "port_4_tz",
+          "name": "tz",
+          "interface": "IStr",
+          "type": "string",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_5_normalise",
+          "name": "normalise",
+          "interface": "IBool",
+          "type": "boolean",
+          "optional": false,
+          "desc": "",
+          "default": false
+        },
+        {
+          "id": "port_6_name",
+          "name": "name",
+          "interface": "IStr",
+          "type": "string",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "outputs": [],
+      "callable": null
+    },
+    "DegreeDay": {
+      "description": "",
+      "inputs": [],
+      "outputs": [],
+      "callable": null
+    },
+    "TimeControl": {
+      "description": "",
+      "inputs": [
+        {
+          "id": "port_0_delay",
+          "name": "delay",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_1_steps",
+          "name": "steps",
+          "interface": "IInt",
+          "type": "float",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_2_model",
+          "name": "model",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_3_weather",
+          "name": "weather",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_4_start_date",
+          "name": "start_date",
+          "interface": "IStr",
+          "type": "string",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "port_0_out",
+          "name": "out",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null
+    },
+    "new_canopy": {
+      "description": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "port_0_g",
+          "name": "g",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_1_model",
+          "name": "model",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null
+    },
+    "grow_canopy": {
+      "description": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "port_0_g",
+          "name": "g",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_1_model",
+          "name": "model",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null
+    },
+    "plot_canopy": {
+      "description": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "port_0_scene",
+          "name": "scene",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        },
+        {
+          "id": "port_1_model",
+          "name": "model",
+          "interface": "None",
+          "type": "any",
+          "optional": false,
+          "desc": ""
+        }
+      ],
+      "callable": null
+    }
+  },
+  "has_wralea": true
+}

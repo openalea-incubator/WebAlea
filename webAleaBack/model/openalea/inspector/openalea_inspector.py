@@ -3,6 +3,7 @@ import logging
 import subprocess
 import ast
 import json
+from pathlib import Path
 
 from typing import Any, Dict, List
 
@@ -10,9 +11,34 @@ from typing import Any, Dict, List
 
 class OpenAleaInspector:
     """Class to inspect OpenAlea packages installed in the current environment."""
-    describe_script = "model/openalea/inspector/runnable/describe_openalea_package.py"
-    list_installed_script = "model/openalea/inspector/runnable/list_installed_openalea_packages.py"
-    list_wralea_script = "model/openalea/inspector/runnable/list_wralea_packages.py"
+    _BASE_DIR = Path(__file__).resolve().parent
+    describe_script = str(_BASE_DIR / "runnable" / "describe_openalea_package.py")
+    list_installed_script = str(_BASE_DIR / "runnable" / "list_installed_openalea_packages.py")
+    list_wralea_script = str(_BASE_DIR / "runnable" / "list_wralea_packages.py")
+
+    @staticmethod
+    def _extract_last_json_object(raw_text: str) -> str | None:
+        """Extract the last JSON-like object from raw text output.
+
+        This helps when subprocess stdout is polluted by warnings or logs.
+        """
+        if not raw_text:
+            return None
+        depth = 0
+        start = None
+        last = None
+        for idx, ch in enumerate(raw_text):
+            if ch == "{":
+                if depth == 0:
+                    start = idx
+                depth += 1
+            elif ch == "}":
+                if depth > 0:
+                    depth -= 1
+                    if depth == 0 and start is not None:
+                        last = raw_text[start:idx + 1]
+                        start = None
+        return last
 
     @staticmethod
     def list_installed_openalea_packages() -> List[str]:
@@ -80,11 +106,23 @@ class OpenAleaInspector:
         try:
             description = json.loads(result.stdout)
         except ValueError:
-            try:
-                description = ast.literal_eval(result.stdout)
-            except (ValueError, SyntaxError):
-                logging.error("Failed to parse package description output: %s", result.stdout)
+            candidate = OpenAleaInspector._extract_last_json_object(result.stdout)
+            if candidate:
+                try:
+                    description = json.loads(candidate)
+                except ValueError:
+                    try:
+                        description = ast.literal_eval(candidate)
+                    except (ValueError, SyntaxError):
+                        description = {}
+            else:
                 description = {}
+            if not description:
+                try:
+                    description = ast.literal_eval(result.stdout)
+                except (ValueError, SyntaxError):
+                    logging.error("Failed to parse package description output: %s", result.stdout)
+                    description = {}
         return description
 
     @staticmethod
@@ -115,7 +153,7 @@ class OpenAleaInspector:
         # parse output
         try:
             packages = json.loads(result.stdout)
-        except (ValueError):
+        except ValueError:
             logging.error("Failed to parse wralea packages output: %s", result.stdout)
             packages = []
         return packages

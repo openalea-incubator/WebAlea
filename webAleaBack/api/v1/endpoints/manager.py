@@ -3,7 +3,7 @@ from typing import List, Optional
 import logging
 
 from fastapi import APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from model.utils.conda_utils import Conda
 from core.config import settings
@@ -13,31 +13,59 @@ router = APIRouter()
 
 class PackageSpec(BaseModel):
     """Specification for a conda package with optional version."""
-    name: str
-    version: Optional[str] = None
+    name: str = Field(..., example="openalea.core")
+    version: Optional[str] = Field(None, example="2.0.0")
 
 
 class InstallRequest(BaseModel):
     """Request model for installing packages into a conda environment."""
-    packages: List[PackageSpec]
-    env_name: Optional[str] = None
+    packages: List[PackageSpec] = Field(
+        ...,
+        example=[
+            {"name": "openalea.core", "version": "2.0.0"},
+            {"name": "openalea.numpy"},
+        ],
+    )
+    env_name: Optional[str] = Field(None, example="webalea_env")
 
-
-@router.get("/")
-def fetch_package_list():
-    """Fetch the list of all conda packages."""
-    logging.info("Fetching package list")
-    return Conda.list_packages()
-
-
-@router.get("/latest")
+@router.get(
+    "/latest",
+    responses={
+        200: {
+            "description": "Latest package versions from the OpenAlea channel",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "openalea.core": {"version": "2.0.0", "build": "py_0"},
+                        "openalea.numpy": {"version": "1.0.0", "build": "py_0"},
+                    }
+                }
+            },
+        }
+    },
+)
 def fetch_latest_package_versions():
     """Fetch the latest versions of all conda packages."""
     logging.info("Fetching latest package versions")
     return Conda.list_latest_packages()
 
 
-@router.post("/install")
+@router.post(
+    "/install",
+    responses={
+        200: {
+            "description": "Installation results",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "installed": ["openalea.core=2.0.0"],
+                        "failed": [],
+                    }
+                }
+            },
+        }
+    },
+)
 def install_packages_in_env(request: InstallRequest):
     """Install a list of packages into the given conda environment.
 

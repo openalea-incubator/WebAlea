@@ -1,0 +1,19 @@
+{
+    "node_id": "n7798-openalea.math::==",
+    "package_name": "openalea.math",
+    "node_name": "==",
+    "inputs": [
+        {
+            "id": "port_0_a",
+            "name": "a",
+            "type": "float",
+            "value": 0
+        },
+        {
+            "id": "port_1_b",
+            "name": "b",
+            "type": "float",
+            "value": 0
+        }
+    ]
+}

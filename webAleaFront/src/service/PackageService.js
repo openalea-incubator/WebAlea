@@ -30,7 +30,11 @@ import {
 
 /**
  * @typedef {Object} VisualPackage
- * @property {string} name - Package name
+ * @property {string} name - Canonical package name (used for backward compatibility)
+ * @property {string} packageName - Canonical package name for node inspection
+ * @property {string} installName - Distribution/conda package name for installation
+ * @property {string} entryName - wralea entry-point name
+ * @property {string} distName - Python distribution name if available
  * @property {string} module - Module path for wralea entry point
  */
 
@@ -59,6 +63,8 @@ import {
  * @property {NodePort[]} inputs - Input ports
  * @property {NodePort[]} outputs - Output ports
  * @property {string|null} callable - Callable class path
+ * @property {string} [nodekind] - "atomic" | "composite"
+ * @property {Object|null} [graph] - Composite graph (if nodekind is composite)
  */
 
 // ============================================================================
@@ -152,7 +158,7 @@ function parseNodePort(port, index = 0) {
             const cleanedStr = port.replace(/'/g, '"').replace(/None/g, 'null');
             const parsed = JSON.parse(cleanedStr);
             const interfaceValue = safeString(parsed.interface, "None");
-            return {
+            const result = {
                 id: safeString(parsed.id, `port_${index}_${parsed.name}`),
                 name: safeString(parsed.name, "unknown"),
                 interface: interfaceValue,
@@ -161,6 +167,10 @@ function parseNodePort(port, index = 0) {
                 desc: safeString(parsed.desc || parsed.description, ""),
                 default: parsed.default ?? null
             };
+            if (parsed.enum_options && Array.isArray(parsed.enum_options)) {
+                result.enumOptions = parsed.enum_options;
+            }
+            return result;
         } catch {
             // Failed to parse, return default with the string as name
             return { ...defaultPort, name: port };
@@ -233,11 +243,23 @@ export async function getVisualPackagesList() {
         const wraleaPackages = safeArray(response?.wralea_packages);
 
         return wraleaPackages
-            .map(pkg => ({
-                name: safeString(pkg?.name),
-                module: safeString(pkg?.module)
-            }))
-            .filter(pkg => pkg.name); // Remove entries with empty names
+            .map(pkg => {
+                const row = typeof pkg === "string" ? { name: pkg } : (pkg || {});
+                const packageName = safeString(row.package_name || row.name);
+                const installName = safeString(row.install_name || row.dist_name || packageName);
+                const entryName = safeString(row.entry_name || row.name || packageName);
+
+                return {
+                    // Keep "name" for compatibility with existing tree builder.
+                    name: packageName,
+                    packageName,
+                    installName,
+                    entryName,
+                    distName: safeString(row.dist_name),
+                    module: safeString(row.module)
+                };
+            })
+            .filter(pkg => pkg.packageName); // Remove entries with empty names
 
     } catch (error) {
         console.error("getVisualPackagesList: Error fetching visual packages:", error);
@@ -272,8 +294,8 @@ export async function isInstalledPackage(packageName) {
         return installedList.some(pkg => {
             const pkgLower = safeString(pkg).toLowerCase();
             return pkgLower === normalizedName ||
-                   pkgLower === `openalea.${normalizedName}` ||
-                   `openalea.${pkgLower}` === normalizedName;
+                pkgLower === `openalea.${normalizedName}` ||
+                `openalea.${pkgLower}` === normalizedName;
         });
 
     } catch (error) {
@@ -355,19 +377,39 @@ export async function getNodesList(pkg) {
             return [];
         }
 
-        // Check if package is installed, install if needed
-        const isInstalled = await isInstalledPackage(pkg.name);
-        if (!isInstalled) {
-            console.log(`getNodesList: Package "${pkg.name}" not installed. Installing...`);
-            const installResult = await installPackage(pkg);
-            if (!installResult.success) {
-                console.error(`getNodesList: Failed to install package "${pkg.name}"`, installResult.failed);
-                return [];
-            }
-        }
+        const packageName = safeString(pkg.packageName || pkg.name);
+        const installName = safeString(pkg.installName || packageName);
+        let response = null;
 
-        // Fetch nodes from backend
-        const response = await fetchPackageNodes(pkg.name);
+        // Try to fetch nodes first; many packages are already installed under an alias.
+        try {
+            response = await fetchPackageNodes(packageName);
+        } catch (fetchError) {
+            // Install as fallback only if package is effectively absent.
+            const isInstalled = await isInstalledPackage(packageName);
+            if (!isInstalled) {
+                console.log(
+                    `getNodesList: Package "${packageName}" not installed. Installing "${installName}"...`, fetchError
+                );
+                const installResult = await installPackage({
+                    name: installName,
+                    version: pkg.version || null
+                });
+                if (!installResult.success) {
+                    console.error(
+                        `getNodesList: Failed to install package "${installName}"`,
+                        installResult.failed
+                    );
+                    return [];
+                }
+            } else {
+                console.warn(
+                    `getNodesList: Package "${packageName}" seems installed but node fetch failed once. Retrying...`, fetchError
+                );
+            }
+
+            response = await fetchPackageNodes(packageName);
+        }
 
         // Backend returns: {package_name: "...", nodes: {nodeName: {...}}, has_wralea: bool}
         if (!response || typeof response !== "object") {
@@ -393,7 +435,9 @@ export async function getNodesList(pkg) {
                 description: safeString(nodeData?.description),
                 inputs,
                 outputs,
-                callable: nodeData?.callable ?? null
+                callable: nodeData?.callable ?? null,
+                nodekind: safeString(nodeData?.nodekind, "atomic"),
+                graph: nodeData?.graph ?? null
             };
         });
 

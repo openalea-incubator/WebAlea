@@ -2,117 +2,60 @@
 import json
 import sys
 import logging
+import os
+
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
+if ROOT_DIR not in sys.path:
+    sys.path.append(ROOT_DIR)
+
+from model.openalea.runner.utils.workflow_helpers import (
+    apply_inputs,
+    build_outputs,
+    get_factory_outputs,
+    get_node_factory,
+    get_package,
+    init_package_manager,
+    instantiate_node,
+)
 
 logging.basicConfig(level=logging.INFO)
 
-def parseIfBoolean(type: str):
-    if type == "bool":
-        return "boolean"
-    return type
 
 def execute_node(package_name: str, node_name: str, inputs: dict) -> dict:
-    """
-    Execute a single OpenAlea node.
+    """Execute a single OpenAlea node.
 
     Args:
-        package_name: OpenAlea package (e.g., "openalea.math")
-        node_name: Node name in package (e.g., "addition")
-        inputs: Dict of {input_name: value} or {input_index: value}
-
+        package_name (str): OpenAlea package name (e.g., "openalea.math").
+        node_name (str): Node name within the package (e.g., "addition").
+        inputs (dict): Input values {input_name: value} or {input_index: value}.
     Returns:
-        Dict with outputs: [{index, name, value, type}, ...]
+        response (dict): Output response with serialized outputs.
     """
-    from openalea.core.pkgmanager import PackageManager
-
     logging.info("Executing node '%s' from package '%s'", node_name, package_name)
-    logging.info("Inputs: %s", inputs)
 
-    # 1. Init PackageManager
-    pm = PackageManager()
-    pm.init()
+    # 1. Init PackageManager + resolve factory
+    pm = init_package_manager()
+    pkg = get_package(pm, package_name)
+    factory = get_node_factory(pkg, package_name, node_name)
 
-    # 2. Get package
-    pkg = pm.get(package_name)
-    if not pkg:
-        raise ValueError(f"Package '{package_name}' not found")
+    # 2. Instantiate node + inject inputs
+    node = instantiate_node(factory)
+    apply_inputs(node, inputs)
 
-    # 3. Get node factory
-    factory = pkg.get(node_name)
-    if not factory:
-        raise ValueError(f"Node '{node_name}' not found in '{package_name}'")
-
-    # 4. Instantiate node
-    node = factory.instantiate()
-    logging.info("Node instantiated: %s", node)
-
-    # 5. Inject inputs
-    for key, value in inputs.items():
-        try:
-            # Try as index first if key is numeric
-            if isinstance(key, int):
-                node.set_input(key, value)
-                logging.info("Set input[%d] = %s", key, value)
-            elif str(key).isdigit():
-                node.set_input(int(key), value)
-                logging.info("Set input[%s] = %s", key, value)
-            else:
-                # Try by name
-                node.set_input(key, value)
-                logging.info("Set input['%s'] = %s", key, value)
-        except Exception as e:
-            logging.warning("Failed to set input '%s': %s", key, e)
-
-    # 6. Execute node
+    # 3. Execute node
     logging.info("Evaluating node...")
     node.eval()
     logging.info("Node evaluation completed")
 
-    # 7. Serialize outputs
-    outputs = []
-    node_outputs = node.outputs if hasattr(node, 'outputs') else []
-    logging.info("Node raw outputs: %s", node_outputs)
+    # 4. Serialize outputs
+    factory_outputs = get_factory_outputs(factory)
+    outputs = build_outputs(node, factory_outputs)
 
-    # Get output descriptions from factory if available
-    factory_outputs = []
-    if hasattr(factory, 'outputs') and factory.outputs:
-        factory_outputs = factory.outputs
-
-    for i, output_value in enumerate(node_outputs):
-        # Get output name from factory description
-        output_name = f"output_{i}"
-        if i < len(factory_outputs):
-            fo = factory_outputs[i]
-            if isinstance(fo, dict):
-                output_name = fo.get("name", output_name)
-            elif hasattr(fo, 'name'):
-                output_name = fo.name or output_name
-
-        outputs.append({
-            "index": i,
-            "name": output_name,
-            "value": serialize_value(output_value),
-            "type": parseIfBoolean(type(output_value).__name__) if output_value is not None else "None"
-        })
-
-    logging.info("Outputs: %s", outputs)
+    logging.info("Serialized outputs summary: %s", [
+        {"index": out["index"], "name": out["name"], "type": out["type"]}
+        for out in outputs
+    ])
     return {"success": True, "outputs": outputs}
-
-
-def serialize_value(value):
-    """Serialize a Python value to JSON-compatible format."""
-    if value is None:
-        return None
-    if isinstance(value, (int, float, str, bool)):
-        return value
-    if isinstance(value, (list, tuple)):
-        return [serialize_value(v) for v in value]
-    if isinstance(value, dict):
-        return {str(k): serialize_value(v) for k, v in value.items()}
-    # For numpy arrays or similar
-    if hasattr(value, 'tolist'):
-        return value.tolist()
-    # Fallback: convert to string representation
-    return str(value)
 
 
 if __name__ == "__main__":

@@ -1,43 +1,80 @@
 @echo off
+SETLOCAL EnableDelayedExpansion
 REM Script to manage Docker Compose services on Windows
 
 SET ARG=%1
 
 IF "%ARG%"=="start" (
     REM Launch the backend and frontend using Docker Compose
-    docker-compose up --build -d
+    docker compose build
+    docker compose up -d
 
-    REM Give Docker a moment to settle
-    timeout /t 1 >nul
+    REM Wait until backend is ready to accept API calls
+    call :wait_backend
+    if errorlevel 1 (
+        EXIT /B 1
+    )
 
-    REM Show the running services and their published localhost addresses (simplified)
-    FOR /F "tokens=*" %%i IN ('docker-compose ps -q') DO (
-        SET ID=%%i
-        FOR /F "tokens=*" %%p IN ('docker inspect -f "%%{{range $p,$conf := .NetworkSettings.Ports}}{{if $conf}}{{printf "%%s=%%s:%%s\n" $p (index $conf 0).HostIp (index $conf 0).HostPort}}{{else}}{{printf "%%s=unmapped\n" $p}}{{end}}{{end}}" %%i') DO (
-            SET LINE=%%p
-            SET PROTOPORT=!LINE:*=!
-            SET MAPPING=!LINE:*!=!
-            IF "!MAPPING!"=="unmapped" (
-                ECHO !ID!: !PROTOPORT! -> unmapped
-            ) ELSE (
-                FOR /F "tokens=1,2 delims=:" %%a IN ("!MAPPING!") DO (
-                    SET HOSTIP=%%a
-                    SET HOSTPORT=%%b
-                    IF "!HOSTIP!"=="0.0.0.0" (
-                        ECHO !ID!: !PROTOPORT! -> http://localhost:!HOSTPORT!
-                    ) ELSE (
-                        ECHO !ID!: !PROTOPORT! -> http://!HOSTIP!:!HOSTPORT!
-                    )
-                )
+    REM Show the running services and their published localhost addresses
+    ECHO.
+    ECHO Running services:
+    ECHO ================
+    FOR /F "tokens=*" %%i IN ('docker compose ps -q') DO (
+        FOR /F "tokens=*" %%n IN ('docker inspect -f "{{.Name}}" %%i') DO (
+            SET CONTAINER_NAME=%%n
+            ECHO !CONTAINER_NAME!:
+        )
+        FOR /F "tokens=1,3 delims= " %%a IN ('docker port %%i ^| findstr "0.0.0.0"') DO (
+            FOR /F "tokens=2 delims=:" %%c IN ("%%b") DO (
+                ECHO    -^> http://localhost:%%c
             )
         )
+        ECHO.
     )
 ) ELSE IF "%ARG%"=="stop" (
     REM Stop and clean up Docker Compose services
-    docker-compose down --volumes --remove-orphans
+    docker compose pause
+) ELSE IF "%ARG%"=="clean-volumes" (
+    REM Stop and clean up Docker Compose services
+    docker compose down --volumes
+) ELSE IF "%ARG%"=="clean-containers" (
+    REM Stop and clean up Docker Compose services
+    docker compose down --remove-orphans
+) ELSE IF "%ARG%"=="clean" (
+    REM Stop and clean up Docker Compose services
+    docker compose down --volumes --remove-orphans
 ) ELSE (
     REM Display help section
-    ECHO Usage: %0 ^{start^|stop^}
+    ECHO Usage: %0 {start^|stop^|clean-volumes^|clean-containers^|clean}
     ECHO start - Launch the backend and frontend using Docker Compose
     ECHO stop  - Stop and clean up Docker Compose services
+    ECHO clean-volumes - Delete volume =^> reset volumes env
+    ECHO clean-containers - Delete container =^> reset containers env
+    ECHO clean - Delete volume and container =^> reset docker env
 )
+
+ENDLOCAL
+goto :eof
+
+:wait_backend
+SET MAX_RETRIES=180
+SET RETRY=0
+ECHO.
+ECHO Waiting for backend readiness on http://localhost:8000/health ...
+
+:WAIT_BACKEND_LOOP
+powershell -NoProfile -Command "try { $r=Invoke-WebRequest -Uri 'http://localhost:8000/health' -UseBasicParsing -TimeoutSec 2; if ($r.StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }"
+IF !ERRORLEVEL! EQU 0 (
+    ECHO Backend is ready.
+    exit /b 0
+)
+
+SET /A RETRY+=1
+IF !RETRY! GEQ !MAX_RETRIES! (
+    ECHO Backend did not become ready in time.
+    ECHO You can inspect logs with: docker logs webalea-backend-1
+    exit /b 1
+)
+
+timeout /t 2 >nul
+GOTO WAIT_BACKEND_LOOP

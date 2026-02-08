@@ -7,16 +7,49 @@ from model.openalea.inspector.openalea_inspector import OpenAleaInspector
 
 router = APIRouter()
 
-@router.get("/installed")
+@router.get(
+    "/installed",
+    responses={
+        200: {
+            "description": "Installed OpenAlea packages",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "installed_openalea_packages": [
+                            "openalea.core",
+                            "openalea.numpy",
+                        ]
+                    }
+                }
+            },
+        }
+    },
+)
 def fetch_installed_openalea_packages():
     """Fetch the list of installed OpenAlea packages in the current conda environment."""
     logging.info("Fetching installed OpenAlea packages")
     packages = OpenAleaInspector.list_installed_openalea_packages()
-    logging.info("Installed OpenAlea packages: %s", packages)
     return {"installed_openalea_packages": packages}
 
 
-@router.get("/wralea")
+@router.get(
+    "/wralea",
+    responses={
+        200: {
+            "description": "Packages exposing visual nodes (wralea)",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "wralea_packages": [
+                            {"name": "openalea.core", "module": "openalea.core"},
+                            {"name": "openalea.numpy", "module": "openalea.numpy"},
+                        ]
+                    }
+                }
+            },
+        }
+    },
+)
 def fetch_wralea_packages():
     """Fetch the list of installed packages that have visual nodes (wralea).
 
@@ -25,10 +58,35 @@ def fetch_wralea_packages():
     """
     logging.info("Fetching packages with visual nodes (wralea)")
     packages = OpenAleaInspector.list_wralea_packages()
-    logging.info("Wralea packages found: %s", packages)
     return {"wralea_packages": packages}
 
-@router.get("/installed/{package_name}")
+@router.get(
+    "/installed/{package_name}",
+    responses={
+        200: {
+            "description": "Node descriptions for a package",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "package": "openalea.core",
+                        "nodes": [
+                            {
+                                "name": "addition",
+                                "inputs": [
+                                    {"name": "a", "type": "float"},
+                                    {"name": "b", "type": "float"},
+                                ],
+                                "outputs": [{"name": "result", "type": "float"}],
+                            }
+                        ],
+                    }
+                }
+            },
+        },
+        404: {"description": "Package not found"},
+        500: {"description": "Unexpected error"},
+    },
+)
 def fetch_package_nodes(package_name: str):
     """fetch a list of present nodes within a specified package
 

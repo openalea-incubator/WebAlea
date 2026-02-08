@@ -1,5 +1,5 @@
 .workspace-flow {
-  height: 70vh;          /* takes 70% of the window height */
+  height: 100%;          /* takes 100% of the window height */
   min-height: 500px;     /* comfortable minimum height */
   width: 100%;
   overflow: hidden;      /* avoid unwanted scrolls */

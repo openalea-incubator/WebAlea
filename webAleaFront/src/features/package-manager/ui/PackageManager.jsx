@@ -32,7 +32,7 @@ export default function PackageManager() {
     const [packagesInstall, setPackagesInstall] = React.useState([]);
     const [filteredPackagesInstall, setFilteredPackagesInstall] = React.useState([]);
     const [loadingInstall, setLoadingInstall] = React.useState(true);
-    const [installing, setInstalling] = React.useState(null);
+    const [installing, setInstalling] = React.useState(new Set());
     const [installedPackages, setInstalledPackages] = React.useState(new Set());
     const [searchTermInstall, setSearchTermInstall] = React.useState('');
     const [snackbarInstall, setSnackbarInstall] = React.useState({ open: false, message: '', severity: 'success' });
@@ -42,7 +42,7 @@ export default function PackageManager() {
         const fetchInstalledPackages = async () => {
             try {
                 const pkgInstalled = await getInstalledPackagesList();
-                setInstalledPackages(new Set(pkgInstalled.map(pkg => pkg.name)));
+                setInstalledPackages(new Set(pkgInstalled.map(pkg => String(pkg).toLowerCase())));
             } catch (error) {
                 console.error("Error fetching installed packages:", error);
             }
@@ -77,6 +77,10 @@ export default function PackageManager() {
                     packageName: item.packageName,
                     nodeName: nodeName,
                     callable: item.callable,
+                    metadata: item.metadata || {},
+                    nodekind: item.nodekind ?? "atomic",
+                    graph: item.graph ?? null,
+                    implicit_output: item.implicit_output ?? false,
                 }
             });
             addNode(newNode);

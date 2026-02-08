@@ -30,7 +30,7 @@ describe("NodeInputEnum Unit Tests", () => {
         );
 
         expect(
-            screen.getByRole("option", { name: "-- No options --" })
+            screen.getByRole("option", { name: "Default" })
         ).toBeInTheDocument();
     });
 

@@ -47,7 +47,7 @@ describe('WorkSpace Component', () => {
         expect(screen.getByTestId('reactflow')).toBeInTheDocument();
         expect(screen.getByTestId('background')).toBeInTheDocument();
         expect(screen.getByTestId('controls')).toBeInTheDocument();
-        expect(screen.getByTestId('minimap')).toBeInTheDocument();
+        expect(screen.queryByTestId('minimap')).not.toBeInTheDocument();
     });
 
     test('passes nodes and edges to ReactFlow', () => {
@@ -71,47 +71,3 @@ describe('WorkSpace Component', () => {
     });
 
     });
-    describe('WorkSpace Component', () => {
-        beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
-    test('renders ReactFlow container', () => {
-        useFlow.mockReturnValue({
-            nodes: [],
-            edges: [],
-            onNodesChange: jest.fn(),
-            onEdgesChange: jest.fn(),
-            onConnect: jest.fn(),
-            nodesTypes: {},
-            onNodeClick: jest.fn()
-        });
-
-        render(<WorkSpace />);
-
-        expect(screen.getByTestId('reactflow')).toBeInTheDocument();
-        expect(screen.getByTestId('background')).toBeInTheDocument();
-        expect(screen.getByTestId('controls')).toBeInTheDocument();
-        expect(screen.getByTestId('minimap')).toBeInTheDocument();
-    });
-
-    test('passes nodes and edges to ReactFlow', () => {
-        const nodes = [{ id: 'n1', data: { label: 'Node 1' }, position: { x: 0, y: 0 } }];
-        const edges = [{ id: 'e1', source: 'n1', target: 'n2' }];
-
-        useFlow.mockReturnValue({
-            nodes,
-            edges,
-            onNodesChange: jest.fn(),
-            onEdgesChange: jest.fn(),
-            onConnect: jest.fn(),
-            nodesTypes: {},
-            onNodeClick: jest.fn()
-        });
-
-        render(<WorkSpace />);
-
-        const container = screen.getByTestId('reactflow');
-        expect(container).toBeInTheDocument();
-    });
-});

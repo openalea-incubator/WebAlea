@@ -7,6 +7,24 @@ services:
       - "8000:8000"
     environment:
       - APP_HOME=/app
+    volumes:
+      - conda_env:/opt/conda
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "conda",
+          "run",
+          "-n",
+          "webalea_env",
+          "python",
+          "-c",
+          "import urllib.request,sys; urllib.request.urlopen('http://localhost:8000/health', timeout=2); sys.exit(0)"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 120s
     networks:
       - webalea-network
 
@@ -16,9 +34,15 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
     networks:
       - webalea-network
 
 networks:
   webalea-network:
     driver: bridge
+
+volumes:
+  conda_env:
