@@ -17,6 +17,10 @@ jest.mock("../../../../../src/features/nodes/ui/sidebar_detail/NodeDescription",
     <div data-testid="node-description">NodeDescription content</div>
 ));
 
+jest.mock("../../../../../src/features/nodes/ui/sidebar_detail/NodeResultRender", () => () => (
+    <div>Preview...</div>
+));
+
 /* ======================
     Tests
 ====================== */

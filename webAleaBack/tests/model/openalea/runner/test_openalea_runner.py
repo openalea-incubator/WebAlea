@@ -9,19 +9,20 @@ from model.openalea.runner.openalea_runner import OpenAleaRunner
 class TestOpenAleaRunner(unittest.TestCase):
     """Tests the OpenAleaRunner class"""
 
-    @unittest.mock.patch("model.openalea.runner.openalea_runner.subprocess")
-    def test_execute_node(self, mock_subprocess):
+    @unittest.mock.patch("model.openalea.runner.openalea_runner.run_node_subprocess")
+    def test_execute_node(self, mock_run_node):
         """Test executing a simple OpenAlea node."""
-        # Setup mock subprocess.run
+        # Setup mock subprocess output
         mock_response = {
             "success": True,
             "outputs": [
                 {"index": 0, "name": "result", "value": 5, "type": "int"}
             ]
         }
-        mock_subprocess.run.return_value.stdout = json.dumps(mock_response)
-        mock_subprocess.run.return_value.returncode = 0
-        mock_subprocess.run.return_value.stderr = ""
+        mock_run_node.return_value = unittest.mock.Mock(
+            stdout=json.dumps(mock_response),
+            stderr=""
+        )
 
         # Call the method
         result = OpenAleaRunner.execute_node(
@@ -40,13 +41,14 @@ class TestOpenAleaRunner(unittest.TestCase):
 class TestOpenAleaRunnerFailure(unittest.TestCase):
     """Tests failure cases for the OpenAleaRunner class"""
 
-    @unittest.mock.patch("model.openalea.runner.openalea_runner.subprocess")
-    def test_execute_node_failure(self, mock_subprocess):
+    @unittest.mock.patch("model.openalea.runner.openalea_runner.run_node_subprocess")
+    def test_execute_node_failure(self, mock_run_node):
         """Test executing a node that fails."""
-        # Setup mock subprocess.run to simulate failure
-        mock_subprocess.run.return_value.stdout = ""
-        mock_subprocess.run.return_value.returncode = 1
-        mock_subprocess.run.return_value.stderr = "Execution error"
+        # Setup mock subprocess output to simulate failure
+        mock_run_node.return_value = unittest.mock.Mock(
+            stdout="",
+            stderr="Execution error"
+        )
 
         # Call the method
         result = OpenAleaRunner.execute_node(
@@ -63,8 +65,8 @@ class TestOpenAleaRunnerFailure(unittest.TestCase):
     def test_execute_node_timeout(self):
         """Test executing a node that times out."""
         with unittest.mock.patch(
-            "model.openalea.runner.openalea_runner.subprocess.run",
-            side_effect=unittest.mock.Mock(side_effect=TimeoutExpired(cmd="test", timeout=1))
+            "model.openalea.runner.openalea_runner.run_node_subprocess",
+            side_effect=TimeoutExpired(cmd="test", timeout=1)
         ):
             # Call the method
             result = OpenAleaRunner.execute_node(
@@ -83,12 +85,13 @@ class TestOpenAleaRunnerFailure(unittest.TestCase):
     def test_execute_node_invalid_json(self):
         """Test executing a node that returns invalid JSON."""
         with unittest.mock.patch(
-            "model.openalea.runner.openalea_runner.subprocess.run"
-        ) as mock_subprocess:
+            "model.openalea.runner.openalea_runner.run_node_subprocess"
+        ) as mock_run_node:
             # Setup mock subprocess.run to return invalid JSON
-            mock_subprocess.return_value.stdout = "invalid json"
-            mock_subprocess.return_value.returncode = 0
-            mock_subprocess.return_value.stderr = ""
+            mock_run_node.return_value = unittest.mock.Mock(
+                stdout="invalid json",
+                stderr=""
+            )
 
             # Call the method
             result = OpenAleaRunner.execute_node(
@@ -106,7 +109,7 @@ class TestOpenAleaRunnerFailure(unittest.TestCase):
     def test_execute_node_file_not_found(self):
         """Test executing a node when the script file is not found."""
         with unittest.mock.patch(
-            "model.openalea.runner.openalea_runner.subprocess.run",
+            "model.openalea.runner.openalea_runner.run_node_subprocess",
             side_effect=FileNotFoundError("No such file or directory")
         ):
             # Call the method

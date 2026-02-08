@@ -58,7 +58,7 @@ describe("NodeInputFloat Unit Tests", () => {
         expect(handleChange).toHaveBeenLastCalledWith(3.14);
     });
 
-    test("calls onChange with 0 when input value is invalid", async () => {
+    test("calls onChange with 0 when input is cleared and blurred", async () => {
         const user = userEvent.setup();
         const handleChange = jest.fn();
 
@@ -73,9 +73,9 @@ describe("NodeInputFloat Unit Tests", () => {
         const input = screen.getByRole("spinbutton");
 
         await user.clear(input);
-        await user.type(input, "abc");
+        await user.tab();
 
-        expect(input).toHaveValue(null);
+        expect(input).toHaveValue(0);
         expect(handleChange).toHaveBeenLastCalledWith(0);
     });
 

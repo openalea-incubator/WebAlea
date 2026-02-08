@@ -2,14 +2,16 @@
 from unittest import TestCase
 import unittest.mock
 import json
+from pathlib import Path
 
 from model.openalea.inspector.openalea_inspector import OpenAleaInspector
 
 class TestOpenAleaInspectorMethods(TestCase):
     """Unit tests for OpenAleaInspector class"""
 
+    _TESTS_ROOT = next(p for p in Path(__file__).resolve().parents if p.name == "tests")
     # data for testing
-    mock_openalea_desc_file = "tests/resources/conda/openalea.astk_description.json"
+    mock_openalea_desc_file = _TESTS_ROOT / "resources" / "conda" / "openalea.astk_description.json"
 
     @unittest.mock.patch("model.openalea.inspector.openalea_inspector.subprocess")
     def test_list_installed_openalea_packages(self, mock_subprocess):
