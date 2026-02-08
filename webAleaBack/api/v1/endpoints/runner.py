@@ -3,7 +3,7 @@ from typing import List, Optional, Any
 import logging
 
 from fastapi import APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from model.openalea.runner.openalea_runner import OpenAleaRunner
 
@@ -12,28 +12,53 @@ router = APIRouter()
 
 class NodeExecutionInput(BaseModel):
     """Input parameter for node execution."""
-    id: str
-    name: str
-    type: str
-    value: Optional[Any] = None
+    id: str = Field(..., example="in_0")
+    name: str = Field(..., example="a")
+    type: str = Field(..., example="float")
+    value: Optional[Any] = Field(None, example=5)
 
 
 class NodeExecutionRequest(BaseModel):
     """Request model for executing a single node."""
-    node_id: str
-    package_name: str
-    node_name: str
-    inputs: List[NodeExecutionInput]
+    node_id: str = Field(..., example="node_1")
+    package_name: str = Field(..., example="openalea.core")
+    node_name: str = Field(..., example="addition")
+    inputs: List[NodeExecutionInput] = Field(
+        ...,
+        example=[
+            {"id": "in_0", "name": "a", "type": "float", "value": 5},
+            {"id": "in_1", "name": "b", "type": "float", "value": 3},
+        ],
+    )
 
 
 class WorkflowExecutionRequest(BaseModel):
     """Request model for executing a workflow."""
-    workflow_type: str = "dataflow"
-    nodes: List[dict]
-    edges: List[dict]
+    workflow_type: str = Field("dataflow", example="dataflow")
+    nodes: List[dict] = Field(default_factory=list, example=[])
+    edges: List[dict] = Field(default_factory=list, example=[])
 
 
-@router.post("/execute")
+@router.post(
+    "/execute",
+    responses={
+        200: {
+            "description": "Node execution result",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "node_id": "node_1",
+                        "outputs": [
+                            {"index": 0, "name": "result", "value": 8, "type": "float"}
+                        ],
+                        "error": None,
+                    }
+                }
+            },
+        }
+    },
+)
 def execute_single_node(request: NodeExecutionRequest):
     """Execute a single OpenAlea node with given inputs.
 
