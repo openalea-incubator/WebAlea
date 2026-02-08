@@ -1,6 +1,5 @@
 import { fetchJSON } from "./utils.js";
 import { API_BASE_URL_VISUALIZER } from "../config/api";
-import { debugLog } from "../features/visualizer/utils/debug";
 
 // ===============================
 // VISUALIZER API
