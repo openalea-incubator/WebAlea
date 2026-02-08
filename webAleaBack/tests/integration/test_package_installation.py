@@ -1,6 +1,9 @@
 """This modules presents integration tests for package installation via conda."""
+import unittest
 from unittest import TestCase
 from dotenv import load_dotenv
+from pathlib import Path
+from shutil import which
 
 import subprocess
 import os
@@ -8,8 +11,14 @@ import os
 from api.v1.endpoints.manager import install_packages_in_env
 from types import SimpleNamespace
 
-load_dotenv("tests/.env")
+_TESTS_ROOT = next(p for p in Path(__file__).resolve().parents if p.name == "tests")
+load_dotenv(_TESTS_ROOT / ".env")
 
+
+def _has_conda() -> bool:
+    return which("conda") is not None
+
+@unittest.skipUnless(_has_conda(), "conda not available")
 class TestPackageInstallationIntegration(TestCase):
     """Integration tests for package installation via conda."""
 

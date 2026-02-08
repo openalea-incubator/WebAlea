@@ -1,30 +1,30 @@
 # Technical Documentation - 3D Rendering System (Backend + Frontend)
 
 ## 1. Scope
-Ce document explique le module de rendu 3D de WebAlea de bout en bout:
-- execution d'un node OpenAlea produisant une scene PlantGL,
-- serialisation/cache serveur,
-- API de visualisation,
-- reconstruction Three.js cote frontend.
+This document explains the WebAlea 3D rendering module end to end:
+- executing an OpenAlea node that produces a PlantGL scene,
+- serialization and server cache,
+- visualization API,
+- Three.js reconstruction on the frontend.
 
-Il est destine a des developpeurs reprenant le projet.
+It is intended for developers taking over the project.
 
 ---
 
 ## 2. Architecture overview
 
-### 2.1 Pipeline haut niveau
-1. Un node est execute via `POST /api/v1/runner/execute`.
-2. Le runner subprocess (`run_workflow.py`) serialise les outputs.
-3. Si output PlantGL (`Scene`, `Shape`, `Geometry`), il renvoie une reference cache (`__ref__`) plutot que le JSON complet.
-4. Le front stocke cet output dans le node (`node.data.outputs`).
-5. Au clic "Launch Render", le front appelle `POST /api/v1/visualizer/visualize` avec `scene_ref` et/ou `outputs`.
-6. Le visualizer backend:
-   - tente d'abord cache JSON scene,
-   - sinon charge l'objet cache, serialise, puis persiste le JSON scene.
-7. Le front recoit `{ scene: { objects: [...] } }`, puis construit la scene Three.js.
+### 2.1 High-level pipeline
+1. A node is executed via `POST /api/v1/runner/execute`.
+2. The runner subprocess (`run_workflow.py`) serializes outputs.
+3. If the output is PlantGL (`Scene`, `Shape`, `Geometry`), it returns a cache reference (`__ref__`) rather than full JSON.
+4. The frontend stores this output in the node (`node.data.outputs`).
+5. On "Launch Render", the frontend calls `POST /api/v1/visualizer/visualize` with `scene_ref` and/or `outputs`.
+6. The backend visualizer:
+   - tries the scene JSON cache first,
+   - otherwise loads the cached object, serializes it, and persists the scene JSON.
+7. The frontend receives `{ scene: { objects: [...] } }` and builds the Three.js scene.
 
-### 2.2 Fichiers cles
+### 2.2 Key files
 
 Backend:
 - `webAleaBack/api/v1/endpoints/runner.py`
@@ -32,8 +32,8 @@ Backend:
 - `webAleaBack/model/openalea/runner/runnable/run_workflow.py`
 - `webAleaBack/model/openalea/cache/object_cache.py`
 - `webAleaBack/api/v1/endpoints/visualizer.py`
-- `webAleaBack/model/openalea/visualizer/serialize.py`
-- `webAleaBack/model/openalea/visualizer/visualizer_utils.py`
+- `webAleaBack/model/openalea/visualizer/utils/serialize.py`
+- `webAleaBack/model/openalea/visualizer/utils/visualizer_utils.py`
 
 Frontend:
 - `webAleaFront/src/api/runnerAPI.js`
@@ -53,90 +53,90 @@ Frontend:
 ### 3.1 Node execution API
 Endpoint: `POST /api/v1/runner/execute`
 
-Le backend transforme la liste d'inputs en dictionnaire `{input_name: value}` puis appelle `OpenAleaRunner.execute_node(...)`.
+The backend converts the input list into a dict `{input_name: value}` and calls `OpenAleaRunner.execute_node(...)`.
 
 ### 3.2 Subprocess execution
-`openalea_runner.py` lance:
+`openalea_runner.py` launches:
 - `python3 model/openalea/runner/runnable/run_workflow.py '<node_info_json>'`
 
 `run_workflow.py`:
-- instancie le node OpenAlea,
-- injecte les inputs (avec resolution de refs cache si `__ref__`),
-- execute `node.eval()`,
-- serialise chaque output.
+- instantiates the OpenAlea node,
+- injects inputs (with cache ref resolution if `__ref__`),
+- executes `node.eval()`,
+- serializes each output.
 
-### 3.3 Serialisation des outputs PlantGL
-Dans `serialize_value(...)`:
+### 3.3 PlantGL output serialization
+In `serialize_value(...)`:
 - `Scene` / `Shape` / `Geometry` -> `_serialize_plantgl_scene(...)`
-- stratégie:
-  1. essayer serialisation JSON immediate (`serialize_scene`) + `cache_store_scene_json_new`
-  2. fallback cache objet pickle (`cache_store`) si echec
-  3. fallback final inline scene JSON
+- strategy:
+  1. try immediate JSON serialization (`serialize_scene`) + `cache_store_scene_json_new`
+  2. fallback to object cache pickle (`cache_store`) on failure
+  3. final fallback: inline scene JSON
 
-Types envoyes par le runner pour une scene:
-- `plantgl_scene_json_ref` (preferentiel)
-- `plantgl_scene_ref` (fallback objet pickle)
-- `plantgl_scene` (fallback inline)
+Types emitted by the runner for a scene:
+- `plantgl_scene_json_ref` (preferred)
+- `plantgl_scene_ref` (pickle fallback)
+- `plantgl_scene` (inline fallback)
 
-### 3.4 Cache serveur
+### 3.4 Server cache
 `object_cache.py`:
-- cache objet: `<cache_dir>/<ref>.pkl`
-- cache scene json: `<cache_dir>/<ref>.scene.json`
-- dossier par defaut: `/tmp/webalea_object_cache`
-- TTL cleanup via `cache_cleanup()` (defaut 3600s)
+- object cache: `<cache_dir>/<ref>.pkl`
+- scene JSON cache: `<cache_dir>/<ref>.scene.json`
+- default directory: `/tmp/webalea_object_cache`
+- TTL cleanup via `cache_cleanup()` (default 3600s)
 
-Variables utiles:
+Useful variables:
 - `OPENALEA_CACHE_DIR`
 - `OPENALEA_CACHE_TTL_SECONDS`
 
-### 3.5 Endpoint visualizer
+### 3.5 Visualizer endpoint
 Endpoint: `POST /api/v1/visualizer/visualize`
 
-Ordre de resolution dans `visualizer.py`:
-1. scene inline deja presente dans payload (`scene`/`objects`/output type `plantgl_scene`),
-2. extraction `scene_ref` (ou depuis outputs),
-3. tentative `cache_load_scene_json(ref)` (hit rapide),
-4. sinon `cache_load(ref)` + `json_from_result(...)` + `cache_store_scene_json(ref, scene)`,
-5. reponse standard `{ nodeId, success, scene, cacheHit }`.
+Resolution order in `visualizer.py`:
+1. inline scene already in payload (`scene`/`objects`/output type `plantgl_scene`),
+2. extract `scene_ref` (or from outputs),
+3. try `cache_load_scene_json(ref)` (fast hit),
+4. otherwise `cache_load(ref)` + `json_from_result(...)` + `cache_store_scene_json(ref, scene)`,
+5. standard response `{ nodeId, success, scene, cacheHit }`.
 
-Si `scene.objects.length === 0`, backend ajoute `warning: "Scene contains no objects."`.
+If `scene.objects.length === 0`, the backend adds `warning: "Scene contains no objects."`.
 
 ---
 
 ## 4. Frontend flow in detail
 
-### 4.1 Execution workflow et stockage outputs
-`WorkflowEngine` execute les nodes via `runnerAPI`.
-Les outputs sont ensuite injectes dans le state node via `FlowContext.updateNodeOutputs(...)`.
+### 4.1 Workflow execution and outputs storage
+`WorkflowEngine` executes nodes via `runnerAPI`.
+Outputs are then injected into the node state via `FlowContext.updateNodeOutputs(...)`.
 
-### 4.2 Demande de rendu
+### 4.2 Render request
 `NodeResultRender.jsx`:
-- recupere le node courant,
-- lit `node.data.outputs`,
-- cherche output avec:
+- gets the current node,
+- reads `node.data.outputs`,
+- finds an output with:
   - `value.__type__` in `{plantgl_scene_ref, plantgl_scene_json_ref}`
   - `value.__ref__`
-- appelle `fetchNodeScene(...)` avec:
+- calls `fetchNodeScene(...)` with:
   - `scene_ref`
-  - `scene_ref_expected_shape_count` (si meta dispo)
+  - `scene_ref_expected_shape_count` (if metadata available)
   - `outputs`
 
-### 4.3 Affichage modal et build scene
+### 4.3 Modal display and scene build
 `VisualizerModal`:
-- ouvre modal,
-- appelle `buildSceneFromJSON(sceneJSON, mountRef)`,
-- gere cleanup `dispose()`.
+- opens the modal,
+- calls `buildSceneFromJSON(sceneJSON, mountRef)`,
+- handles cleanup via `dispose()`.
 
 `SceneBuilder`:
-- setup Three.js scene/camera/renderer,
-- creation objets via `buildObjectNode(...)`,
-- merge des meshes statiques par materiau (reduire draw calls),
-- framing camera automatique via bounding box,
-- loop animation seulement si objets animes.
+- sets up Three.js scene/camera/renderer,
+- creates objects via `buildObjectNode(...)`,
+- merges static meshes by material (reduce draw calls),
+- auto-frames the camera via bounding box,
+- runs animation loop only if objects are animated.
 
 ---
 
-## 5. JSON contracts (formats attendus)
+## 5. JSON contracts (expected formats)
 
 ## 5.1 Runner execute request (frontend -> backend)
 ```json
@@ -152,7 +152,7 @@ Les outputs sont ensuite injectes dans le state node via `FlowContext.updateNode
 ```
 
 ## 5.2 Runner execute response (backend -> frontend)
-Exemple scene via reference JSON cache:
+Example scene via JSON cache reference:
 ```json
 {
   "success": true,
@@ -243,13 +243,13 @@ Exemple scene via reference JSON cache:
 `ObjectNode`:
 - `id: string`
 - `objectType: "mesh" | "line" | "text" | "group"`
-- `geometry` (pour `mesh`)
-- `material` (optionnel)
-- `transform` (optionnel)
-- `children` (optionnel, arbre)
-- `animation` (optionnel)
+- `geometry` (for `mesh`)
+- `material` (optional)
+- `transform` (optional)
+- `children` (optional, tree)
+- `animation` (optional)
 
-`geometry` pour mesh:
+`geometry` for mesh:
 - `type: "mesh"`
 - `vertices: number[][]` (triplets xyz)
 - `indices?: number[][]` (triplets indices triangle)
@@ -258,27 +258,27 @@ Exemple scene via reference JSON cache:
 
 ## 7. Performance model and design choices
 
-## 7.1 Pourquoi le cache ref-based
-Sans cache, serialiser des scenes massives (vertices/indices) a chaque execution:
-- augmente latence backend,
-- augmente RAM backend,
-- gonfle payload HTTP.
+## 7.1 Why ref-based cache
+Without cache, serializing huge scenes (vertices/indices) on each run:
+- increases backend latency,
+- increases backend RAM,
+- inflates HTTP payload size.
 
-Le design actuel:
-- runner renvoie une ref legere,
-- visualizer construit/sert le JSON scene a la demande,
-- cache JSON scene reutilisable sur rerender.
+Current design:
+- runner returns a lightweight ref,
+- visualizer builds/serves scene JSON on demand,
+- scene JSON cache is reusable for re-render.
 
-## 7.2 Optimisations frontend
-- conversion vers `Float32Array` / `Uint32Array` sans flatten intermediaire,
-- merge de meshes statiques par materiau,
-- animation loop active seulement si necessaire.
+## 7.2 Frontend optimizations
+- convert to `Float32Array` / `Uint32Array` without intermediate flatten,
+- merge static meshes by material,
+- animation loop enabled only when needed.
 
 ---
 
 ## 8. Logging and observability
 
-Logs backend importants:
+Important backend logs:
 - runner:
   - `OpenAleaRunner: Execution result ... sceneRef ... sceneShapeCount ...`
 - visualizer:
@@ -288,7 +288,7 @@ Logs backend importants:
   - `Visualizer scene generated from ref ...`
   - `Visualizer mismatch ... expected_shape_count ... object_count ...`
 
-Logs frontend:
+Frontend logs:
 - `NodeResultRender`:
   - payload summary (`sceneRef`, outputSummary)
   - scene ready (`cacheHit`, `warning`, `objects`)
@@ -299,46 +299,45 @@ Logs frontend:
 
 ## 9. Troubleshooting guide
 
-## 9.1 Cas: "Scene contains no objects."
-Verifier:
-1. `sceneShapeCount` dans log runner > 0 ?
-2. `visualizer` signale mismatch attendu vs object_count ?
-3. serialisation PlantGL (`serialize_scene`) retourne bien des objects ?
+## 9.1 Case: "Scene contains no objects."
+Check:
+1. `sceneShapeCount` in runner logs > 0?
+2. `visualizer` reports expected vs object_count mismatch?
+3. PlantGL serialization (`serialize_scene`) returns objects?
 
-Si `shape_count > 0` mais `object_count = 0`:
-- suspecter conversion geometrie (`mesh_from_geometry`) ou geometries non supportees.
+If `shape_count > 0` but `object_count = 0`:
+- suspect geometry conversion (`mesh_from_geometry`) or unsupported geometries.
 
-## 9.2 Cas: modal vide cote front
-Verifier:
+## 9.2 Case: empty modal on frontend
+Check:
 - `sceneData.success === true`
-- `scene.objects` existe et non vide
-- `objectType` reconnus (`mesh`, `line`, `text`, `group`)
+- `scene.objects` exists and is not empty
+- recognized `objectType` values (`mesh`, `line`, `text`, `group`)
 
-## 9.3 Cas: erreurs cache
-- verifier `OPENALEA_CACHE_DIR` accessible en ecriture,
-- verifier presence des fichiers `.pkl` / `.scene.json`,
-- verifier TTL cleanup pas trop agressif.
+## 9.3 Case: cache errors
+- verify `OPENALEA_CACHE_DIR` is writable,
+- verify presence of `.pkl` / `.scene.json` files,
+- verify TTL cleanup is not too aggressive.
 
-## 9.4 Cas: backend indisponible (ERR_EMPTY_RESPONSE)
-Verifier la sante du container backend et les dependances Python (ex: `anyio`/FastAPI/Starlette env).
+## 9.4 Case: backend unavailable (ERR_EMPTY_RESPONSE)
+Check backend container health and Python dependencies (e.g., `anyio` / FastAPI / Starlette env).
 
 ---
 
 ## 10. Extension points
 
-- Ajouter de nouveaux `objectType`:
-  - backend: enrichir `serialize_scene` / `mesh_from_geometry`,
-  - frontend: ajouter factory dans `SceneFactory`.
-- Ajouter support materiaux avancees (textures, PBR).
-- Ajouter endpoint de streaming scene (chunking) pour scenes extremement volumineuses.
+- Add new `objectType`:
+  - backend: extend `serialize_scene` / `mesh_from_geometry`,
+  - frontend: add a factory in `SceneFactory`.
+- Add advanced materials support (textures, PBR).
+- Add a scene streaming endpoint (chunking) for very large scenes.
 
 ---
 
 ## 11. Suggested validation checklist (dev)
 
-1. Executer un node simple (`openalea.math.addition`) -> output scalar OK.
-2. Executer un node scene PlantGL -> output `plantgl_scene_json_ref` ou `plantgl_scene_ref`.
-3. Appeler visualizer avec `scene_ref` -> `success=true`, `scene.objects` coherent.
-4. Rouvrir rendu sur meme node -> verifier `cacheHit=true` possible.
-5. Changer de node -> verifier reset cache front (`NodeResultRender`).
-
+1. Execute a simple node (`openalea.math.addition`) -> scalar output OK.
+2. Execute a PlantGL scene node -> output `plantgl_scene_json_ref` or `plantgl_scene_ref`.
+3. Call visualizer with `scene_ref` -> `success=true`, coherent `scene.objects`.
+4. Reopen render on same node -> check `cacheHit=true` possible.
+5. Switch nodes -> check frontend cache reset (`NodeResultRender`).

@@ -3,6 +3,7 @@ import logging
 import subprocess
 import ast
 import json
+from pathlib import Path
 
 from typing import Any, Dict, List
 
@@ -10,9 +11,10 @@ from typing import Any, Dict, List
 
 class OpenAleaInspector:
     """Class to inspect OpenAlea packages installed in the current environment."""
-    describe_script = "model/openalea/inspector/runnable/describe_openalea_package.py"
-    list_installed_script = "model/openalea/inspector/runnable/list_installed_openalea_packages.py"
-    list_wralea_script = "model/openalea/inspector/runnable/list_wralea_packages.py"
+    _BASE_DIR = Path(__file__).resolve().parent
+    describe_script = str(_BASE_DIR / "runnable" / "describe_openalea_package.py")
+    list_installed_script = str(_BASE_DIR / "runnable" / "list_installed_openalea_packages.py")
+    list_wralea_script = str(_BASE_DIR / "runnable" / "list_wralea_packages.py")
 
     @staticmethod
     def list_installed_openalea_packages() -> List[str]:

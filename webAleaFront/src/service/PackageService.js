@@ -294,8 +294,8 @@ export async function isInstalledPackage(packageName) {
         return installedList.some(pkg => {
             const pkgLower = safeString(pkg).toLowerCase();
             return pkgLower === normalizedName ||
-                   pkgLower === `openalea.${normalizedName}` ||
-                   `openalea.${pkgLower}` === normalizedName;
+                pkgLower === `openalea.${normalizedName}` ||
+                `openalea.${pkgLower}` === normalizedName;
         });
 
     } catch (error) {
