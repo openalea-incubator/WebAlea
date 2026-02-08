@@ -100,7 +100,7 @@ The application communicates with a FastAPI backend service that handles package
 - **TypeScript ESLint**: Type checking support
 - **@vitejs/plugin-react**: Vite plugin for React
 
-```
+```
 webAleaFront/
 |-- public/
 |-- src/
@@ -308,7 +308,7 @@ The production build is optimized with:
 
 ## Architecture
 
-```
+```
 App
 |-- Header (Navigation)
 |-- ToolBar
