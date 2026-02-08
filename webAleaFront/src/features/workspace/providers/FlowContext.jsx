@@ -583,6 +583,47 @@ export const FlowProvider = ({ children }) => {
     }, [setNodes, setEdges, addLog]);
 
     /**
+     * Duplicates the currently selected node(s) with a small position offset.
+     * Falls back to currentNode when selection state is not available.
+     */
+    const duplicateSelectedNodes = useCallback(() => {
+        const selectedNodes = nodesRef.current.filter(n => n.selected);
+        const sourceNodes = selectedNodes.length > 0
+            ? selectedNodes
+            : (currentNode ? nodesRef.current.filter(n => n.id === currentNode) : []);
+
+        if (sourceNodes.length === 0) return;
+
+        const offset = { x: 40, y: 40 };
+        const now = Date.now();
+
+        const nextNodes = sourceNodes.map((node, index) => {
+            const baseId = node.id || `node_${index}`;
+            const newId = `n${now}-${Math.floor(Math.random() * 10000)}-${baseId}`;
+            const clonedData = JSON.parse(JSON.stringify(node.data ?? {}));
+
+            return {
+                ...node,
+                id: newId,
+                position: {
+                    x: (node.position?.x ?? 0) + offset.x,
+                    y: (node.position?.y ?? 0) + offset.y
+                },
+                selected: true,
+                data: clonedData
+            };
+        });
+
+        setNodes((nds) => {
+            const cleared = nds.map(n => ({ ...n, selected: false }));
+            return [...cleared, ...nextNodes];
+        });
+
+        setCurrentNode(nextNodes[0].id);
+        addLog("Node duplicated", { count: nextNodes.length, ids: nextNodes.map(n => n.id) });
+    }, [setNodes, addLog, currentNode, setCurrentNode]);
+
+    /**
      * Handles node click events to set the current node.
      * @type {(function(*, *): void)|*}
      * @param {Object} event - The click event
@@ -618,6 +659,7 @@ export const FlowProvider = ({ children }) => {
         currentNode,
         setCurrentNode,
         onNodeClick,
+        duplicateSelectedNodes,
 
         // Execution
         onNodeExecute,
