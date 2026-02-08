@@ -1,10 +1,9 @@
-# Integration test
+# Integration Tests
 
 ## Description
-RTL => test React components (UI)
+Integration tests use React Testing Library (RTL) to validate UI behavior.
 
-## Run integration tests
-
+## Run Integration Tests
 ```bash
-npx jest --config=tests/integration/jest.config.cjs
+npm run test:integration
 ```

@@ -144,7 +144,7 @@ describe("NodeInputs Unit Tests", () => {
             { id: "status", name: "Status", type: "enum", value: "" }
         ];
         render(<NodeInput inputs={inputs} />);
-        expect(screen.getByText("-- No options --")).toBeInTheDocument();
+        expect(screen.getByText("Default")).toBeInTheDocument();
     });
 
     test("boolean input toggle triggers onInputChange", async () => {

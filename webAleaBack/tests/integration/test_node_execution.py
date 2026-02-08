@@ -1,6 +1,8 @@
 """Integration tests for node execution in WebAleaBack."""
+import unittest
 from unittest import TestCase
 from dotenv import load_dotenv
+from pathlib import Path
 
 import subprocess
 import os
@@ -10,15 +12,48 @@ import json
 from api.v1.endpoints.runner import execute_single_node
 from types import SimpleNamespace
 
-load_dotenv("tests/.env")
+_TESTS_ROOT = next(p for p in Path(__file__).resolve().parents if p.name == "tests")
+load_dotenv(_TESTS_ROOT / ".env")
 
+
+def _resolve_test_path(raw_value: str | None) -> str | None:
+    if not raw_value:
+        return None
+    raw_value = str(raw_value)
+    path = Path(raw_value)
+    if path.is_absolute():
+        return str(path)
+    normalized = raw_value.replace("\\", "/")
+    if normalized.startswith("tests/"):
+        return str(_TESTS_ROOT.parent / normalized)
+    return str(_TESTS_ROOT / normalized)
+
+
+def _has_openalea() -> bool:
+    try:
+        import openalea.core  # noqa: F401
+        return True
+    except Exception:
+        return False
+
+_NODE_REQUEST_FILE = _resolve_test_path(os.getenv("NODE_EXECUTION_REQUEST_FILE"))
+_NODE_RESPONSE_FILE = _resolve_test_path(os.getenv("NODE_EXECUTION_RESPONSE_FILE"))
+_REQUEST_FILES_AVAILABLE = bool(
+    _NODE_REQUEST_FILE
+    and _NODE_RESPONSE_FILE
+    and Path(_NODE_REQUEST_FILE).exists()
+    and Path(_NODE_RESPONSE_FILE).exists()
+)
+
+
+@unittest.skipUnless(_has_openalea() and _REQUEST_FILES_AVAILABLE, "OpenAlea not installed or test resources missing")
 class TestNodeExecutionIntegration(TestCase):
     """Integration tests for node execution"""
 
 
     package_to_execute = os.getenv("PACKAGE_TO_EXECUTE")
-    node_execution_request_file = os.getenv("NODE_EXECUTION_REQUEST_FILE")
-    expected_node_execution_response_file = os.getenv("NODE_EXECUTION_RESPONSE_FILE")
+    node_execution_request_file = _NODE_REQUEST_FILE
+    expected_node_execution_response_file = _NODE_RESPONSE_FILE
 
     def test_execute_node(self):
         """Test executing a node from a package."""

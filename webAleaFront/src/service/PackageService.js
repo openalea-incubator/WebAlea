@@ -294,8 +294,8 @@ export async function isInstalledPackage(packageName) {
         return installedList.some(pkg => {
             const pkgLower = safeString(pkg).toLowerCase();
             return pkgLower === normalizedName ||
-                   pkgLower === `openalea.${normalizedName}` ||
-                   `openalea.${pkgLower}` === normalizedName;
+                pkgLower === `openalea.${normalizedName}` ||
+                `openalea.${pkgLower}` === normalizedName;
         });
 
     } catch (error) {
@@ -389,7 +389,7 @@ export async function getNodesList(pkg) {
             const isInstalled = await isInstalledPackage(packageName);
             if (!isInstalled) {
                 console.log(
-                    `getNodesList: Package "${packageName}" not installed. Installing "${installName}"...`
+                    `getNodesList: Package "${packageName}" not installed. Installing "${installName}"...`, fetchError
                 );
                 const installResult = await installPackage({
                     name: installName,
@@ -404,7 +404,7 @@ export async function getNodesList(pkg) {
                 }
             } else {
                 console.warn(
-                    `getNodesList: Package "${packageName}" seems installed but node fetch failed once. Retrying...`
+                    `getNodesList: Package "${packageName}" seems installed but node fetch failed once. Retrying...`, fetchError
                 );
             }
 

@@ -48,7 +48,6 @@ The application communicates with a FastAPI backend service that handles package
 - **Interactive Canvas**: Drag-and-drop interface powered by ReactFlow
 - **Node Types**: Support for OpenAlea custom nodes and primitive nodes (Float, String, Boolean, Enum)
 - **Connection Validation**: Type-safe connections between nodes
-- **Mini Map**: Navigate large workflows easily
 - **Zoom Controls**: Pan, zoom, and fit-to-view controls
 
 ### Package Management
@@ -101,54 +100,29 @@ The application communicates with a FastAPI backend service that handles package
 - **TypeScript ESLint**: Type checking support
 - **@vitejs/plugin-react**: Vite plugin for React
 
-## Project Structure
-
-```
+```
 webAleaFront/
-├── public/                 # Static assets
-│   └── vite.svg
-├── src/
-│   ├── api/               # API client layer
-│   │   └── managerAPI.js  # Backend API integration
-│   ├── assets/            # Static assets (CSS, images, data)
-│   │   ├── css/          # Stylesheets
-│   │   │   ├── app.css
-│   │   │   ├── custom_node.css
-│   │   │   ├── modal.css
-│   │   │   ├── package_manager.css
-│   │   │   └── workspace.css
-│   │   └── data_sample.json
-│   ├── features/          # Feature-based modules
-│   │   ├── logger/        # Logging system
-│   │   │   ├── providers/ # Log context providers
-│   │   │   └── ui/        # Log UI components
-│   │   ├── nodes/         # Node components
-│   │   │   ├── model/     # Node data models
-│   │   │   └── ui/        # Node UI components
-│   │   ├── package-manager/ # Package management
-│   │   │   ├── model/     # Package data models
-│   │   │   └── ui/        # Package UI components
-│   │   ├── toolbar/       # Toolbar components
-│   │   │   ├── model/     # Toolbar models
-│   │   │   └── ui/        # Toolbar UI
-│   │   └── workspace/     # Workspace components
-│   │       ├── engine/    # WorkflowEngine
-│   │       ├── hooks/     # Custom hooks
-│   │       ├── model/     # Workflow models
-│   │       ├── providers/ # Context providers
-│   │       └── ui/        # Workspace UI
-│   ├── service/           # Business logic services
-│   │   └── PackageService.js
-│   ├── App.jsx            # Main application component
-│   ├── main.jsx           # Application entry point
-│   └── index.css          # Global styles
-├── Dockerfile             # Docker configuration
-├── eslint.config.js       # ESLint configuration
-├── eslint.config.ts       # TypeScript ESLint config
-├── index.html             # HTML template
-├── package.json           # Dependencies and scripts
-├── vite.config.js         # Vite configuration
-└── README.md              
+|-- public/
+|-- src/
+|   |-- api/
+|   |-- assets/
+|   |-- features/
+|   |   |-- logger/
+|   |   |-- nodes/
+|   |   |-- package-manager/
+|   |   |-- toolbar/
+|   |   |-- visualizer/
+|   |   `-- workspace/
+|   |-- service/
+|   |-- App.jsx
+|   |-- main.jsx
+|   `-- index.css
+|-- Dockerfile
+|-- eslint.config.js
+|-- index.html
+|-- package.json
+|-- vite.config.js
+`-- README.md
 ```
 
 ## Getting Started
@@ -241,7 +215,6 @@ The production build is optimized with:
 
 4. **Organize the Canvas**:
    - Drag nodes to reposition them
-   - Use the minimap to navigate large workflows
    - Use zoom controls to adjust the view
 
 ### Managing Packages
@@ -335,32 +308,32 @@ The production build is optimized with:
 
 ## Architecture
 
-### Component Hierarchy
-
-```
+```
 App
-├── Header (Navigation)
-├── ToolBar
-│   ├── Export/Import/Info Buttons
-│   ├── Progress Bar & Status
-│   └── Run/Stop Buttons
-├── PackageManager (Sidebar)
-│   ├── PanelModuleNode (Packages Tab)
-│   ├── PanelPrimitiveNode (Primitives Tab)
-│   └── PanelInstallPackage (Install Tab)
-├── Workspace (Main Canvas)
-│   ├── ReactFlow Canvas
-│   ├── CustomNode (OpenAlea nodes)
-│   ├── FloatNode / StringNode / BoolNode (Primitives)
-│   └── CustomHandle (Connection points)
-├── NodeDetailSection (Right Panel)
-│   ├── NodeDescription
-│   └── NodeParameters
-│       ├── NodeInputFloat
-│       ├── NodeInputString
-│       ├── NodeInputBoolean
-│       └── NodeInputEnum
-└── ConsoleLog (Bottom Panel)
+|-- Header (Navigation)
+|-- ToolBar
+|   |-- Export/Import/Info Buttons
+|   |-- Progress Bar and Status
+|   `-- Run/Stop Buttons
+|-- PackageManager (Sidebar)
+|   |-- PanelModuleNode (Packages Tab)
+|   |-- PanelPrimitiveNode (Primitives Tab)
+|   `-- PanelInstallPackage (Install Tab)
+|-- Workspace (Main Canvas)
+|   |-- ReactFlow Canvas
+|   |-- CustomNode (OpenAlea nodes)
+|   |-- FloatNode / StringNode / BoolNode (Primitives)
+|   `-- CustomHandle (Connection points)
+|-- NodeDetailSection (Right Panel)
+|   |-- NodeDescription
+|   |-- NodeParameters
+|   |   |-- NodeInputFloat
+|   |   |-- NodeInputStr
+|   |   |-- NodeInputBoolean
+|   |   `-- NodeInputEnum
+|   `-- NodeResultRender
+|       `-- VisualizerModal
+`-- ConsoleLog (Bottom Panel)
 ```
 
 ### State Management
@@ -413,18 +386,19 @@ The `WorkflowEngine` class handles asynchronous workflow execution:
 
 The frontend communicates with the backend via REST API:
 
-**Base URL**: `http://localhost:8000/api/v1/manager`
+**Base URLs** (see `src/config/api.js`):
+- Manager: `http://localhost:8000/api/v1/manager`
+- Inspector: `http://localhost:8000/api/v1/inspector`
+- Runner: `http://localhost:8000/api/v1/runner`
+- Visualizer: `http://localhost:8000/api/v1/visualizer`
 
 **Endpoints Used:**
-- `GET /` - List all Conda packages
-- `GET /latest` - Get latest package versions
-- `GET /installed` - List installed OpenAlea packages
-- `GET /wralea` - List packages with visual nodes
-- `GET /installed/{packageName}` - Get nodes for a package
-- `POST /install` - Install packages
-- `POST /execute/node` - Execute a single node
+- Manager: `GET /`, `GET /latest`, `POST /install`
+- Inspector: `GET /installed`, `GET /wralea`, `GET /installed/{packageName}`
+- Runner: `POST /execute`
+- Visualizer: `POST /visualize`
 
-**API Client**: `src/api/managerAPI.js`
+**API Clients**: `src/api/managerAPI.js`, `src/api/inspectorAPI.js`, `src/api/runnerAPI.js`, `src/api/visualizerAPI.js`
 
 All API calls are asynchronous and include error handling. The client uses the Fetch API with JSON serialization.
 
@@ -432,17 +406,17 @@ All API calls are asynchronous and include error handling. The client uses the F
 
 ### Environment Variables
 
-Currently, the backend URL is hardcoded in `src/api/managerAPI.js`. To make it configurable:
+Backend base URLs are defined in `src/config/api.js` and can be overridden with environment variables:
 
 1. Create a `.env` file:
    ```env
-   VITE_API_BASE_URL=http://localhost:8000/api/v1/manager
+   VITE_API_BASE_URL_MANAGER=http://localhost:8000/api/v1/manager
+   VITE_API_BASE_URL_INSPECTOR=http://localhost:8000/api/v1/inspector
+   VITE_API_BASE_URL_RUNNER=http://localhost:8000/api/v1/runner
+   VITE_API_BASE_URL_VISUALIZER=http://localhost:8000/api/v1/visualizer
    ```
 
-2. Update `managerAPI.js`:
-   ```javascript
-   const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1/manager";
-   ```
+2. Restart the dev server to apply changes.
 
 ### Vite Configuration
 

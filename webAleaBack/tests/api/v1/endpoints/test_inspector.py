@@ -1,14 +1,16 @@
 """Tests for the inspector endpoints."""
 import unittest
 import unittest.mock
+from pathlib import Path
 
 from api.v1.endpoints import inspector
 
 class TestOpenAleaInspector(unittest.TestCase):
     """Unit tests for OpenAlea Inspector endpoints."""
 
+    _TESTS_ROOT = next(p for p in Path(__file__).resolve().parents if p.name == "tests")
     # openalea inspector package desc file
-    openalea_package_desc_file = "tests/resources/conda/openalea.astk_description.json"
+    openalea_package_desc_file = _TESTS_ROOT / "resources" / "conda" / "openalea.astk_description.json"
 
     app_router = inspector.router
 
