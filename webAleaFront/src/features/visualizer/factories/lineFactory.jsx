@@ -1,34 +1,30 @@
-// lineFactory.jsx
-
 import * as THREE from "three";
+import { buildFloat32Array } from "../utils/geometry";
+import { applyTransform } from "../utils/transforms";
 
 /**
- * 
- * @param {string} lineJSON 
- * @returns Three.Line
+ * Builds a Three.js line from a JSON description.
+ * @param {object} lineJSON
+ * @returns {THREE.Line}
  */
 export function lineFromJSON(lineJSON) {
-    const points = lineJSON.geometry.vertices.map(
-        v => new THREE.Vector3(v[0], v[1], v[2])
-    );
+    const points = lineJSON?.geometry?.vertices ?? [];
+    const vertices = buildFloat32Array(points);
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-
-    const color = lineJSON.material?.color ?? [0, 0, 0]; // noir par défaut
-    const opacity = lineJSON.material?.opacity ?? 1;
+    const color = lineJSON?.material?.color ?? [0, 0, 0];
+    const opacity = lineJSON?.material?.opacity ?? 1;
 
     const material = new THREE.LineBasicMaterial({
         color: new THREE.Color(...color),
-        opacity: opacity,
+        opacity,
         transparent: opacity < 1
     });
 
     const line = new THREE.Line(geometry, material);
-    if (lineJSON.transform) {
-        const t = lineJSON.transform;
-        line.position.set(...(t.position ?? [0,0,0]));
-        line.rotation.set(...(t.rotation ?? [0,0,0]));
-        line.scale.set(...(t.scale ?? [1,1,1]));
+    if (lineJSON?.transform) {
+        applyTransform(line, lineJSON.transform);
     }
 
     return line;

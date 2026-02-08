@@ -1,6 +1,6 @@
-﻿# 3D Visualization Pipeline (Workflow → Scene → Render)
+﻿# 3D Visualization Pipeline (Workflow -> Scene -> Render)
 
-This document explains, step by step, how the app executes a workflow node, extracts 3D data, serializes it, and renders it in the browser.
+This document provides the full technical overview of the 3D visualization system: from workflow execution, to backend serialization and caching, to frontend rendering in Three.js.
 
 ## 1) Workflow execution starts (Frontend)
 
@@ -18,7 +18,6 @@ This document explains, step by step, how the app executes a workflow node, extr
 2. `WorkflowEngine.start()` validates the graph, initializes state, and schedules ready nodes.
 3. Each node executes either locally (primitive) or via backend if it has `packageName` + `nodeName`.
 
-
 ## 2) OpenAlea node execution (Backend)
 
 **Frontend API call**
@@ -28,7 +27,7 @@ This document explains, step by step, how the app executes a workflow node, extr
 - `POST /execute` in `webAleaBack/api/v1/endpoints/runner.py`
 
 **Execution flow**
-1. The endpoint converts input list → dict `{name: value}`.
+1. The endpoint converts input list -> dict `{name: value}`.
 2. It calls `OpenAleaRunner.execute_node(...)` which ultimately runs `run_workflow.py` in a subprocess.
 3. `run_workflow.execute_node()` instantiates the node and runs `node.eval()`.
 4. Each output is serialized with `serialize_value()`.
@@ -37,7 +36,6 @@ This document explains, step by step, how the app executes a workflow node, extr
 - `webAleaFront/src/api/runnerAPI.js`
 - `webAleaBack/api/v1/endpoints/runner.py`
 - `webAleaBack/model/openalea/runner/runnable/run_workflow.py`
-
 
 ## 3) Serialization of 3D data (Backend)
 
@@ -62,12 +60,11 @@ This document explains, step by step, how the app executes a workflow node, extr
 - `webAleaBack/model/openalea/visualizer/utils/serialize.py`
 - `webAleaBack/model/openalea/visualizer/utils/plantgl.py`
 
-
-## 3.5) Backend cache strategy (important)
+## 4) Backend cache strategy (important)
 
 **Why it exists**
 - PlantGL scenes can be very large (many vertices/indices). Serializing them inline for every execution is expensive in RAM and HTTP payload size.
-- The backend therefore prefers a **cache-first, ref-based flow** to keep runner responses small and enable fast re-rendering.
+- The backend therefore prefers a cache-first, ref-based flow to keep runner responses small and enable fast re-rendering.
 
 **Two complementary caches**
 - **Object cache** (pickle). Stores the raw PlantGL object serialized as `<ref>.pkl`. Used as a fallback if JSON serialization fails or if JSON was not precomputed.
@@ -91,7 +88,7 @@ This document explains, step by step, how the app executes a workflow node, extr
 
 **Why this matters**
 - The cache reduces backend memory spikes and drastically reduces response size.
-- It also enables **fast rerender** of the same node output without recomputing or reserializing.
+- It also enables fast rerender of the same node output without recomputing or reserializing.
 
 **Cache configuration**
 - Default cache dir is `/tmp/webalea_object_cache` (can be overridden).
@@ -103,8 +100,7 @@ This document explains, step by step, how the app executes a workflow node, extr
 - `webAleaBack/model/openalea/visualizer/utils/visualizer_utils.py`
 - `webAleaBack/api/v1/endpoints/visualizer.py`
 
-
-## 4) Results stored in the UI (Frontend)
+## 5) Results stored in the UI (Frontend)
 
 **Event handler**
 - When a node finishes, `WorkflowEngine` emits `node-result`.
@@ -113,11 +109,10 @@ This document explains, step by step, how the app executes a workflow node, extr
 **Key files**
 - `webAleaFront/src/features/workspace/handlers/workflowEventHandlers.js`
 
-
-## 5) User triggers 3D rendering (Frontend)
+## 6) User triggers 3D rendering (Frontend)
 
 **UI action**
-- In the sidebar, `NodeResultRender` lets the user click “Launch Render”.
+- In the sidebar, `NodeResultRender` lets the user click "Launch Render".
 
 **Data sent**
 - The frontend sends `node.data.outputs` to the visualizer API.
@@ -126,8 +121,36 @@ This document explains, step by step, how the app executes a workflow node, extr
 - `webAleaFront/src/features/nodes/ui/sidebar_detail/NodeResultRender.jsx`
 - `webAleaFront/src/api/visualizerAPI.js`
 
+## 7) Frontend visualizer flow
 
-## 6) Visualizer API extracts a scene (Backend)
+**Orchestration**
+- `NodeResultRender` is UI-only and delegates logic to `useVisualizerScene`.
+- The hook:
+  - extracts scene refs and builds payloads,
+  - calls the backend visualizer,
+  - parses the response,
+  - manages cache and modal state.
+
+**Core files**
+- `webAleaFront/src/features/visualizer/hooks/useVisualizerScene.js`
+- `webAleaFront/src/features/visualizer/services/visualizerService.js`
+- `webAleaFront/src/api/visualizerAPI.js`
+
+**Key helpers (service layer)**
+- `extractSceneRef(outputs)`
+- `buildVisualizationData(outputs)`
+- `buildOutputSummary(outputs)`
+- `parseSceneData(sceneData)`
+
+**Local cache behavior**
+- The hook caches the parsed scene JSON per node so a second render is instant.
+- If the selected node changes, the cache is cleared.
+
+**Debug logging**
+- All visualizer logs are gated via `debugLog`.
+- Enable with `VITE_VISUALIZER_DEBUG=true`.
+
+## 8) Visualizer API extracts a scene (Backend)
 
 **Endpoint**
 - `POST /visualize` in `webAleaBack/api/v1/endpoints/visualizer.py`
@@ -149,56 +172,64 @@ It returns:
 - If the expected `shape_count` (from `__meta__`) does not match the produced `object_count`,
   the backend logs a mismatch and can return a `warning`.
 
-
-## 7) Scene is rendered in Three.js (Frontend)
+## 9) Scene is rendered in Three.js (Frontend)
 
 **Modal lifecycle**
 - `VisualizerModal` mounts and calls `buildSceneFromJSON(sceneJSON, mountRef)`.
 
-**Scene construction**
-- `SceneBuilder` creates `THREE.Scene`, `THREE.PerspectiveCamera`, `THREE.WebGLRenderer`, and `OrbitControls`.
-- It separates static meshes from animated objects.
-- Static meshes are merged by material for performance.
-- Non-mesh objects go through `SceneFactory`.
+**Scene construction (core modules)**
+- `SceneBuilder` orchestrates the render pipeline and delegates to core modules:
+  - `core/sceneSetup.js` (scene, camera, renderer, controls)
+  - `core/objectPipeline.js` (object grouping + mesh merging)
+  - `core/lighting.js` (default lights)
+  - `core/framing.js` (fit camera to bounds)
+  - `core/resize.js` (resize handler)
+  - `core/animation.js` (render loop)
+  - `core/dispose.js` (cleanup)
 
 **Rendering system specifics (important)**
-- **TypedArray conversion**: geometry arrays are converted to `Float32Array` / `Uint32Array` to avoid heavy intermediate allocations.
-- **Mesh merging**: static meshes are grouped by material to reduce draw calls (critical for large scenes).
-- **Bounding box framing**: the camera framing is computed from the scene bounds for consistent initial view.
+- **TypedArray conversion**: shared in `utils/geometry.js` to avoid repeated allocations.
+- **Mesh merging**: static meshes are grouped by material to reduce draw calls.
+- **Transform handling**: centralized in `utils/transforms.js` and applied consistently.
+- **Bounding box framing**: camera framing is computed from scene bounds for consistent initial view.
 - **Animation loop**: only enabled if animated objects exist, otherwise a single render is performed.
-- **Object types supported**:
-- `mesh` → `THREE.Mesh`
-- `line` → `THREE.Line`
-- `text` → text mesh (via factory)
-- `group` → recursive children
+
+**Object types supported**
+- `mesh` -> `THREE.Mesh`
+- `line` -> `THREE.Line`
+- `text` -> sprite-based text (via factory + cached textures)
+- `group` -> `THREE.Group` (recursive children)
 
 **Factories**
-- `SceneFactory.buildObjectNode()` recursively builds objects
-- `meshFactory` builds a `THREE.Mesh`
-- `lineFactory` builds `THREE.Line`
-- `textFactory` builds text meshes
+- `SceneFactory` uses a registry of factories (no switch/case).
+- Factories live in:
+  - `features/visualizer/factories/meshFactory.jsx`
+  - `features/visualizer/factories/lineFactory.jsx`
+  - `features/visualizer/factories/textFactory.jsx`
+
+**TextFactory details**
+- Caches text textures by `(text, font, color, background, padding, lineHeight)`.
+- Supports multi-line text, font options, opacity, background, and transform overrides.
 
 **Key files**
 - `webAleaFront/src/features/visualizer/VisualizerModal.jsx`
 - `webAleaFront/src/features/visualizer/SceneBuilder.jsx`
 - `webAleaFront/src/features/visualizer/SceneFactory.jsx`
-- `webAleaFront/src/features/visualizer/factories/meshFactory.jsx`
-- `webAleaFront/src/features/visualizer/factories/lineFactory.jsx`
-- `webAleaFront/src/features/visualizer/factories/textFactory.jsx`
+- `webAleaFront/src/features/visualizer/core/*`
+- `webAleaFront/src/features/visualizer/utils/*`
+- `webAleaFront/src/features/visualizer/factories/*`
 
+## 10) End-to-end summary (short)
 
-## 8) End-to-end summary (short)
-
-1. Workflow executes → outputs produced by OpenAlea.
-2. PlantGL outputs are serialized to JSON scenes.
+1. Workflow executes -> outputs produced by OpenAlea.
+2. PlantGL outputs are serialized to JSON scenes (cache-first).
 3. Node outputs stored in UI state.
-4. User requests render → outputs sent to visualizer.
-5. Backend extracts scene JSON.
+4. User requests render -> outputs sent to visualizer.
+5. Backend extracts scene JSON and uses cache if possible.
 6. Frontend builds a Three.js scene and renders it.
-
 
 ## Notes / Extension points
 
-- If you want automatic rendering after execution, trigger `fetchNodeScene()` on `node-result`.
+- If you want automatic rendering after execution, trigger `fetchNodeScene()` (or the hook) on `node-result`.
 - If you want other 3D formats, extend `serialize_value()` + `visualizer.py` extraction logic.
 - If you need richer materials/lights, expand `serialize_scene()` and the Three.js factories.
