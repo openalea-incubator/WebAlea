@@ -1,0 +1,4 @@
+Configuration
+=============
+
+.. js:automodule:: config
