@@ -17,6 +17,30 @@ class OpenAleaInspector:
     list_wralea_script = str(_BASE_DIR / "runnable" / "list_wralea_packages.py")
 
     @staticmethod
+    def _extract_last_json_object(raw_text: str) -> str | None:
+        """Extract the last JSON-like object from raw text output.
+
+        This helps when subprocess stdout is polluted by warnings or logs.
+        """
+        if not raw_text:
+            return None
+        depth = 0
+        start = None
+        last = None
+        for idx, ch in enumerate(raw_text):
+            if ch == "{":
+                if depth == 0:
+                    start = idx
+                depth += 1
+            elif ch == "}":
+                if depth > 0:
+                    depth -= 1
+                    if depth == 0 and start is not None:
+                        last = raw_text[start:idx + 1]
+                        start = None
+        return last
+
+    @staticmethod
     def list_installed_openalea_packages() -> List[str]:
         """Lists all installed OpenAlea packages in the current conda environment.
 
@@ -82,11 +106,23 @@ class OpenAleaInspector:
         try:
             description = json.loads(result.stdout)
         except ValueError:
-            try:
-                description = ast.literal_eval(result.stdout)
-            except (ValueError, SyntaxError):
-                logging.error("Failed to parse package description output: %s", result.stdout)
+            candidate = OpenAleaInspector._extract_last_json_object(result.stdout)
+            if candidate:
+                try:
+                    description = json.loads(candidate)
+                except ValueError:
+                    try:
+                        description = ast.literal_eval(candidate)
+                    except (ValueError, SyntaxError):
+                        description = {}
+            else:
                 description = {}
+            if not description:
+                try:
+                    description = ast.literal_eval(result.stdout)
+                except (ValueError, SyntaxError):
+                    logging.error("Failed to parse package description output: %s", result.stdout)
+                    description = {}
         return description
 
     @staticmethod
