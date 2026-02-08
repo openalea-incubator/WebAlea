@@ -7,6 +7,7 @@ This document describes the backend architecture, runtime flow, and API surface 
 - Entry point: `webAleaBack/main.py`
 - API base path: `/api/v1` (from `core.config.Settings.API_V1_STR`)
 - Domain focus: OpenAlea package inspection and node execution, plus Conda package management
+- You can access a swagger, built in from FastAPI. Default addresses : [swagger documentation](http://localhost:8000/docs), [ReDoc documentation](http://localhost:8000/redoc)
 
 ## Project Structure (Backend)
 - `webAleaBack/main.py` : FastAPI application, CORS, router inclusion, root endpoint

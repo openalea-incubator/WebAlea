@@ -1,84 +1,70 @@
-# Flux de Récupération de Packages - WebAlea
+# Package Retrieval Flow - WebAlea
 
-> Documentation technique du flux de données entre le Frontend et le Backend pour la gestion des packages OpenAlea.
-
----
-
-## Table des matières
-
-1. [Architecture Générale](#architecture-générale)
-2. [Flux 1 : Liste des Packages Disponibles](#flux-1--liste-des-packages-disponibles-onglet-install)
-3. [Flux 2 : Liste des Packages Visuels](#flux-2--liste-des-packages-visuels-onglet-packages)
-4. [Flux 3 : Récupération des Nodes](#flux-3--récupération-des-nodes-dun-package)
-5. [Flux 4 : Installation d'un Package](#flux-4--installation-dun-package)
-6. [Référence des Fichiers](#référence-des-fichiers)
-7. [Types de Données](#types-de-données)
+> Technical documentation of the data flow between the frontend and the backend for OpenAlea package management.
 
 ---
 
-## Architecture Générale
+## Table of Contents
+
+1. [Overall Architecture](#overall-architecture)
+2. [Flow 1: Available Packages List (Install tab)](#flow-1-available-packages-list-install-tab)
+3. [Flow 2: Visual Packages List (Packages tab)](#flow-2-visual-packages-list-packages-tab)
+4. [Flow 3: Fetch Nodes for a Package](#flow-3-fetch-nodes-for-a-package)
+5. [Flow 4: Package Installation](#flow-4-package-installation)
+6. [File Reference](#file-reference)
+7. [Data Types](#data-types)
+
+---
+
+## Overall Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                          FRONTEND                               │
-│  (React + MUI)                                                  │
-├─────────────────────────────────────────────────────────────────┤
-│  UI Components    →    Service Layer    →    API Layer          │
-│  (PanelXXX.jsx)        (PackageService.js)   (managerAPI.js)    │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              │ HTTP (REST API)
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                          BACKEND                                │
-│  (FastAPI + Python)                                             │
-├─────────────────────────────────────────────────────────────────┤
-│  API Routes       →    Inspector/Utils   →    Subprocess        │
-│  (manager.py)          (OpenAleaInspector)    (conda, python3)  │
-│                        (Conda)                                  │
-└─────────────────────────────────────────────────────────────────┘
++-------------------------------+
+| FRONTEND (React + MUI)        |
+| UI -> Service -> API          |
+| Panel*.jsx -> PackageService  |
+| -> managerAPI.js              |
++-------------------------------+
+                |
+                | HTTP (REST API)
+                v
++-------------------------------+
+| BACKEND (FastAPI + Python)    |
+| Routes -> Inspector/Utils     |
+| -> Subprocess (conda, python) |
++-------------------------------+
 ```
 
 ---
 
-## Flux 1 : Liste des Packages Disponibles (Onglet Install)
+## Flow 1: Available Packages List (Install tab)
 
 ### Description
-Récupère tous les packages OpenAlea disponibles sur le canal conda `openalea3` avec leur dernière version.
+Fetches all OpenAlea packages available on the `openalea3` conda channel with their latest version.
 
-### Séquence
+### Sequence
 
 ```
 PanelInstallPackage.jsx
-        │
-        │ useEffect() au montage
-        ▼
-PackageService.getPackagesList()
-        │
-        ▼
-managerAPI.fetchLatestPackageVersions()
-        │
-        │ GET /api/v1/manager/latest
-        ▼
-manager.py: fetch_latest_package_versions()
-        │
-        ▼
-Conda.list_latest_packages()
-        │
-        │ subprocess: conda search --override-channels -c openalea3 openalea* --json
-        ▼
-Retourne les packages avec leur dernière version
+  -> useEffect() on mount
+  -> PackageService.getPackagesList()
+  -> managerAPI.fetchLatestPackageVersions()
+  -> GET /api/v1/manager/latest
+  -> manager.py: fetch_latest_package_versions()
+  -> Conda.list_latest_packages()
+  -> subprocess: conda search --override-channels -c openalea3 openalea* --json
+  -> returns packages with latest version
 ```
 
 ### Endpoints
 
-| Méthode | URL | Description |
-|---------|-----|-------------|
-| GET | `/api/v1/manager/latest` | Liste des packages avec dernière version |
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/v1/manager/latest` | List of packages with latest version |
 
-### Format des Données
+### Data Format
 
-**Réponse Backend :**
+**Backend response:**
 ```json
 {
   "openalea.plantgl": {
@@ -93,7 +79,7 @@ Retourne les packages avec leur dernière version
 }
 ```
 
-**Après normalisation (PackageService) :**
+**After normalization (PackageService):**
 ```javascript
 [
   { name: "openalea.plantgl", version: "3.22.3" },
@@ -101,11 +87,11 @@ Retourne les packages avec leur dernière version
 ]
 ```
 
-### Fichiers Impliqués
+### Files Involved
 
-| Couche | Fichier | Fonction |
-|--------|---------|----------|
-| UI | `PanelInstallPackage.jsx` | `useEffect()` → fetch au montage |
+| Layer | File | Function |
+|-------|------|----------|
+| UI | `PanelInstallPackage.jsx` | `useEffect()` -> fetch on mount |
 | Service | `PackageService.js` | `getPackagesList()` |
 | API | `managerAPI.js` | `fetchLatestPackageVersions()` |
 | Route | `manager.py` | `fetch_latest_package_versions()` |
@@ -113,45 +99,34 @@ Retourne les packages avec leur dernière version
 
 ---
 
-## Flux 2 : Liste des Packages Visuels (Onglet Packages)
+## Flow 2: Visual Packages List (Packages tab)
 
 ### Description
-Récupère uniquement les packages installés qui possèdent des nodes visuels (entry points `wralea`).
+Fetches only installed packages that expose visual nodes (wralea entry points).
 
-### Séquence
+### Sequence
 
 ```
 PanelModuleNode.jsx
-        │
-        │ useEffect() au montage
-        ▼
-PackageService.getVisualPackagesList()
-        │
-        ▼
-managerAPI.fetchWraleaPackages()
-        │
-        │ GET /api/v1/manager/wralea
-        ▼
-manager.py: fetch_wralea_packages()
-        │
-        ▼
-OpenAleaInspector.list_wralea_packages()
-        │
-        │ subprocess: python3 list_wralea_packages.py
-        │ (scanne les entry_points "wralea")
-        ▼
-Retourne les packages avec wralea
+  -> useEffect() on mount
+  -> PackageService.getVisualPackagesList()
+  -> managerAPI.fetchWraleaPackages()
+  -> GET /api/v1/manager/wralea
+  -> manager.py: fetch_wralea_packages()
+  -> OpenAleaInspector.list_wralea_packages()
+  -> subprocess: python3 list_wralea_packages.py
+  -> returns packages with wralea
 ```
 
 ### Endpoints
 
-| Méthode | URL | Description |
-|---------|-----|-------------|
-| GET | `/api/v1/manager/wralea` | Packages avec nodes visuels |
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/v1/manager/wralea` | Packages with visual nodes |
 
-### Format des Données
+### Data Format
 
-**Réponse Backend :**
+**Backend response:**
 ```json
 {
   "wralea_packages": [
@@ -161,7 +136,7 @@ Retourne les packages avec wralea
 }
 ```
 
-**Après normalisation (PackageService) :**
+**After normalization (PackageService):**
 ```javascript
 [
   { name: "openalea.plantgl", module: "openalea.plantgl_wralea" },
@@ -169,73 +144,59 @@ Retourne les packages avec wralea
 ]
 ```
 
-### Fichiers Impliqués
+### Files Involved
 
-| Couche | Fichier | Fonction |
-|--------|---------|----------|
-| UI | `PanelModuleNode.jsx` | `useEffect()` → fetch au montage |
+| Layer | File | Function |
+|-------|------|----------|
+| UI | `PanelModuleNode.jsx` | `useEffect()` -> fetch on mount |
 | Service | `PackageService.js` | `getVisualPackagesList()` |
 | API | `managerAPI.js` | `fetchWraleaPackages()` |
 | Route | `manager.py` | `fetch_wralea_packages()` |
 | Inspector | `openalea_inspector.py` | `list_wralea_packages()` |
-| Script | `list_wralea_packages.py` | Scan des entry_points |
+| Script | `list_wralea_packages.py` | Scan wralea entry_points |
 
 ---
 
-## Flux 3 : Récupération des Nodes d'un Package
+## Flow 3: Fetch Nodes for a Package
 
 ### Description
-Récupère tous les nodes (NodeFactory) d'un package quand l'utilisateur expand un package dans le TreeView.
+Fetches all nodes (NodeFactory) of a package when the user expands a package in the TreeView.
 
-### Séquence
+### Sequence
 
 ```
 PanelModuleNode.jsx
-        │
-        │ handleItemExpansionToggle() ou handleItemClick()
-        │     └─ loadPackageNodes(packageId)
-        ▼
-PackageService.getNodesList({ name: packageId })
-        │
-        ├─── 1. Vérifie si installé ───────────────────┐
-        │    isInstalledPackage(name)                  │
-        │         │                                    │
-        │         ▼                                    │
-        │    fetchInstalledOpenAleaPackages()          │
-        │         │ GET /api/v1/manager/installed      │
-        │         ▼                                    │
-        │    Retourne boolean                          │
-        │                                              │
-        ├─── 2. Si non installé, installe ─────────────┤
-        │    installPackage(pkg)                       │
-        │         │ POST /api/v1/manager/install       │
-        │                                              │
-        └─── 3. Récupère les nodes ────────────────────┘
-             fetchPackageNodes(name)
-                  │
-                  │ GET /api/v1/manager/installed/{name}
-                  ▼
-             manager.py: fetch_package_nodes()
-                  │
-                  ▼
-             OpenAleaInspector.describe_openalea_package()
-                  │
-                  │ subprocess: python3 describe_openalea_package.py {name}
-                  ▼
-             Retourne la description du package avec ses nodes
+  -> handleItemExpansionToggle() or handleItemClick()
+     -> loadPackageNodes(packageId)
+  -> PackageService.getNodesList({ name: packageId })
+  -> Step 1: check if installed
+     -> isInstalledPackage(name)
+     -> fetchInstalledOpenAleaPackages()
+     -> GET /api/v1/manager/installed
+     -> returns boolean
+  -> Step 2: if not installed, install
+     -> installPackage(pkg)
+     -> POST /api/v1/manager/install
+  -> Step 3: fetch nodes
+     -> fetchPackageNodes(name)
+     -> GET /api/v1/manager/installed/{name}
+     -> manager.py: fetch_package_nodes()
+     -> OpenAleaInspector.describe_openalea_package()
+     -> subprocess: python3 describe_openalea_package.py {name}
+     -> returns package description with nodes
 ```
 
 ### Endpoints
 
-| Méthode | URL | Description |
-|---------|-----|-------------|
-| GET | `/api/v1/manager/installed` | Liste packages installés |
-| GET | `/api/v1/manager/installed/{name}` | Détail d'un package |
-| POST | `/api/v1/manager/install` | Installation (si nécessaire) |
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/v1/manager/installed` | List installed packages |
+| GET | `/api/v1/manager/installed/{name}` | Package details |
+| POST | `/api/v1/manager/install` | Installation (if needed) |
 
-### Format des Données
+### Data Format
 
-**Réponse Backend (`/installed/{name}`) :**
+**Backend response (`/installed/{name}`):**
 ```json
 {
   "package_name": "openalea.plantgl",
@@ -266,7 +227,7 @@ PackageService.getNodesList({ name: packageId })
 }
 ```
 
-**Après normalisation (PackageService) :**
+**After normalization (PackageService):**
 ```javascript
 [
   {
@@ -283,59 +244,49 @@ PackageService.getNodesList({ name: packageId })
 ]
 ```
 
-### Fichiers Impliqués
+### Files Involved
 
-| Couche | Fichier | Fonction |
-|--------|---------|----------|
+| Layer | File | Function |
+|-------|------|----------|
 | UI | `PanelModuleNode.jsx` | `loadPackageNodes()` |
 | Service | `PackageService.js` | `getNodesList()`, `isInstalledPackage()` |
 | API | `managerAPI.js` | `fetchPackageNodes()`, `fetchInstalledOpenAleaPackages()` |
 | Route | `manager.py` | `fetch_package_nodes()` |
 | Inspector | `openalea_inspector.py` | `describe_openalea_package()` |
-| Script | `describe_openalea_package.py` | Introspection OpenAlea |
+| Script | `describe_openalea_package.py` | OpenAlea introspection |
 
 ---
 
-## Flux 4 : Installation d'un Package
+## Flow 4: Package Installation
 
 ### Description
-Installe un package conda dans l'environnement OpenAlea.
+Installs a conda package into the OpenAlea environment.
 
-### Séquence
+### Sequence
 
 ```
 PanelInstallPackage.jsx
-        │
-        │ handleInstall(pkg) → onClick bouton
-        ▼
-PackageService.installPackage({ name: pkg.name })
-        │
-        ▼
-managerAPI.installPackages([{ name, version }], envName)
-        │
-        │ POST /api/v1/manager/install
-        │ Body: { packages: [...], env_name: null }
-        ▼
-manager.py: install_packages_in_env(request)
-        │
-        ▼
-Conda.install_package_list(env_name, package_list)
-        │
-        │ Pour chaque package:
-        │ subprocess: conda install -n {env} -c openalea3 -c conda-forge {pkg} -y
-        ▼
-Retourne { installed: [...], failed: [...] }
+  -> handleInstall(pkg) on button click
+  -> PackageService.installPackage({ name: pkg.name })
+  -> managerAPI.installPackages([{ name, version }], envName)
+  -> POST /api/v1/manager/install
+  -> Body: { packages: [...], env_name: null }
+  -> manager.py: install_packages_in_env(request)
+  -> Conda.install_package_list(env_name, package_list)
+  -> For each package:
+     subprocess: conda install -n {env} -c openalea3 -c conda-forge {pkg} -y
+  -> returns { installed: [...], failed: [...] }
 ```
 
 ### Endpoints
 
-| Méthode | URL | Description |
-|---------|-----|-------------|
-| POST | `/api/v1/manager/install` | Installation de packages |
+| Method | URL | Description |
+|--------|-----|-------------|
+| POST | `/api/v1/manager/install` | Package installation |
 
-### Format des Données
+### Data Format
 
-**Requête Frontend :**
+**Frontend request:**
 ```json
 {
   "packages": [
@@ -345,9 +296,9 @@ Retourne { installed: [...], failed: [...] }
 }
 ```
 
-> **Note:** `version: null` permet à conda de résoudre automatiquement une version compatible avec Python.
+> Note: `version: null` lets conda resolve a compatible version automatically.
 
-**Réponse Backend (succès) :**
+**Backend response (success):**
 ```json
 {
   "installed": ["openalea.plantgl"],
@@ -355,7 +306,7 @@ Retourne { installed: [...], failed: [...] }
 }
 ```
 
-**Réponse Backend (échec) :**
+**Backend response (failure):**
 ```json
 {
   "installed": [],
@@ -368,19 +319,19 @@ Retourne { installed: [...], failed: [...] }
 }
 ```
 
-**Après normalisation (PackageService) :**
+**After normalization (PackageService):**
 ```javascript
 {
-  success: true,  // ou false
+  success: true,  // or false
   installed: ["openalea.plantgl"],
   failed: [{ package: "...", error: "..." }]
 }
 ```
 
-### Fichiers Impliqués
+### Files Involved
 
-| Couche | Fichier | Fonction |
-|--------|---------|----------|
+| Layer | File | Function |
+|-------|------|----------|
 | UI | `PanelInstallPackage.jsx` | `handleInstall()` |
 | Service | `PackageService.js` | `installPackage()` |
 | API | `managerAPI.js` | `installPackages()` |
@@ -389,85 +340,85 @@ Retourne { installed: [...], failed: [...] }
 
 ---
 
-## Référence des Fichiers
+## File Reference
 
 ### Frontend (`webAleaFront/src/`)
 
 #### UI Components
-| Fichier | Rôle |
-|---------|------|
-| `features/package-manager/ui/PackageManager.jsx` | Container principal avec tabs |
-| `features/package-manager/ui/type/PanelModuleNode.jsx` | TreeView des packages visuels |
-| `features/package-manager/ui/type/PanelInstallPackage.jsx` | Liste d'installation |
-| `features/package-manager/ui/type/PanelPrimitiveNode.jsx` | Nodes primitifs (Float, String, Boolean) |
+| File | Role |
+|------|------|
+| `features/package-manager/ui/PackageManager.jsx` | Main container with tabs |
+| `features/package-manager/ui/type/PanelModuleNode.jsx` | TreeView of visual packages |
+| `features/package-manager/ui/type/PanelInstallPackage.jsx` | Installation list |
+| `features/package-manager/ui/type/PanelPrimitiveNode.jsx` | Primitive nodes (Float, String, Boolean) |
 
 #### Service Layer
-| Fichier | Fonctions exportées |
-|---------|---------------------|
+| File | Exported functions |
+|------|-------------------|
 | `service/PackageService.js` | `getPackagesList()`, `getVisualPackagesList()`, `getNodesList()`, `installPackage()`, `isInstalledPackage()`, `getInstalledPackagesList()` |
 
 #### API Layer
-| Fichier | Fonctions exportées |
-|---------|---------------------|
+| File | Exported functions |
+|------|-------------------|
 | `api/managerAPI.js` | `fetchLatestPackageVersions()`, `fetchWraleaPackages()`, `fetchPackageNodes()`, `fetchInstalledOpenAleaPackages()`, `installPackages()` |
 
 ### Backend (`webAleaBack/`)
 
 #### API Routes
-| Fichier | Routes |
-|---------|--------|
+| File | Routes |
+|------|--------|
 | `api/v1/endpoints/manager.py` | `GET /`, `GET /latest`, `POST /install`, `GET /installed`, `GET /wralea`, `GET /installed/{name}` |
 
-#### Utils & Services
-| Fichier | Classe/Méthodes |
-|---------|-----------------|
+#### Utils and Services
+| File | Classes/Methods |
+|------|-----------------|
 | `model/utils/conda_utils.py` | `Conda.list_packages()`, `Conda.list_latest_packages()`, `Conda.install_package()`, `Conda.install_package_list()` |
 | `model/openalea/inspector/openalea_inspector.py` | `OpenAleaInspector.list_installed_openalea_packages()`, `OpenAleaInspector.list_wralea_packages()`, `OpenAleaInspector.describe_openalea_package()` |
 
-#### Scripts Python (subprocess)
-| Fichier | Rôle |
-|---------|------|
-| `model/openalea/inspector/runnable/list_installed_openalea_packages.py` | Liste les packages OpenAlea installés |
-| `model/openalea/inspector/runnable/list_wralea_packages.py` | Liste les packages avec entry_points wralea |
-| `model/openalea/inspector/runnable/describe_openalea_package.py` | Décrit les NodeFactory d'un package |
+#### Python Scripts (subprocess)
+| File | Role |
+|------|------|
+| `model/openalea/inspector/runnable/list_installed_openalea_packages.py` | Lists installed OpenAlea packages |
+| `model/openalea/inspector/runnable/list_wralea_packages.py` | Lists packages with wralea entry_points |
+| `model/openalea/inspector/runnable/describe_openalea_package.py` | Describes NodeFactory objects in a package |
 
 ---
 
-## Types de Données
+## Data Types
 
 ### Frontend (JSDoc)
 
 ```typescript
-// Package disponible pour installation
+// Package available for installation
 interface Package {
-  name: string;      // ex: "openalea.plantgl"
-  version: string;   // ex: "3.22.3"
+  name: string;      // e.g. "openalea.plantgl"
+  version: string;   // e.g. "3.22.3"
 }
 
-// Package avec nodes visuels
+// Package with visual nodes
 interface VisualPackage {
-  name: string;      // ex: "openalea.plantgl"
-  module: string;    // ex: "openalea.plantgl_wralea"
+  name: string;      // e.g. "openalea.plantgl"
+  module: string;    // e.g. "openalea.plantgl_wralea"
 }
 
-// Port d'un node (input ou output)
+// Node port (input or output)
 interface NodePort {
-  name: string;      // ex: "radius"
-  interface: string; // ex: "IFloat", "IStr", "None"
+  name: string;      // e.g. "radius"
+  interface: string; // e.g. "IFloat", "IStr", "None"
   optional: boolean;
   desc: string;
 }
 
-// Node d'un package
+// Node in a package
 interface PackageNode {
-  name: string;           // ex: "Sphere"
+  name: string;            // e.g. "Sphere"
   description: string;
   inputs: NodePort[];
   outputs: NodePort[];
-  callable: string | null; // ex: "openalea.plantgl.scenegraph.Sphere"
+  callable: string | null; // e.g. "openalea.plantgl.scenegraph.Sphere"
 }
 
-// Résultat d'installation
+// Installation result
 interface InstallResult {
   success: boolean;
   installed: string[];
@@ -489,44 +440,16 @@ class InstallRequest(BaseModel):
 
 ---
 
-## Diagramme de Séquence Global
+## Global Sequence Diagram
 
 ```
-┌──────────┐     ┌──────────────┐     ┌───────────┐     ┌──────────┐     ┌─────────────────┐     ┌───────┐
-│    UI    │     │PackageService│     │ managerAPI│     │ manager  │     │OpenAleaInspector│     │ Conda │
-│Component │     │              │     │           │     │  (route) │     │                 │     │       │
-└────┬─────┘     └──────┬───────┘     └─────┬─────┘     └────┬─────┘     └────────┬────────┘     └───┬───┘
-     │                  │                   │                │                    │                  │
-     │ getPackagesList()│                   │                │                    │                  │
-     │─────────────────>│                   │                │                    │                  │
-     │                  │ fetchLatest()     │                │                    │                  │
-     │                  │──────────────────>│                │                    │                  │
-     │                  │                   │ GET /latest    │                    │                  │
-     │                  │                   │───────────────>│                    │                  │
-     │                  │                   │                │ list_latest()      │                  │
-     │                  │                   │                │───────────────────────────────────────>│
-     │                  │                   │                │                    │  conda search    │
-     │                  │                   │                │<───────────────────────────────────────│
-     │                  │                   │<───────────────│                    │                  │
-     │                  │<──────────────────│                │                    │                  │
-     │<─────────────────│                   │                │                    │                  │
-     │                  │                   │                │                    │                  │
-     │ getNodesList()   │                   │                │                    │                  │
-     │─────────────────>│                   │                │                    │                  │
-     │                  │ fetchNodes()      │                │                    │                  │
-     │                  │──────────────────>│                │                    │                  │
-     │                  │                   │GET /installed/X│                    │                  │
-     │                  │                   │───────────────>│                    │                  │
-     │                  │                   │                │ describe_package() │                  │
-     │                  │                   │                │───────────────────>│                  │
-     │                  │                   │                │                    │ python3 script   │
-     │                  │                   │                │<───────────────────│                  │
-     │                  │                   │<───────────────│                    │                  │
-     │                  │<──────────────────│                │                    │                  │
-     │<─────────────────│                   │                │                    │                  │
-     │                  │                   │                │                    │                  │
+UI Component -> PackageService -> managerAPI -> manager route -> OpenAleaInspector -> Conda
+
+Examples:
+- list latest packages: PackageService.getPackagesList() -> ... -> Conda.list_latest_packages()
+- fetch nodes: PackageService.getNodesList() -> ... -> OpenAleaInspector.describe_openalea_package()
 ```
 
 ---
 
-*Document généré le 29/12/2025 - WebAlea v1.0*
+*Document generated on 2025-12-29 - WebAlea v1.0*

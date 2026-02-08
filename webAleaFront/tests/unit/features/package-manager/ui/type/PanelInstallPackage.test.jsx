@@ -33,7 +33,7 @@ describe("PanelInstallPackage Unit Tests", () => {
             setFilteredPackages: jest.fn(),
             loading: false,
             setLoading: jest.fn(),
-            installing: null,
+            installing: new Set(),
             setInstalling: jest.fn(),
             installedPackages: new Set(),
             setInstalledPackages: jest.fn(),
@@ -69,16 +69,23 @@ describe("PanelInstallPackage Unit Tests", () => {
         fireEvent.click(screen.getByTitle(`Install ${pkg.name}`));
 
         await waitFor(() => {
-            expect(props.setInstalling).toHaveBeenCalledWith(pkg.name);
-            expect(props.setInstalledPackages).toHaveBeenCalled();
+            expect(props.setInstalling).toHaveBeenCalled();
+            expect(props.setInstalledPackages).toHaveBeenCalledWith(expect.any(Function));
             expect(props.setSnackbar).toHaveBeenCalledWith({
-            open: true,
-            message: `${pkg.name} installed successfully!`,
-            severity: "success",
+                open: true,
+                message: `${pkg.name} installed successfully!`,
+                severity: "success",
             });
             expect(props.onPackageInstalled).toHaveBeenCalledWith(pkg);
-            expect(props.setInstalling).toHaveBeenCalledWith(null);
         });
+
+        const firstUpdater = props.setInstalling.mock.calls[0][0];
+        const nextSet = firstUpdater(new Set());
+        expect(nextSet.has(pkg.name.toLowerCase())).toBe(true);
+
+        const lastUpdater = props.setInstalling.mock.calls.at(-1)[0];
+        const clearedSet = lastUpdater(new Set([pkg.name.toLowerCase()]));
+        expect(clearedSet.has(pkg.name.toLowerCase())).toBe(false);
     });
 
     test("handleInstall failure shows snackbar error", async () => {

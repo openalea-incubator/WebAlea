@@ -1,6 +1,7 @@
 """Tests for the manager endpoints."""
 import unittest
 import unittest.mock
+from pathlib import Path
 
 from api.v1.endpoints import manager
 
@@ -13,8 +14,9 @@ class TestManagerEndpoints(unittest.TestCase):
         "fetch_latest_package_versions",
         "install_packages_in_env",
     }
+    _TESTS_ROOT = next(p for p in Path(__file__).resolve().parents if p.name == "tests")
     # mock data for testing
-    mock_list_packages_output_file = "tests/resources/conda/mock_list_package.json"
+    mock_list_packages_output_file = _TESTS_ROOT / "resources" / "conda" / "mock_list_package.json"
 
     def test_routes_exist(self):
         """test that all expected routes exist in the manager router."""

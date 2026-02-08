@@ -1,24 +1,36 @@
+from __future__ import annotations
 
-from openalea.plantgl.all import (
-    Scene, Shape, Text,
-    Tesselator, Discretizer,
-    Cylinder, Sphere,
-    Polyline, BezierCurve, NurbsCurve, PointSet
-)
-from model.openalea.visualizer.plantgl import mesh_from_geometry
-import uuid
 import logging
+import uuid
+
+from openalea.plantgl.all import Scene, Shape, Text
+
+from model.openalea.visualizer.utils.plantgl import mesh_from_geometry
 
 
 def serialize_color(color):
+    """Serialize a PlantGL color to normalized RGB.
+
+    Args:
+        color (Any): PlantGL color object.
+    Returns:
+        rgb (list): Normalized RGB list.
+    """
     return [
         color.red / 255.0,
         color.green / 255.0,
         color.blue / 255.0
     ]
-    
+
 
 def serialize_shape(shape: Shape):
+    """Serialize a PlantGL Shape into a JSON-friendly object node.
+
+    Args:
+        shape (Shape): PlantGL shape to serialize.
+    Returns:
+        node (dict): Serialized object node.
+    """
     geom_data = mesh_from_geometry(shape.geometry)
 
     material = shape.appearance
@@ -33,7 +45,6 @@ def serialize_shape(shape: Shape):
             "color": serialize_color(color),
             "opacity": opacity
         },
-        # Transformation par défaut
         "transform": {
             "position": [0, 0, 0],
             "rotation": [0, 0, 0],
@@ -41,7 +52,15 @@ def serialize_shape(shape: Shape):
         }
     }
 
+
 def serialize_scene(scene: Scene):
+    """Serialize a PlantGL Scene into JSON with object nodes.
+
+    Args:
+        scene (Scene): PlantGL scene to serialize.
+    Returns:
+        scene_json (dict): JSON scene with objects list.
+    """
     objects = []
     shape_count = 0
 
@@ -60,6 +79,4 @@ def serialize_scene(scene: Scene):
         objects.append(serialize_shape(shape))
 
     logging.info("serialize_scene done shape_count=%s object_count=%s", shape_count, len(objects))
-    return {
-        "objects": objects
-    }
+    return {"objects": objects}

@@ -1,27 +1,31 @@
 # Tests
+
 ## Environment
-The project uses Python and Coverage. We recommend using the Conda test environment (see [Setup Conda environment](#setup-conda-environment)).
-## Launch Tests
-You need to go to the backend directory:
-```bash
-cd webAleaBack
+Tests rely on Python and Coverage. Integration tests require OpenAlea to be installed.
+Environment variables are loaded from `tests/.env`.
+
+## Run Tests (from `webAleaBack/`)
+
+### PowerShell
+```powershell
+$env:PYTHONPATH="$env:PYTHONPATH;$(Get-Location)"
+python -m pytest
 ```
-Change PYTHONPATH:
+
+### Bash
 ```bash
-export PYTHONPATH=$PYTHONPATH:$(pwd)
+export PYTHONPATH="$PYTHONPATH:$(pwd)"
+python -m pytest
 ```
-Execute tests:
-```bash
-pytest
-```
+
 ## Integration Tests
-Integration tests cannot work without a proper conda test environment.
-You can skip those by uncommenting the skip line before integration tests.
+Integration tests require a conda environment with OpenAlea.
+
 ### Setup Conda Environment
-Use the `tests/resources/environment.yml` file to set up the test environment.
+Use `tests/resources/environment.yml`:
 ```bash
 conda env create -f tests/resources/environment.yml
 conda activate webalea_test_env
 ```
 
-After setup, you can run the tests following the steps in [Launch Tests](#launch-tests).
+Then run the tests as above.

@@ -3,13 +3,15 @@ from unittest import TestCase
 import unittest.mock
 import unittest
 from subprocess import CalledProcessError
+from pathlib import Path
 from model.utils.conda_utils import Conda
 
 class TestCondaMethods(TestCase):
     """Unit tests for Conda class methods."""
 
+    _TESTS_ROOT = next(p for p in Path(__file__).resolve().parents if p.name == "tests")
     # mock data for testing
-    mock_list_packages_output_file = "tests/resources/conda/mock_list_package.json"
+    mock_list_packages_output_file = _TESTS_ROOT / "resources" / "conda" / "mock_list_package.json"
 
     @unittest.mock.patch("subprocess.run")
     def test_list_packages(self, mock_run):

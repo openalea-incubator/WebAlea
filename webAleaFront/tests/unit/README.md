@@ -1,10 +1,14 @@
 # Unit Tests
 
 ## Description
-Jest => test the logic of your application in isolation.
+Jest runs unit tests in isolation.
 
-## Run unit tests
-
+## Run Unit Tests
 ```bash
-npm run test -- --watch
+npm run test:unit
+```
+
+## Watch Mode
+```bash
+npm run test:watch
 ```
