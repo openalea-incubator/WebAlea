@@ -5,6 +5,18 @@ This README describes the backend package for WebAlea.
 ## Start The Project
 Please refer to the top-level `README.md` for setup and run instructions.
 
+## Tests
+From `webAleaBack/`:
+```bash
+python -m pytest
+```
+
+## Lint
+From `webAleaBack/`:
+```bash
+python -m pylint --rcfile .pylintrc api core model
+```
+
 ## Best Practices
 
 ### API Versioning
