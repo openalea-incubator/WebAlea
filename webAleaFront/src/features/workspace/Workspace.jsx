@@ -7,7 +7,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import '../../assets/css/workspace.css'; // Css perso
 import { useFlow } from './providers/FlowContextDefinition.jsx';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import CompositeInspectModal from './ui/CompositeInspectModal.jsx';
 
 /**
@@ -17,7 +17,16 @@ import CompositeInspectModal from './ui/CompositeInspectModal.jsx';
  */
 export default function WorkSpace() {
 
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, nodesTypes, onNodeClick } = useFlow();
+  const {
+    nodes,
+    edges,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    nodesTypes,
+    onNodeClick,
+    duplicateSelectedNodes
+  } = useFlow();
   const [contextMenu, setContextMenu] = useState(null);
   const [inspectNode, setInspectNode] = useState(null);
   const containerRef = useRef(null);
@@ -50,6 +59,28 @@ export default function WorkSpace() {
   const closeInspectModal = () => {
     setInspectNode(null);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const isCtrlOrMeta = event.ctrlKey || event.metaKey;
+      if (!isCtrlOrMeta || event.key.toLowerCase() !== 'd') return;
+
+      const target = event.target;
+      const isEditable = target instanceof HTMLElement && (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable
+      );
+      if (isEditable) return;
+
+      event.preventDefault();
+      duplicateSelectedNodes();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [duplicateSelectedNodes]);
 
   return (
     <div className="workspace-flow rounded shadow-sm border bg-white" ref={containerRef} style={{ position: "relative" }}>
