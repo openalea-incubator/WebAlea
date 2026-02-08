@@ -67,7 +67,14 @@ describe("PackageService Unit Tests", () => {
         const result = await getVisualPackagesList();
 
         expect(result).toEqual([
-            { name: "plantgl", module: "openalea.plantgl_wralea" },
+            {
+                name: "plantgl",
+                packageName: "plantgl",
+                installName: "plantgl",
+                entryName: "plantgl",
+                distName: "",
+                module: "openalea.plantgl_wralea",
+            },
         ]);
     });
 
@@ -221,6 +228,7 @@ describe("PackageService Unit Tests", () => {
             installed: [],
             failed: [{ package: "openalea.plantgl", error: "error" }],
         });
+        fetchPackageNodes.mockRejectedValueOnce(new Error("not installed"));
         const result = await getNodesList({ name: "openalea.plantgl" });
         expect(result).toEqual([]);
     });
